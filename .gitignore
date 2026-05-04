@@ -1,0 +1,5 @@
+docs
+.env.example 
+__init__.py
+env.py
+.venv
