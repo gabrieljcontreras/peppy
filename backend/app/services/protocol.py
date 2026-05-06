@@ -199,8 +199,8 @@ class ProtocolService:
             raise ValueError("Protocol must have at least one compound")
 
         # Remove existing compounds
-        for compound in protocol.compounds:
-            await self.db.delete(compound)
+        protocol.compounds.clear()
+        await self.db.flush()
 
         # Add new compounds
         for compound_data in compounds:
@@ -213,7 +213,7 @@ class ProtocolService:
                 administration_route=compound_data.get("administration_route", "subcutaneous"),
                 notes=compound_data.get("notes"),
             )
-            self.db.add(compound)
+            protocol.compounds.append(compound)
 
         await self.db.commit()
         return await self.get_by_id(protocol.id, protocol.user_id)
@@ -238,7 +238,7 @@ class ProtocolService:
             administration_route=administration_route,
             notes=notes,
         )
-        self.db.add(compound)
+        protocol.compounds.append(compound)
         await self.db.commit()
         await self.db.refresh(compound)
         return compound
@@ -271,8 +271,10 @@ class ProtocolService:
         await self.db.refresh(compound)
         return compound
 
-    async def remove_compound(self, compound: Compound) -> None:
+    async def remove_compound(self, compound: Compound, protocol: Protocol = None) -> None:
         """Remove a compound from a protocol."""
+        if protocol and compound in protocol.compounds:
+            protocol.compounds.remove(compound)
         await self.db.delete(compound)
         await self.db.commit()
 

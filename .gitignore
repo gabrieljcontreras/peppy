@@ -3,3 +3,6 @@ docs
 __init__.py
 env.py
 .venv
+**/__pycache__
+backend/tests/
+
