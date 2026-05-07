@@ -1,92 +1,60 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional
-from enum import Enum
+from typing import Optional, Callable, Awaitable, Sequence
+from uuid import UUID
 
+from sqlalchemy.ext.asyncio import AsyncSession
 
-class InsightType(Enum):
-    ANOMALY = "anomaly"
-    TREND = "trend"
-    SUGGESTION = "suggestion"
-    MILESTONE = "milestone"
-
-
-class InsightSeverity(Enum):
-    INFO = "info"
-    WARNING = "warning"
-    ALERT = "alert"
+from app.models.insight import InsightType, InsightSeverity
 
 
 @dataclass
 class GeneratedInsight:
+    """A candidate insight produced by the engine.
+
+    Pure data — the engine never persists. The route layer is responsible
+    for turning these into `Insight` rows via `InsightService.create`.
+    """
     type: InsightType
     severity: InsightSeverity
     title: str
     description: str
     explanation: str
     confidence: float
-    source_data_refs: Optional[list[str]] = None
+    source_data_refs: Optional[str] = None
+
+
+Rule = Callable[[AsyncSession, UUID, date, date], Awaitable[list[GeneratedInsight]]]
 
 
 class InsightsEngine:
     """
-    The adaptive insights engine that analyzes user data and generates
-    personalized insights, anomaly alerts, and suggestions.
+    The adaptive insights engine. Reads a user's check-ins, labs, wearable
+    data, and protocol info over a date range and returns candidate
+    insights.
 
-    This is the core ML component of Peppy.
+    Its public interface is intentionally small — `analyze_user_data` — so
+    detection rules can be added behind it without changing callers.
     """
 
-    def __init__(self):
-        # TODO: Load models, configure thresholds
-        pass
+    def __init__(self, db: AsyncSession, rules: Optional[Sequence[Rule]] = None):
+        self.db = db
+        if rules is None:
+            from app.ml.rules import DEFAULT_RULES
+            rules = DEFAULT_RULES
+        self._rules: Sequence[Rule] = rules
 
     async def analyze_user_data(
         self,
-        user_id: str,
+        user_id: UUID,
         start_date: date,
         end_date: date,
     ) -> list[GeneratedInsight]:
         """
-        Analyze a user's data over a time range and generate insights.
-
-        This method:
-        1. Fetches user's checkins, labs, wearable data, and protocol info
-        2. Establishes/updates user's baseline metrics
-        3. Detects anomalies from baseline
-        4. Identifies trends (improving, declining, stable)
-        5. Generates suggestions based on patterns
-        6. Flags milestones (weight goals, lab improvements)
+        Analyze a user's data over a time range and return candidate
+        insights. No persistence — caller decides what to do with the result.
         """
-        insights = []
-
-        # TODO: Implement analysis pipeline
-        # - Load user data
-        # - Calculate baselines
-        # - Detect anomalies (z-score, isolation forest, etc.)
-        # - Trend detection (linear regression, LOESS)
-        # - Rule-based suggestions
-        # - ML-based pattern matching
-
-        return insights
-
-    async def detect_anomalies(self, user_id: str, metric: str, value: float) -> Optional[GeneratedInsight]:
-        """
-        Check if a single metric value is anomalous for this user.
-        Used for real-time flagging during check-in.
-        """
-        # TODO: Compare against user's baseline
-        # Use z-score or percentile-based detection
-        return None
-
-    async def generate_dosing_suggestion(self, user_id: str) -> Optional[GeneratedInsight]:
-        """
-        Based on user's response data, suggest protocol adjustments.
-
-        Considers:
-        - Side effect severity trends
-        - Weight loss velocity
-        - Lab markers (if recent)
-        - Time on current dose
-        """
-        # TODO: Implement dosing suggestion logic
-        return None
+        results: list[GeneratedInsight] = []
+        for rule in self._rules:
+            results.extend(await rule(self.db, user_id, start_date, end_date))
+        return results
