@@ -2,7 +2,7 @@ from uuid import UUID
 from datetime import datetime, timezone
 from typing import Optional, Sequence
 
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, exists
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.insight import Insight, InsightType, InsightSeverity
@@ -42,6 +42,7 @@ class InsightService:
         unread_only: bool = False,
         type: Optional[InsightType] = None,
         severity: Optional[InsightSeverity] = None,
+        include_dismissed: bool = False,
         limit: int = 100,
         offset: int = 0,
     ) -> Sequence[Insight]:
@@ -52,6 +53,8 @@ class InsightService:
 
         if unread_only:
             query = query.where(Insight.read_at.is_(None))
+        if not include_dismissed:
+            query = query.where(Insight.dismissed_at.is_(None))
         if type is not None:
             query = query.where(Insight.type == type)
         if severity is not None:
@@ -87,6 +90,25 @@ class InsightService:
         await self.db.commit()
         await self.db.refresh(insight)
         return insight
+
+    async def exists_matching(
+        self,
+        user_id: UUID,
+        type: InsightType,
+        source_data_refs: Optional[str],
+    ) -> bool:
+        """Check if an insight with the same type and source_data_refs exists for this user."""
+        query = select(
+            exists().where(
+                and_(
+                    Insight.user_id == user_id,
+                    Insight.type == type,
+                    Insight.source_data_refs == source_data_refs,
+                )
+            )
+        )
+        result = await self.db.execute(query)
+        return result.scalar()
 
     async def mark_read(self, insight: Insight) -> Insight:
         """

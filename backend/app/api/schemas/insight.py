@@ -57,3 +57,12 @@ class InsightSummary(BaseModel):
 class GenerationResult(BaseModel):
     insights_generated: int
     types_breakdown: dict[str, int]
+
+
+class JobResponse(BaseModel):
+    job_id: UUID
+    status: str
+    result: Optional[dict] = None
+    error: Optional[str] = None
+
+    model_config = {"from_attributes": True}
