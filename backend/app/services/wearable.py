@@ -8,6 +8,7 @@ from app.models.wearable import WearableConnection, WearableData, WearableProvid
 from app.integrations.base import NormalizedWearableData
 from app.integrations.oura import OuraIntegration
 from app.integrations.whoop import WhoopIntegration
+from app.security import encrypt_token, decrypt_token
 
 
 class WearableService:
@@ -94,8 +95,8 @@ class WearableService:
         existing = await self.get_connection_by_provider(user_id, provider)
 
         if existing:
-            existing.access_token = tokens.get("access_token")
-            existing.refresh_token = tokens.get("refresh_token")
+            existing.access_token = encrypt_token(tokens.get("access_token"))
+            existing.refresh_token = encrypt_token(tokens.get("refresh_token"))
             existing.is_active = True
             if "expires_in" in tokens:
                 existing.token_expires_at = datetime.now(timezone.utc) + timedelta(
@@ -108,8 +109,8 @@ class WearableService:
         connection = WearableConnection(
             user_id=user_id,
             provider=provider,
-            access_token=tokens.get("access_token"),
-            refresh_token=tokens.get("refresh_token"),
+            access_token=encrypt_token(tokens.get("access_token")),
+            refresh_token=encrypt_token(tokens.get("refresh_token")),
             is_active=True,
         )
         if "expires_in" in tokens:
@@ -162,11 +163,12 @@ class WearableService:
             raise ValueError("No refresh token available")
 
         integration = self._get_integration(connection.provider)
-        tokens = await integration.refresh_tokens(connection.refresh_token)
+        decrypted_refresh = decrypt_token(connection.refresh_token)
+        tokens = await integration.refresh_tokens(decrypted_refresh)
 
-        connection.access_token = tokens.get("access_token")
+        connection.access_token = encrypt_token(tokens.get("access_token"))
         if "refresh_token" in tokens:
-            connection.refresh_token = tokens["refresh_token"]
+            connection.refresh_token = encrypt_token(tokens["refresh_token"])
         if "expires_in" in tokens:
             connection.token_expires_at = datetime.now(timezone.utc) + timedelta(
                 seconds=tokens["expires_in"]
@@ -200,8 +202,9 @@ class WearableService:
             start_date = end_date - timedelta(days=7)
 
         integration = self._get_integration(connection.provider)
+        decrypted_access = decrypt_token(connection.access_token)
         data = await integration.fetch_data(
-            connection.access_token,
+            decrypted_access,
             start_date,
             end_date,
         )

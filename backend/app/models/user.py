@@ -21,3 +21,4 @@ class User(Base, UUIDMixin, TimestampMixin):
     lab_results = relationship("LabResult", back_populates="user", cascade="all, delete-orphan")
     insights = relationship("Insight", back_populates="user", cascade="all, delete-orphan")
     wearable_connections = relationship("WearableConnection", back_populates="user", cascade="all, delete-orphan")
+    jobs = relationship("Job", back_populates="user", cascade="all, delete-orphan")
