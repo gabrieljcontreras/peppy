@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.api.routes import auth, protocols, checkins, labs, insights, health, wearables
+from app.api.routes import auth, protocols, checkins, labs, insights, health, wearables, notifications
 
 settings = get_settings()
 
@@ -30,6 +30,7 @@ app.include_router(checkins.router, prefix="/api/v1/checkins", tags=["checkins"]
 app.include_router(labs.router, prefix="/api/v1/labs", tags=["labs"])
 app.include_router(insights.router, prefix="/api/v1/insights", tags=["insights"])
 app.include_router(wearables.router, prefix="/api/v1/wearables", tags=["wearables"])
+app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["notifications"])
 
 
 @app.on_event("startup")
