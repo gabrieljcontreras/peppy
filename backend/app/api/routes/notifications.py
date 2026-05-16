@@ -10,6 +10,8 @@ from app.models.notification import DevicePlatform as DevicePlatformModel
 from app.api.schemas.notification import (
     DeviceTokenCreate,
     DeviceTokenResponse,
+    NotificationPreferenceResponse,
+    NotificationPreferenceUpdate,
 )
 
 router = APIRouter()
@@ -57,3 +59,30 @@ async def unregister_device(
             detail="Device token not found",
         )
     await service.delete_device(device)
+
+
+@router.get("/preferences", response_model=NotificationPreferenceResponse)
+async def get_preferences(
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Get notification preferences for the current user."""
+    service = NotificationService(db)
+    return await service.get_or_create_preferences(current_user.id)
+
+
+@router.patch("/preferences", response_model=NotificationPreferenceResponse)
+async def update_preferences(
+    updates: NotificationPreferenceUpdate,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Update notification preferences for the current user."""
+    service = NotificationService(db)
+    return await service.update_preferences(
+        user_id=current_user.id,
+        insights_enabled=updates.insights_enabled,
+        alert_severity_only=updates.alert_severity_only,
+        quiet_hours_start=updates.quiet_hours_start,
+        quiet_hours_end=updates.quiet_hours_end,
+    )

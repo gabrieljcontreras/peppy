@@ -1,8 +1,9 @@
+from datetime import time
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.models.notification import DeviceToken, DevicePlatform
+from app.models.notification import DeviceToken, DevicePlatform, NotificationPreference
 
 
 class NotificationService:
@@ -59,3 +60,40 @@ class NotificationService:
         await self.db.commit()
         await self.db.refresh(device)
         return device
+
+    async def get_or_create_preferences(self, user_id: UUID) -> NotificationPreference:
+        result = await self.db.execute(
+            select(NotificationPreference).where(NotificationPreference.user_id == user_id)
+        )
+        pref = result.scalar_one_or_none()
+        if pref:
+            return pref
+
+        pref = NotificationPreference(user_id=user_id)
+        self.db.add(pref)
+        await self.db.commit()
+        await self.db.refresh(pref)
+        return pref
+
+    async def update_preferences(
+        self,
+        user_id: UUID,
+        insights_enabled: bool | None = None,
+        alert_severity_only: bool | None = None,
+        quiet_hours_start: time | None = None,
+        quiet_hours_end: time | None = None,
+    ) -> NotificationPreference:
+        pref = await self.get_or_create_preferences(user_id)
+
+        if insights_enabled is not None:
+            pref.insights_enabled = insights_enabled
+        if alert_severity_only is not None:
+            pref.alert_severity_only = alert_severity_only
+        if quiet_hours_start is not None:
+            pref.quiet_hours_start = quiet_hours_start
+        if quiet_hours_end is not None:
+            pref.quiet_hours_end = quiet_hours_end
+
+        await self.db.commit()
+        await self.db.refresh(pref)
+        return pref
