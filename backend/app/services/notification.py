@@ -1,10 +1,11 @@
-from datetime import time
+from datetime import datetime, time
 from typing import Any
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.models.notification import DeviceToken, DevicePlatform, NotificationPreference
+from app.models.insight import InsightSeverity
 from app.integrations.push import PushAdapter
 
 
@@ -136,3 +137,52 @@ class NotificationService:
                     failed += 1
 
         return {"sent": sent, "failed": failed}
+
+    async def send_insight_notification(
+        self,
+        user_id: UUID,
+        insight_id: UUID,
+        title: str,
+        body: str,
+        severity: InsightSeverity,
+        ios_adapter: PushAdapter | None = None,
+        android_adapter: PushAdapter | None = None,
+    ) -> dict[str, Any]:
+        """Send push notification for an insight, respecting user preferences.
+
+        Returns dict with 'sent', 'failed', and 'skipped_reason' (if skipped).
+        """
+        pref = await self.get_or_create_preferences(user_id)
+
+        if not pref.insights_enabled:
+            return {"sent": 0, "failed": 0, "skipped_reason": "insights_disabled"}
+
+        if pref.alert_severity_only and severity != InsightSeverity.ALERT:
+            return {"sent": 0, "failed": 0, "skipped_reason": "alert_only"}
+
+        if self._is_quiet_hours(pref):
+            return {"sent": 0, "failed": 0, "skipped_reason": "quiet_hours"}
+
+        result = await self.send_push(
+            user_id=user_id,
+            title=title,
+            body=body,
+            data={"insight_id": str(insight_id)},
+            ios_adapter=ios_adapter,
+            android_adapter=android_adapter,
+        )
+        return {**result, "skipped_reason": None}
+
+    def _is_quiet_hours(self, pref: NotificationPreference) -> bool:
+        """Check if current time falls within user's quiet hours."""
+        if not pref.quiet_hours_start or not pref.quiet_hours_end:
+            return False
+
+        now = datetime.now().time()
+        start = pref.quiet_hours_start
+        end = pref.quiet_hours_end
+
+        if start <= end:
+            return start <= now <= end
+        else:
+            return now >= start or now <= end

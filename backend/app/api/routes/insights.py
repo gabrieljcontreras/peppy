@@ -10,6 +10,7 @@ from app.database import get_db
 from app.api.deps import CurrentUser
 from app.services.insight import InsightService
 from app.services.job import JobService
+from app.services.notification import NotificationService
 from app.ml.insights_engine import InsightsEngine
 from app.models.insight import InsightType as ModelInsightType, InsightSeverity as ModelInsightSeverity
 from app.api.schemas.insight import (
@@ -186,13 +187,14 @@ async def trigger_insight_generation(
     candidates = await engine.analyze_user_data(current_user.id, start_date, end_date)
 
     service = InsightService(db)
+    notification_service = NotificationService(db)
     created = []
     for candidate in candidates:
         if await service.exists_matching(
             current_user.id, candidate.type, candidate.source_data_refs
         ):
             continue
-        await service.create(
+        insight = await service.create(
             user_id=current_user.id,
             type=candidate.type,
             severity=candidate.severity,
@@ -203,6 +205,15 @@ async def trigger_insight_generation(
             source_data_refs=candidate.source_data_refs,
         )
         created.append(candidate)
+
+        if candidate.severity == ModelInsightSeverity.ALERT:
+            await notification_service.send_insight_notification(
+                user_id=current_user.id,
+                insight_id=insight.id,
+                title=candidate.title,
+                body=candidate.description,
+                severity=candidate.severity,
+            )
 
     breakdown = Counter(c.type.value for c in created)
     return GenerationResult(
