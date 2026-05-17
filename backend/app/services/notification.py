@@ -1,9 +1,11 @@
 from datetime import time
+from typing import Any
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.models.notification import DeviceToken, DevicePlatform, NotificationPreference
+from app.integrations.push import PushAdapter
 
 
 class NotificationService:
@@ -97,3 +99,40 @@ class NotificationService:
         await self.db.commit()
         await self.db.refresh(pref)
         return pref
+
+    async def send_push(
+        self,
+        user_id: UUID,
+        title: str,
+        body: str,
+        data: dict[str, Any] | None = None,
+        ios_adapter: PushAdapter | None = None,
+        android_adapter: PushAdapter | None = None,
+    ) -> dict[str, int]:
+        """Send push notification to all user's registered devices.
+
+        Returns dict with 'sent' and 'failed' counts.
+        """
+        devices = await self.list_devices(user_id)
+
+        sent = 0
+        failed = 0
+
+        for device in devices:
+            adapter = None
+            if device.platform == DevicePlatform.IOS and ios_adapter:
+                adapter = ios_adapter
+            elif device.platform == DevicePlatform.ANDROID and android_adapter:
+                adapter = android_adapter
+
+            if adapter:
+                try:
+                    success = await adapter.send(device.token, title, body, data)
+                    if success:
+                        sent += 1
+                    else:
+                        failed += 1
+                except Exception:
+                    failed += 1
+
+        return {"sent": sent, "failed": failed}
