@@ -55,7 +55,7 @@ class TestProtocolRoutes:
             "/api/v1/protocols/",
             json=sample_protocol,
         )
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     async def test_create_protocol_no_compounds(self, client, auth_headers):
         response = await client.post(

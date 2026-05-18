@@ -301,7 +301,7 @@ class TestProtocolService:
         )
 
         compound_to_remove = next(c for c in protocol.compounds if c.name == "BPC-157")
-        await service.remove_compound(compound_to_remove)
+        await service.remove_compound(compound_to_remove, protocol)
 
         reloaded = await service.get_by_id(protocol.id, user.id)
         assert len(reloaded.compounds) == 1
