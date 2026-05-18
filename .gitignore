@@ -6,5 +6,7 @@ env.py
 **/__pycache__
 backend/tests/
 .env
+BACKEND_HANDOFF.md
+
 
 
