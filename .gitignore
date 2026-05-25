@@ -7,6 +7,5 @@ env.py
 backend/tests/
 .env
 BACKEND_HANDOFF.md
-
-
+.claude
 
