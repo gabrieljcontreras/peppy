@@ -17,17 +17,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
-import com.peppy.app.ui.theme.Border
+import com.peppy.app.ui.theme.Cream50
 import com.peppy.app.ui.theme.CornerRadius
-import com.peppy.app.ui.theme.Error
+import com.peppy.app.ui.theme.Danger
+import com.peppy.app.ui.theme.Ink100
+import com.peppy.app.ui.theme.Ink300
+import com.peppy.app.ui.theme.Ink500
+import com.peppy.app.ui.theme.Ink900
 import com.peppy.app.ui.theme.PeppyTheme
-import com.peppy.app.ui.theme.Primary
+import com.peppy.app.ui.theme.Rust500
 import com.peppy.app.ui.theme.Spacing
-import com.peppy.app.ui.theme.Surface
-import com.peppy.app.ui.theme.SurfaceElevated
-import com.peppy.app.ui.theme.TextPrimary
-import com.peppy.app.ui.theme.TextSecondary
-import com.peppy.app.ui.theme.TextTertiary
 
 @Composable
 fun PepTextField(
@@ -52,7 +51,7 @@ fun PepTextField(
             enabled = enabled,
             singleLine = singleLine,
             label = label?.let { { Text(it) } },
-            placeholder = placeholder?.let { { Text(it, color = TextTertiary) } },
+            placeholder = placeholder?.let { { Text(it, color = Ink300) } },
             isError = error != null,
             visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
             keyboardOptions = KeyboardOptions(
@@ -64,38 +63,38 @@ fun PepTextField(
             ),
             shape = RoundedCornerShape(CornerRadius.sm),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = TextPrimary,
-                unfocusedTextColor = TextPrimary,
-                disabledTextColor = TextSecondary,
-                focusedContainerColor = Surface,
-                unfocusedContainerColor = Surface,
-                disabledContainerColor = Surface,
-                errorContainerColor = Surface,
-                cursorColor = Primary,
-                focusedBorderColor = Primary,
-                unfocusedBorderColor = Border,
-                disabledBorderColor = Border.copy(alpha = 0.5f),
-                errorBorderColor = Error,
-                focusedLabelColor = Primary,
-                unfocusedLabelColor = TextSecondary,
-                disabledLabelColor = TextTertiary,
-                errorLabelColor = Error,
-                focusedPlaceholderColor = TextTertiary,
-                unfocusedPlaceholderColor = TextTertiary
+                focusedTextColor = Ink900,
+                unfocusedTextColor = Ink900,
+                disabledTextColor = Ink500,
+                focusedContainerColor = Cream50,
+                unfocusedContainerColor = Cream50,
+                disabledContainerColor = Cream50,
+                errorContainerColor = Cream50,
+                cursorColor = Rust500,
+                focusedBorderColor = Rust500,
+                unfocusedBorderColor = Ink100,
+                disabledBorderColor = Ink100.copy(alpha = 0.5f),
+                errorBorderColor = Danger,
+                focusedLabelColor = Rust500,
+                unfocusedLabelColor = Ink500,
+                disabledLabelColor = Ink300,
+                errorLabelColor = Danger,
+                focusedPlaceholderColor = Ink300,
+                unfocusedPlaceholderColor = Ink300
             )
         )
         if (error != null) {
             Text(
                 text = error,
                 style = MaterialTheme.typography.bodySmall,
-                color = Error,
+                color = Danger,
                 modifier = Modifier.padding(start = Spacing.xs, top = Spacing.xs)
             )
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917)
+@Preview(showBackground = true, backgroundColor = 0xFFFAF7F0)
 @Composable
 private fun PepTextFieldPreview() {
     PeppyTheme {
@@ -110,7 +109,7 @@ private fun PepTextFieldPreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917)
+@Preview(showBackground = true, backgroundColor = 0xFFFAF7F0)
 @Composable
 private fun PepTextFieldErrorPreview() {
     PeppyTheme {

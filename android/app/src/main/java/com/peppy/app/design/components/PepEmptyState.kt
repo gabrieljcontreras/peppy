@@ -19,10 +19,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.peppy.app.ui.theme.Ink300
+import com.peppy.app.ui.theme.Ink500
 import com.peppy.app.ui.theme.PeppyTheme
 import com.peppy.app.ui.theme.Spacing
-import com.peppy.app.ui.theme.TextSecondary
-import com.peppy.app.ui.theme.TextTertiary
 
 @Composable
 fun PepEmptyState(
@@ -43,15 +43,15 @@ fun PepEmptyState(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(64.dp),
-            tint = TextTertiary
+            tint = Ink300
         )
 
         Spacer(modifier = Modifier.height(Spacing.lg))
 
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = TextSecondary,
+            style = MaterialTheme.typography.headlineSmall,
+            color = Ink500,
             textAlign = TextAlign.Center
         )
 
@@ -60,7 +60,7 @@ fun PepEmptyState(
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = TextTertiary,
+                color = Ink300,
                 textAlign = TextAlign.Center
             )
         }
@@ -72,7 +72,7 @@ fun PepEmptyState(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917)
+@Preview(showBackground = true, backgroundColor = 0xFFFAF7F0)
 @Composable
 private fun PepEmptyStatePreview() {
     PeppyTheme {

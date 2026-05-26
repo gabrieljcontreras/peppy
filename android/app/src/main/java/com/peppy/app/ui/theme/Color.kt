@@ -2,30 +2,91 @@ package com.peppy.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Peppy Warm Light Theme
-// Based on rounded soft sans design examples
-// Primary: Warm coral — soft, approachable, health-focused
-val Primary = Color(0xFFD4805A)          // Warm coral/salmon
-val PrimaryLight = Color(0xFFE9A88A)     // Lighter coral
-val PrimaryDark = Color(0xFFB86B48)      // Darker coral (pressed states)
+// peppy Design System v2 — Professional Direction
+// Three roles: Rust (brand), Ink (foreground), Cream (background)
 
-// Backgrounds (Light theme - warm cream)
-val Background = Color(0xFFFBF8F3)       // Warm cream
-val Surface = Color(0xFFFFFFFF)          // White cards
-val SurfaceElevated = Color(0xFFF5F0E8)  // Slightly darker cream
-val Border = Color(0xFFE8E2D9)           // Warm gray border
+// Rust scale (brand accent)
+val Rust100 = Color(0xFFF7DDCB)
+val Rust300 = Color(0xFFE5A487)
+val Rust500 = Color(0xFFC76B3E)  // Primary brand color
+val Rust700 = Color(0xFF98512E)  // Hover/pressed states
+val Rust900 = Color(0xFF663520)
 
-// Text (Dark on light)
-val TextPrimary = Color(0xFF1E2235)      // Dark charcoal
-val TextSecondary = Color(0xFF5A5F72)    // Muted gray
-val TextTertiary = Color(0xFF8E92A3)     // Hints, placeholders
+// Ink scale (text, dark buttons)
+val Ink100 = Color(0xFFE5E7EB)   // Borders, dividers
+val Ink300 = Color(0xFFBFC1C7)
+val Ink500 = Color(0xFF777A82)   // Secondary text
+val Ink700 = Color(0xFF4A4D54)
+val Ink900 = Color(0xFF1E2026)   // Primary text, headlines
 
-// Semantic
-val Success = Color(0xFF6BA87A)          // Soft green
-val Warning = Color(0xFFD4A05A)          // Warm gold
-val Error = Color(0xFFD45A5A)            // Soft red
+// Cream scale (backgrounds)
+val Cream50 = Color(0xFFFCFAF5)  // Card backgrounds
+val Cream100 = Color(0xFFFAF7F0) // Default page background
+val Cream200 = Color(0xFFF3EDDF) // Elevated surfaces
 
-// On-colors (for text/icons on colored backgrounds)
-val OnPrimary = Color(0xFFFFFFFF)        // White on coral
-val OnSurface = Color(0xFF1E2235)        // Dark on white
-val OnBackground = Color(0xFF1E2235)     // Dark on cream
+// Semantic colors
+val Success = Color(0xFF4E8C5B)
+val Warning = Color(0xFFD9A04A)
+val Danger = Color(0xFFC24B3F)
+
+// ============================================
+// Light Mode Aliases (default)
+// ============================================
+val LightPrimary = Rust500
+val LightPrimaryContainer = Rust100
+val LightOnPrimary = Cream100
+val LightOnPrimaryContainer = Ink900
+
+val LightBackground = Cream100
+val LightSurface = Cream50
+val LightSurfaceVariant = Cream200
+val LightOnBackground = Ink900
+val LightOnSurface = Ink900
+val LightOnSurfaceVariant = Ink500
+
+val LightOutline = Ink100
+val LightOutlineVariant = Ink100
+
+val LightError = Danger
+val LightOnError = Cream100
+
+// ============================================
+// Dark Mode Colors
+// Per design system: Cream inverts to deep ink,
+// rust desaturates slightly, text inverts to warm off-white
+// ============================================
+val RustDark = Color(0xFFD4805A)  // Slightly desaturated rust for dark mode
+
+val DarkPrimary = RustDark
+val DarkPrimaryContainer = Rust900
+val DarkOnPrimary = Cream100
+val DarkOnPrimaryContainer = Cream100
+
+val DarkBackground = Color(0xFF121214)  // Deep ink background
+val DarkSurface = Color(0xFF1A1A1E)     // Slightly elevated surface
+val DarkSurfaceVariant = Color(0xFF242428)  // Card backgrounds
+val DarkOnBackground = Color(0xFFF5F3EE)  // Warm off-white text
+val DarkOnSurface = Color(0xFFF5F3EE)
+val DarkOnSurfaceVariant = Color(0xFFA0A3AA)  // Secondary text
+
+val DarkOutline = Color(0xFF3A3A3E)
+val DarkOutlineVariant = Color(0xFF2A2A2E)
+
+val DarkError = Color(0xFFE57373)  // Lighter red for dark mode
+val DarkOnError = Color(0xFF121214)
+
+// Legacy aliases (for backward compatibility, use light mode values)
+val Primary = LightPrimary
+val PrimaryContainer = LightPrimaryContainer
+val OnPrimary = LightOnPrimary
+val OnPrimaryContainer = LightOnPrimaryContainer
+val Background = LightBackground
+val Surface = LightSurface
+val SurfaceVariant = LightSurfaceVariant
+val OnBackground = LightOnBackground
+val OnSurface = LightOnSurface
+val OnSurfaceVariant = LightOnSurfaceVariant
+val Outline = LightOutline
+val OutlineVariant = LightOutlineVariant
+val Error = LightError
+val OnError = LightOnError

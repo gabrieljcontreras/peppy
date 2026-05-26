@@ -14,10 +14,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import com.peppy.app.design.components.PepButton
 import com.peppy.app.design.components.PepButtonStyle
+import com.peppy.app.ui.theme.NunitoFontFamily
 import com.peppy.app.ui.theme.PeppyTheme
 import com.peppy.app.ui.theme.Spacing
 
@@ -38,9 +42,15 @@ fun WelcomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // peppy wordmark — Nunito font only (per design system)
             Text(
-                text = "Peppy",
-                style = MaterialTheme.typography.displayMedium,
+                text = "peppy",
+                style = TextStyle(
+                    fontFamily = NunitoFontFamily,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 48.sp,
+                    letterSpacing = (-0.5).sp
+                ),
                 color = MaterialTheme.colorScheme.primary
             )
 
@@ -87,10 +97,21 @@ fun WelcomeScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Light Mode")
 @Composable
 private fun WelcomeScreenPreview() {
-    PeppyTheme {
+    PeppyTheme(darkTheme = false) {
+        WelcomeScreen(
+            onSignUpClick = {},
+            onSignInClick = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "Dark Mode")
+@Composable
+private fun WelcomeScreenDarkPreview() {
+    PeppyTheme(darkTheme = true) {
         WelcomeScreen(
             onSignUpClick = {},
             onSignInClick = {}

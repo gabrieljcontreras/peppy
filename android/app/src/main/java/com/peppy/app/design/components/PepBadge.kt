@@ -18,16 +18,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peppy.app.ui.theme.CornerRadius
-import com.peppy.app.ui.theme.Error
-import com.peppy.app.ui.theme.OnPrimary
+import com.peppy.app.ui.theme.Cream100
+import com.peppy.app.ui.theme.Cream200
+import com.peppy.app.ui.theme.Danger
+import com.peppy.app.ui.theme.Ink900
 import com.peppy.app.ui.theme.PeppyTheme
-import com.peppy.app.ui.theme.Primary
-import com.peppy.app.ui.theme.PrimaryLight
+import com.peppy.app.ui.theme.Rust500
 import com.peppy.app.ui.theme.Spacing
 import com.peppy.app.ui.theme.Success
-import com.peppy.app.ui.theme.Surface
-import com.peppy.app.ui.theme.SurfaceElevated
-import com.peppy.app.ui.theme.TextPrimary
 import com.peppy.app.ui.theme.Warning
 
 enum class PepBadgeStyle {
@@ -45,11 +43,11 @@ fun PepBadge(
     style: PepBadgeStyle = PepBadgeStyle.Default
 ) {
     val (backgroundColor, textColor) = when (style) {
-        PepBadgeStyle.Default -> SurfaceElevated to TextPrimary
-        PepBadgeStyle.Primary -> Primary.copy(alpha = 0.2f) to Primary
-        PepBadgeStyle.Success -> Success.copy(alpha = 0.2f) to Success
-        PepBadgeStyle.Warning -> Warning.copy(alpha = 0.2f) to Warning
-        PepBadgeStyle.Error -> Error.copy(alpha = 0.2f) to Error
+        PepBadgeStyle.Default -> Cream200 to Ink900
+        PepBadgeStyle.Primary -> Rust500.copy(alpha = 0.15f) to Rust500
+        PepBadgeStyle.Success -> Success.copy(alpha = 0.15f) to Success
+        PepBadgeStyle.Warning -> Warning.copy(alpha = 0.15f) to Warning
+        PepBadgeStyle.Error -> Danger.copy(alpha = 0.15f) to Danger
     }
 
     Box(
@@ -69,7 +67,7 @@ fun PepBadge(
 @Composable
 fun PepNotificationDot(
     modifier: Modifier = Modifier,
-    color: Color = Primary
+    color: Color = Rust500
 ) {
     Box(
         modifier = modifier
@@ -88,20 +86,20 @@ fun PepCountBadge(
         Box(
             modifier = modifier
                 .clip(CircleShape)
-                .background(Primary)
+                .background(Rust500)
                 .padding(horizontal = 6.dp, vertical = 2.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = if (count > 99) "99+" else count.toString(),
                 style = MaterialTheme.typography.labelSmall,
-                color = OnPrimary
+                color = Cream100
             )
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917)
+@Preview(showBackground = true, backgroundColor = 0xFFFAF7F0)
 @Composable
 private fun PepBadgePreview() {
     PeppyTheme {
@@ -116,7 +114,7 @@ private fun PepBadgePreview() {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917)
+@Preview(showBackground = true, backgroundColor = 0xFFFAF7F0)
 @Composable
 private fun PepCountBadgePreview() {
     PeppyTheme {

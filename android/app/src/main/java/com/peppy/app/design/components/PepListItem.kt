@@ -19,12 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.peppy.app.ui.theme.Border
+import com.peppy.app.ui.theme.Ink100
+import com.peppy.app.ui.theme.Ink500
+import com.peppy.app.ui.theme.Ink900
 import com.peppy.app.ui.theme.PeppyTheme
-import com.peppy.app.ui.theme.Primary
+import com.peppy.app.ui.theme.Rust500
 import com.peppy.app.ui.theme.Spacing
-import com.peppy.app.ui.theme.TextPrimary
-import com.peppy.app.ui.theme.TextSecondary
 
 @Composable
 fun PepListItem(
@@ -54,7 +54,7 @@ fun PepListItem(
                     imageVector = leadingIcon,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
-                    tint = Primary
+                    tint = Rust500
                 )
             }
 
@@ -65,13 +65,13 @@ fun PepListItem(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = TextPrimary
+                    color = Ink900
                 )
                 if (subtitle != null) {
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = Ink500
                     )
                 }
             }
@@ -83,7 +83,7 @@ fun PepListItem(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
-                    tint = TextSecondary
+                    tint = Ink500
                 )
             }
         }
@@ -91,14 +91,14 @@ fun PepListItem(
         if (showDivider) {
             HorizontalDivider(
                 modifier = Modifier.padding(start = if (leadingIcon != null) 56.dp else Spacing.md),
-                color = Border,
+                color = Ink100,
                 thickness = 1.dp
             )
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917)
+@Preview(showBackground = true, backgroundColor = 0xFFFAF7F0)
 @Composable
 private fun PepListItemPreview() {
     PeppyTheme {

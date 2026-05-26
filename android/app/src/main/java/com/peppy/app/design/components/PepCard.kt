@@ -12,11 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.peppy.app.ui.theme.Border
+import com.peppy.app.ui.theme.Cream50
 import com.peppy.app.ui.theme.CornerRadius
 import com.peppy.app.ui.theme.PeppyTheme
 import com.peppy.app.ui.theme.Spacing
-import com.peppy.app.ui.theme.Surface
 
 @Composable
 fun PepCard(
@@ -26,7 +25,7 @@ fun PepCard(
 ) {
     val shape = RoundedCornerShape(CornerRadius.md)
     val colors = CardDefaults.cardColors(
-        containerColor = Surface
+        containerColor = Cream50
     )
 
     if (onClick != null) {
@@ -55,7 +54,7 @@ fun PepCard(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF1C1917)
+@Preview(showBackground = true, backgroundColor = 0xFFFAF7F0)
 @Composable
 private fun PepCardPreview() {
     PeppyTheme {
