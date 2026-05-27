@@ -47,13 +47,13 @@ class MessageResponse(BaseModel):
     message: str
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 async def register(
     user_data: UserCreate,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """
-    Register a new user account.
+    Register a new user account and return auth tokens.
 
     - **email**: Valid email address (will be normalized to lowercase)
     - **password**: Minimum 8 characters
@@ -74,7 +74,13 @@ async def register(
         display_name=user_data.display_name,
     )
 
-    return user
+    access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+
+    return Token(
+        access_token=access_token,
+        refresh_token=refresh_token,
+    )
 
 
 @router.post("/login", response_model=Token)

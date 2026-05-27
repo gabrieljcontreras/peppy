@@ -97,7 +97,7 @@ class AuthViewModel(
             val request = RegisterRequest(
                 email = state.email,
                 password = state.password,
-                name = state.name.ifBlank { null }
+                displayName = state.name.ifBlank { null }
             )
 
             when (val result = apiClient.execute { apiClient.service.register(request) }) {

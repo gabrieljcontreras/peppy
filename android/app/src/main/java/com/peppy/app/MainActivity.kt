@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
                                 com.peppy.app.core.network.UserResponse(
                                     id = "cached",
                                     email = "",
-                                    name = null
+                                    displayName = null
                                 )
                             )
                             launchState = AppLaunchState.Ready
@@ -101,7 +101,7 @@ class MainActivity : ComponentActivity() {
                             com.peppy.app.core.network.UserResponse(
                                 id = "cached",
                                 email = "",
-                                name = null
+                                displayName = null
                             )
                         )
                         launchState = AppLaunchState.Ready

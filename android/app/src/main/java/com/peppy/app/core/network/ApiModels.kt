@@ -13,7 +13,7 @@ data class LoginRequest(
 data class RegisterRequest(
     val email: String,
     val password: String,
-    val name: String? = null
+    @SerialName("display_name") val displayName: String? = null
 )
 
 @Serializable
@@ -32,8 +32,8 @@ data class RefreshRequest(
 data class UserResponse(
     val id: String,
     val email: String,
-    val name: String? = null,
-    @SerialName("created_at") val createdAt: String? = null
+    @SerialName("display_name") val displayName: String? = null,
+    @SerialName("is_verified") val isVerified: Boolean = false
 )
 
 @Serializable

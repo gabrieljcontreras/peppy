@@ -18,7 +18,11 @@ class AuthInterceptor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
-        if (originalRequest.url.encodedPath.contains("/auth/")) {
+        val path = originalRequest.url.encodedPath
+        val isPublicAuthEndpoint = path.endsWith("/auth/login") ||
+                                   path.endsWith("/auth/register") ||
+                                   path.endsWith("/auth/refresh")
+        if (isPublicAuthEndpoint) {
             return chain.proceed(originalRequest)
         }
 
