@@ -63,6 +63,7 @@ dependencies {
 
     // Security
     implementation(libs.androidx.security.crypto)
+    implementation(libs.androidx.biometric)
 
     // Image Loading
     implementation(libs.coil.compose)

@@ -28,7 +28,8 @@ import com.peppy.app.ui.theme.Spacing
 @Composable
 fun WelcomeScreen(
     onSignUpClick: () -> Unit,
-    onSignInClick: () -> Unit
+    onSignInClick: () -> Unit,
+    onDevModeClick: (() -> Unit)? = null
 ) {
     Box(
         modifier = Modifier
@@ -93,6 +94,16 @@ fun WelcomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 style = PepButtonStyle.Secondary
             )
+
+            if (onDevModeClick != null) {
+                Spacer(modifier = Modifier.height(Spacing.lg))
+                PepButton(
+                    text = "Dev Mode (skip login)",
+                    onClick = onDevModeClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    style = PepButtonStyle.Tertiary
+                )
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ import androidx.security.crypto.MasterKey
 interface SecureStorage {
     var accessToken: String?
     var refreshToken: String?
+    var biometricEnabled: Boolean
     fun clear()
 }
 
@@ -43,6 +44,12 @@ class SecureStorageImpl(context: Context) : SecureStorage {
             }.apply()
         }
 
+    override var biometricEnabled: Boolean
+        get() = prefs.getBoolean(KEY_BIOMETRIC_ENABLED, true)
+        set(value) {
+            prefs.edit().putBoolean(KEY_BIOMETRIC_ENABLED, value).apply()
+        }
+
     override fun clear() {
         prefs.edit().clear().apply()
     }
@@ -51,5 +58,6 @@ class SecureStorageImpl(context: Context) : SecureStorage {
         private const val PREFS_FILE_NAME = "peppy_secure_prefs"
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
+        private const val KEY_BIOMETRIC_ENABLED = "biometric_enabled"
     }
 }

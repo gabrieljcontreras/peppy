@@ -37,6 +37,11 @@ fun AppNavigation(appState: AppState) {
                 is AuthEvent.NavigateBack -> {
                     navController.popBackStack()
                 }
+                is AuthEvent.NavigateToWelcome -> {
+                    navController.navigate(Routes.WELCOME) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             }
         }
     }
@@ -85,7 +90,9 @@ fun AppNavigation(appState: AppState) {
         }
 
         composable(Routes.MAIN) {
-            MainScreen()
+            MainScreen(
+                onLogoutClick = authViewModel::logout
+            )
         }
     }
 }

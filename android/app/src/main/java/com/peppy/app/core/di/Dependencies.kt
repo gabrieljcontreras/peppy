@@ -1,6 +1,9 @@
 package com.peppy.app.core.di
 
 import android.content.Context
+import androidx.biometric.BiometricManager as AndroidBiometricManager
+import com.peppy.app.core.auth.BiometricManager
+import com.peppy.app.core.auth.BiometricManagerImpl
 import com.peppy.app.core.network.ApiClient
 import com.peppy.app.core.state.AppState
 import com.peppy.app.core.storage.SecureStorage
@@ -13,6 +16,10 @@ class Dependencies private constructor(context: Context) {
     val apiClient: ApiClient = ApiClient(secureStorage)
 
     val appState: AppState = AppState()
+
+    val biometricManager: BiometricManager = BiometricManagerImpl(
+        AndroidBiometricManager.from(context.applicationContext)
+    )
 
     companion object {
         @Volatile

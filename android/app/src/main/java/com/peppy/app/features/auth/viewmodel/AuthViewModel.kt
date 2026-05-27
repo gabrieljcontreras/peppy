@@ -29,6 +29,7 @@ data class AuthUiState(
 sealed class AuthEvent {
     data object NavigateToMain : AuthEvent()
     data object NavigateBack : AuthEvent()
+    data object NavigateToWelcome : AuthEvent()
 }
 
 class AuthViewModel(
@@ -139,6 +140,14 @@ class AuthViewModel(
 
     fun clearState() {
         _uiState.value = AuthUiState()
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            secureStorage.clear()
+            appState.setUnauthenticated()
+            _events.emit(AuthEvent.NavigateToWelcome)
+        }
     }
 
     private fun validateLoginFields(state: AuthUiState): Boolean {

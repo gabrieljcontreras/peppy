@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import com.peppy.app.features.settings.ui.SettingsScreen
 import com.peppy.app.ui.theme.PeppyTheme
 
 data class TabItem(
@@ -48,7 +49,9 @@ val tabs = listOf(
 )
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    onLogoutClick: () -> Unit = {}
+) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
@@ -88,11 +91,16 @@ fun MainScreen() {
                 .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = tabs[selectedTab].title,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            when (selectedTab) {
+                4 -> SettingsScreen(onLogoutClick = onLogoutClick)
+                else -> {
+                    Text(
+                        text = tabs[selectedTab].title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
         }
     }
 }
