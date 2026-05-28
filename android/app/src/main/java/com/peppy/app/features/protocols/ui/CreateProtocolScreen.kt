@@ -62,7 +62,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.peppy.app.core.data.peptideNames
 import com.peppy.app.core.network.CompoundRequest
+import com.peppy.app.design.components.PepAutocompleteField
 import com.peppy.app.design.components.PepButton
 import com.peppy.app.design.components.PepButtonVariant
 import com.peppy.app.design.components.PepCard
@@ -536,11 +538,12 @@ private fun AddCompoundForm(
 
         Spacer(modifier = Modifier.height(Spacing.space3))
 
-        PepTextField(
+        PepAutocompleteField(
             value = name,
             onValueChange = { name = it },
+            suggestions = peptideNames,
             label = "Compound Name",
-            placeholder = "e.g., Retatrutide",
+            placeholder = "Search or type custom...",
             imeAction = ImeAction.Next,
             modifier = Modifier.fillMaxWidth()
         )
