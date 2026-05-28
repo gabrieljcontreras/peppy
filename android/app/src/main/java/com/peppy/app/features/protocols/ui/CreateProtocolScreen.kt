@@ -91,17 +91,21 @@ data class CompoundFormState(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateProtocolScreen(
+    protocolId: String? = null,
     viewModel: ProtocolViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onSuccess: () -> Unit = {}
 ) {
+    val isEditMode = protocolId != null
     val createState by viewModel.createState.collectAsState()
+    val detailState by viewModel.detailState.collectAsState()
 
     var name by remember { mutableStateOf("") }
     var startDate by remember { mutableStateOf(LocalDate.now()) }
     var endDate by remember { mutableStateOf<LocalDate?>(null) }
     var notes by remember { mutableStateOf("") }
     val compounds = remember { mutableStateListOf<CompoundFormState>() }
+    var hasLoadedData by remember { mutableStateOf(false) }
 
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
@@ -111,11 +115,52 @@ fun CreateProtocolScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
+    // Load existing protocol data for edit mode
+    LaunchedEffect(protocolId) {
+        if (protocolId != null) {
+            viewModel.loadProtocol(protocolId)
+        }
+    }
+
+    // Pre-fill form when protocol data loads
+    LaunchedEffect(detailState.protocol) {
+        if (isEditMode && detailState.protocol != null && !hasLoadedData) {
+            val protocol = detailState.protocol!!
+            name = protocol.name
+            startDate = try {
+                LocalDate.parse(protocol.startDate, DateTimeFormatter.ISO_DATE)
+            } catch (e: Exception) {
+                LocalDate.now()
+            }
+            endDate = protocol.endDate?.let {
+                try {
+                    LocalDate.parse(it, DateTimeFormatter.ISO_DATE)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            notes = protocol.notes ?: ""
+            compounds.clear()
+            compounds.addAll(protocol.compounds.map { compound ->
+                CompoundFormState(
+                    name = compound.name,
+                    doseMg = compound.doseMg.toString(),
+                    doseUnit = compound.doseUnit,
+                    frequency = compound.frequency,
+                    administrationRoute = compound.administrationRoute,
+                    notes = compound.notes ?: ""
+                )
+            })
+            hasLoadedData = true
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.clearCreateState()
         viewModel.events.collect { event ->
             when (event) {
                 is ProtocolEvent.ProtocolCreated -> onSuccess()
+                is ProtocolEvent.ProtocolUpdated -> onSuccess()
                 else -> {}
             }
         }
@@ -183,7 +228,7 @@ fun CreateProtocolScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Create Protocol",
+                        if (isEditMode) "Edit Protocol" else "Create Protocol",
                         style = MaterialTheme.typography.titleLarge
                     )
                 },
@@ -364,9 +409,14 @@ fun CreateProtocolScreen(
                 )
             }
 
-            // Create Button
+            // Create/Update Button
             PepButton(
-                text = if (createState.isLoading) "Creating..." else "Create Protocol",
+                text = when {
+                    createState.isLoading && isEditMode -> "Updating..."
+                    createState.isLoading -> "Creating..."
+                    isEditMode -> "Update Protocol"
+                    else -> "Create Protocol"
+                },
                 onClick = {
                     if (name.isBlank()) {
                         nameError = "Protocol name is required"
@@ -387,13 +437,24 @@ fun CreateProtocolScreen(
                         )
                     }
 
-                    viewModel.createProtocol(
-                        name = name,
-                        startDate = startDate.format(DateTimeFormatter.ISO_DATE),
-                        endDate = endDate?.format(DateTimeFormatter.ISO_DATE),
-                        compounds = compoundRequests,
-                        notes = notes.ifBlank { null }
-                    )
+                    if (isEditMode && protocolId != null) {
+                        viewModel.updateProtocolFull(
+                            id = protocolId,
+                            name = name,
+                            startDate = startDate.format(DateTimeFormatter.ISO_DATE),
+                            endDate = endDate?.format(DateTimeFormatter.ISO_DATE),
+                            compounds = compoundRequests,
+                            notes = notes.ifBlank { null }
+                        )
+                    } else {
+                        viewModel.createProtocol(
+                            name = name,
+                            startDate = startDate.format(DateTimeFormatter.ISO_DATE),
+                            endDate = endDate?.format(DateTimeFormatter.ISO_DATE),
+                            compounds = compoundRequests,
+                            notes = notes.ifBlank { null }
+                        )
+                    }
                 },
                 enabled = !createState.isLoading && name.isNotBlank() && compounds.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()

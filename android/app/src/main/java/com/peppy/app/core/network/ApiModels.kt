@@ -86,6 +86,11 @@ data class ProtocolUpdateRequest(
 )
 
 @Serializable
+data class CompoundsReplaceRequest(
+    val compounds: List<CompoundRequest>
+)
+
+@Serializable
 data class ProtocolResponse(
     val id: String,
     val name: String,

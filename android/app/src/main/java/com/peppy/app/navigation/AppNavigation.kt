@@ -132,5 +132,20 @@ fun AppNavigation(appState: AppState) {
                 onSuccess = { navController.popBackStack() }
             )
         }
+
+        composable(
+            route = Routes.PROTOCOL_EDIT,
+            arguments = listOf(navArgument("protocolId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val protocolId = backStackEntry.arguments?.getString("protocolId") ?: return@composable
+            val protocolViewModel: ProtocolViewModel = viewModel()
+
+            CreateProtocolScreen(
+                protocolId = protocolId,
+                viewModel = protocolViewModel,
+                onBackClick = { navController.popBackStack() },
+                onSuccess = { navController.popBackStack() }
+            )
+        }
     }
 }

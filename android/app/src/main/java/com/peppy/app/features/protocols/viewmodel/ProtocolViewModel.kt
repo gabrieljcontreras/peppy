@@ -8,6 +8,7 @@ import com.peppy.app.core.network.ApiResult
 import com.peppy.app.core.network.CompoundRequest
 import com.peppy.app.core.network.ProtocolCreateRequest
 import com.peppy.app.core.network.ProtocolResponse
+import com.peppy.app.core.network.CompoundsReplaceRequest
 import com.peppy.app.core.network.ProtocolUpdateRequest
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -205,6 +206,75 @@ class ProtocolViewModel(
         }
     }
 
+    fun updateProtocolFull(
+        id: String,
+        name: String,
+        startDate: String,
+        endDate: String?,
+        compounds: List<CompoundRequest>,
+        notes: String?
+    ) {
+        viewModelScope.launch {
+            _createState.value = _createState.value.copy(isLoading = true, error = null)
+
+            // First update the metadata
+            val metadataRequest = ProtocolUpdateRequest(
+                name = name,
+                startDate = startDate,
+                endDate = endDate,
+                notes = notes
+            )
+
+            when (val metadataResult = apiClient.execute {
+                apiClient.service.updateProtocol(id, metadataRequest)
+            }) {
+                is ApiResult.Success -> {
+                    // Then replace compounds
+                    val compoundsRequest = CompoundsReplaceRequest(compounds = compounds)
+                    when (val compoundsResult = apiClient.execute {
+                        apiClient.service.replaceCompounds(id, compoundsRequest)
+                    }) {
+                        is ApiResult.Success -> {
+                            _createState.value = _createState.value.copy(isLoading = false)
+                            _detailState.value = _detailState.value.copy(protocol = compoundsResult.data)
+                            _events.emit(ProtocolEvent.ProtocolUpdated)
+                        }
+                        is ApiResult.Error -> {
+                            _createState.value = _createState.value.copy(
+                                isLoading = false,
+                                error = compoundsResult.message
+                            )
+                            _events.emit(ProtocolEvent.Error(compoundsResult.message))
+                        }
+                        is ApiResult.Exception -> {
+                            val message = compoundsResult.throwable.message ?: "Unknown error"
+                            _createState.value = _createState.value.copy(
+                                isLoading = false,
+                                error = message
+                            )
+                            _events.emit(ProtocolEvent.Error(message))
+                        }
+                    }
+                }
+                is ApiResult.Error -> {
+                    _createState.value = _createState.value.copy(
+                        isLoading = false,
+                        error = metadataResult.message
+                    )
+                    _events.emit(ProtocolEvent.Error(metadataResult.message))
+                }
+                is ApiResult.Exception -> {
+                    val message = metadataResult.throwable.message ?: "Unknown error"
+                    _createState.value = _createState.value.copy(
+                        isLoading = false,
+                        error = message
+                    )
+                    _events.emit(ProtocolEvent.Error(message))
+                }
+            }
+        }
+    }
+
     fun deleteProtocol(id: String) {
         viewModelScope.launch {
             _createState.value = _createState.value.copy(isLoading = true, error = null)
@@ -237,8 +307,9 @@ class ProtocolViewModel(
 
     fun activateProtocol(id: String) {
         viewModelScope.launch {
+            val request = ProtocolUpdateRequest(isActive = true)
             when (val result = apiClient.execute {
-                apiClient.service.activateProtocol(id)
+                apiClient.service.updateProtocol(id, request)
             }) {
                 is ApiResult.Success -> {
                     _detailState.value = _detailState.value.copy(protocol = result.data)

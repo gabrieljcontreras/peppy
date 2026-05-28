@@ -50,8 +50,11 @@ interface ApiService {
     @DELETE("protocols/{id}")
     suspend fun deleteProtocol(@Path("id") id: String): Response<Unit>
 
-    @POST("protocols/{id}/activate")
-    suspend fun activateProtocol(@Path("id") id: String): Response<ProtocolResponse>
+    @retrofit2.http.PUT("protocols/{id}/compounds")
+    suspend fun replaceCompounds(
+        @Path("id") id: String,
+        @Body request: CompoundsReplaceRequest
+    ): Response<ProtocolResponse>
 
     @POST("protocols/{id}/deactivate")
     suspend fun deactivateProtocol(@Path("id") id: String): Response<ProtocolResponse>
