@@ -10,4 +10,9 @@ backend/tests/
 .env
 BACKEND_HANDOFF.md
 .claude
-
+design-mockups
+peppy_dev.db
+server_stderr.txt
+server_stdout.txt
+XCODE_SETUP.md
+DESIGN_SYSTEM.md
