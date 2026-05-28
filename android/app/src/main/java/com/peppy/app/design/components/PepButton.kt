@@ -2,16 +2,23 @@ package com.peppy.app.design.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peppy.app.ui.theme.CornerRadius
@@ -28,7 +35,7 @@ import com.peppy.app.ui.theme.Spacing
 // Secondary: transparent, 1.5px ink border
 // Tertiary: transparent, rust text
 
-enum class PepButtonStyle {
+enum class PepButtonVariant {
     Primary,
     Secondary,
     Tertiary,
@@ -46,9 +53,10 @@ fun PepButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    style: PepButtonStyle = PepButtonStyle.Primary,
+    variant: PepButtonVariant = PepButtonVariant.Primary,
     size: PepButtonSize = PepButtonSize.Default,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    leadingIcon: ImageVector? = null
 ) {
     val shape = RoundedCornerShape(CornerRadius.pill)
 
@@ -60,8 +68,26 @@ fun PepButton(
 
     val contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = Spacing.sm)
 
-    when (style) {
-        PepButtonStyle.Primary -> {
+    @Composable
+    fun ButtonContent() {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (leadingIcon != null) {
+                Icon(
+                    imageVector = leadingIcon,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+    }
+
+    when (variant) {
+        PepButtonVariant.Primary -> {
             Button(
                 onClick = onClick,
                 modifier = modifier.height(height),
@@ -75,13 +101,10 @@ fun PepButton(
                     disabledContentColor = Cream100.copy(alpha = 0.4f)
                 )
             ) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.labelLarge
-                )
+                ButtonContent()
             }
         }
-        PepButtonStyle.Secondary -> {
+        PepButtonVariant.Secondary -> {
             OutlinedButton(
                 onClick = onClick,
                 modifier = modifier.height(height),
@@ -94,13 +117,10 @@ fun PepButton(
                     disabledContentColor = Ink900.copy(alpha = 0.4f)
                 )
             ) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.labelLarge
-                )
+                ButtonContent()
             }
         }
-        PepButtonStyle.Tertiary -> {
+        PepButtonVariant.Tertiary -> {
             TextButton(
                 onClick = onClick,
                 modifier = modifier.height(height),
@@ -112,13 +132,10 @@ fun PepButton(
                     disabledContentColor = Rust500.copy(alpha = 0.4f)
                 )
             ) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.labelLarge
-                )
+                ButtonContent()
             }
         }
-        PepButtonStyle.Destructive -> {
+        PepButtonVariant.Destructive -> {
             Button(
                 onClick = onClick,
                 modifier = modifier.height(height),
@@ -132,10 +149,7 @@ fun PepButton(
                     disabledContentColor = Cream100.copy(alpha = 0.4f)
                 )
             ) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.labelLarge
-                )
+                ButtonContent()
             }
         }
     }
@@ -153,7 +167,7 @@ private fun PepButtonPreview() {
 @Composable
 private fun PepButtonSecondaryPreview() {
     PeppyTheme {
-        PepButton(text = "Cancel", onClick = {}, style = PepButtonStyle.Secondary)
+        PepButton(text = "Cancel", onClick = {}, variant = PepButtonVariant.Secondary)
     }
 }
 
@@ -161,6 +175,6 @@ private fun PepButtonSecondaryPreview() {
 @Composable
 private fun PepButtonTertiaryPreview() {
     PeppyTheme {
-        PepButton(text = "Learn more", onClick = {}, style = PepButtonStyle.Tertiary)
+        PepButton(text = "Learn more", onClick = {}, variant = PepButtonVariant.Tertiary)
     }
 }

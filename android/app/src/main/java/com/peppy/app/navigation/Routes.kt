@@ -5,6 +5,14 @@ object Routes {
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val MAIN = "main"
+
+    // Protocol routes
+    const val PROTOCOL_DETAIL = "protocol/{protocolId}"
+    const val PROTOCOL_CREATE = "protocol/create"
+    const val PROTOCOL_EDIT = "protocol/{protocolId}/edit"
+
+    fun protocolDetail(protocolId: String) = "protocol/$protocolId"
+    fun protocolEdit(protocolId: String) = "protocol/$protocolId/edit"
 }
 
 object MainTabs {

@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.peppy.app.design.components.PepButton
-import com.peppy.app.design.components.PepButtonStyle
+import com.peppy.app.design.components.PepButtonVariant
 import com.peppy.app.ui.theme.PeppyTheme
 
 @Composable
@@ -55,7 +55,7 @@ fun SettingsScreen(
         PepButton(
             text = "Log out",
             onClick = onLogoutClick,
-            style = PepButtonStyle.Secondary,
+            variant = PepButtonVariant.Secondary,
             modifier = Modifier.fillMaxWidth()
         )
 

@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.peppy.app.design.components.PepButton
-import com.peppy.app.design.components.PepButtonStyle
+import com.peppy.app.design.components.PepButtonVariant
 import com.peppy.app.ui.theme.NunitoFontFamily
 import com.peppy.app.ui.theme.PeppyTheme
 import com.peppy.app.ui.theme.Spacing
@@ -92,7 +92,7 @@ fun WelcomeScreen(
                 text = "Sign In",
                 onClick = onSignInClick,
                 modifier = Modifier.fillMaxWidth(),
-                style = PepButtonStyle.Secondary
+                variant = PepButtonVariant.Secondary
             )
 
             if (onDevModeClick != null) {
@@ -101,7 +101,7 @@ fun WelcomeScreen(
                     text = "Dev Mode (skip login)",
                     onClick = onDevModeClick,
                     modifier = Modifier.fillMaxWidth(),
-                    style = PepButtonStyle.Tertiary
+                    variant = PepButtonVariant.Tertiary
                 )
             }
         }

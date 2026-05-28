@@ -31,6 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.peppy.app.features.protocols.ui.ProtocolListScreen
+import com.peppy.app.features.protocols.viewmodel.ProtocolViewModel
 import com.peppy.app.features.settings.ui.SettingsScreen
 import com.peppy.app.ui.theme.PeppyTheme
 
@@ -50,9 +53,12 @@ val tabs = listOf(
 
 @Composable
 fun MainScreen(
-    onLogoutClick: () -> Unit = {}
+    onLogoutClick: () -> Unit = {},
+    onProtocolClick: (String) -> Unit = {},
+    onCreateProtocolClick: () -> Unit = {}
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    val protocolViewModel: ProtocolViewModel = viewModel()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -92,6 +98,11 @@ fun MainScreen(
             contentAlignment = Alignment.Center
         ) {
             when (selectedTab) {
+                2 -> ProtocolListScreen(
+                    viewModel = protocolViewModel,
+                    onProtocolClick = onProtocolClick,
+                    onCreateClick = onCreateProtocolClick
+                )
                 4 -> SettingsScreen(onLogoutClick = onLogoutClick)
                 else -> {
                     Text(

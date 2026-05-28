@@ -2,11 +2,16 @@ package com.peppy.app.core.network
 
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
+    // Auth
     @POST("auth/register")
     suspend fun register(@Body request: RegisterRequest): Response<TokenResponse>
 
@@ -21,4 +26,33 @@ interface ApiService {
 
     @GET("auth/me")
     suspend fun me(): Response<UserResponse>
+
+    // Protocols
+    @GET("protocols")
+    suspend fun getProtocols(
+        @Query("limit") limit: Int = 50,
+        @Query("offset") offset: Int = 0,
+        @Query("include_inactive") includeInactive: Boolean = true
+    ): Response<List<ProtocolResponse>>
+
+    @GET("protocols/{id}")
+    suspend fun getProtocol(@Path("id") id: String): Response<ProtocolResponse>
+
+    @POST("protocols")
+    suspend fun createProtocol(@Body request: ProtocolCreateRequest): Response<ProtocolResponse>
+
+    @PATCH("protocols/{id}")
+    suspend fun updateProtocol(
+        @Path("id") id: String,
+        @Body request: ProtocolUpdateRequest
+    ): Response<ProtocolResponse>
+
+    @DELETE("protocols/{id}")
+    suspend fun deleteProtocol(@Path("id") id: String): Response<Unit>
+
+    @POST("protocols/{id}/activate")
+    suspend fun activateProtocol(@Path("id") id: String): Response<ProtocolResponse>
+
+    @POST("protocols/{id}/deactivate")
+    suspend fun deactivateProtocol(@Path("id") id: String): Response<ProtocolResponse>
 }
