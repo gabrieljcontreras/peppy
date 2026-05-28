@@ -6,63 +6,63 @@ FastAPI backend for the Peppy personalized peptide protocol engine.
 
 ### Requirements
 
-- Python 3.11+
-- PostgreSQL 15+
-- Redis 7+
+- **Python 3.11 or 3.12** (3.13+ not supported yet — pydantic-core binaries)
+- PostgreSQL 15+ (production only — dev uses SQLite)
+- Redis 7+ (production only — for Celery async jobs)
 
 ### Installation
 
-```bash
+```powershell
 cd backend
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Create virtual environment with Python 3.11
+py -3.11 -m venv venv         # Windows with py launcher
+venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
 # Copy environment file
-cp .env.example .env
-# Edit .env with your database credentials
+copy .env.example .env
 ```
 
-### Database Setup
+### Running the Server (Development)
+
+Development mode uses SQLite — no database setup needed.
+
+```powershell
+$env:DEBUG="true"
+python -m uvicorn app.main:app --reload --port 8001
+```
+
+### Running the Server (Production)
 
 ```bash
-# Run migrations
+# Run migrations (after setting up PostgreSQL)
 alembic upgrade head
-```
 
-### Running the Server
-
-```bash
-# Development
-uvicorn app.main:app --reload --port 8000
-
-# Production
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+# Server
+uvicorn app.main:app --host 0.0.0.0 --port 8001
 ```
 
 ### Running Tests
 
 ```bash
-# Run all tests
 pytest
 
-# Run with coverage
+# With coverage
 pytest --cov=app --cov-report=html
 
-# Run specific test file
+# Specific test file
 pytest tests/test_auth.py -v
 ```
 
 ## API Documentation
 
-When running in debug mode, API docs are available at:
+When running, API docs are available at:
 
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+- Swagger UI: http://localhost:8001/docs
+- ReDoc: http://localhost:8001/redoc
 
 ## Project Structure
 
