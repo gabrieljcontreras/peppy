@@ -602,6 +602,15 @@ No spring/bouncy easings — too playful for the professional voice.
 | 2e Edit/delete protocol | [ ] | [x] | Delete works; Autocomplete peptide picker (60+ peptides) added |
 | 2f Activate/deactivate | [ ] | [x] | Toggle from detail screen |
 
+### Phase 3: Check-ins ✅
+| Slice | iOS | Android | Notes |
+|-------|-----|---------|-------|
+| 3a Quick check-in | [ ] | [x] | Weight + quick mood capture |
+| 3b Symptom logging | [ ] | [x] | Symptom picker integrated into check-in form |
+| 3c Detailed check-in | [ ] | [x] | Full form: weight, mood, energy, sleep, symptoms, notes |
+| 3d Check-in history | [ ] | [x] | List with date display |
+| 3e Check-in detail | [ ] | [x] | View past check-in entry |
+
 *(Continue for all phases)*
 
 ---
@@ -985,3 +994,46 @@ Users must go through an onboarding questionnaire **BEFORE** seeing the sign in/
   - `CompoundsReplaceRequest` model added to ApiModels.kt
 - **Phase 2 status:** ✅ FULLY COMPLETE with bug fixes
 - **Next:** Phase 3 (Check-ins) planned and ready for implementation
+
+### 2026-05-28 — Phase 3 Android Check-ins Complete
+- **New screens:**
+  - `features/checkin/ui/CheckinScreen.kt` — full check-in flow with weight, mood, energy, sleep, symptoms, notes
+  - `features/checkin/viewmodel/CheckinViewModel.kt` — state + submission logic
+- **API integration (`core/network/`):**
+  - `ApiModels.kt` — added `CheckinRequest`, `CheckinResponse`, `SymptomRequest`/`SymptomResponse` models
+  - `ApiService.kt` — added `POST /checkins`, `GET /checkins`, `GET /checkins/{id}` endpoints
+  - `ApiClient.kt` — wired check-in endpoints into the generic execute layer
+- **Navigation:** Check-in tab in `MainScreen.kt` now opens `CheckinScreen` (was placeholder)
+- **MainActivity.kt:** updated to include check-in routing
+- **Gradle:** added one dependency to `app/build.gradle.kts`
+- **Backend fix:** added missing package to `backend/requirements.txt` (resolved a runtime import error during check-in submission)
+- **Polish pass:** CheckinScreen iterated +402 lines after slices a-e (validation, error states, UX refinements)
+- **Phase 3 status:** ✅ COMPLETE (Android, slices 3a–3e)
+- **Next:** Phase 4 (Dashboard) — unified home view with active protocol, weight chart, recent check-ins, unread insights
+
+### 2026-05-28 — Web Landing Site Redesign (peppy.app)
+**Goal:** Upgrade the Next.js 16 landing site from generic-minimal to a professional, motion-rich, design-system-compliant experience that "wows".
+
+- **Stack additions:**
+  - `motion` (formerly framer-motion) — scroll/hover/stagger animations
+  - `lucide-react` — SVG icon set (replaced all emojis per design system)
+- **Design system v2 compliance fixes:**
+  - Page background switched from pure white to cream `#FAF7F0`
+  - All sections use Plus Jakarta Sans; Nunito reserved for `.peppy-wordmark`; Fraunces italic via semantic `<em class="peppy-accent">` (max 2 per page, e.g., "body", "optimize")
+  - Weight ceiling 700, sentence case, pill buttons, no card shadows, no bouncy easings
+- **Hero — two-column layout** (inspired by levelshealth.com / whoop.com):
+  - Left: eyebrow chip, large headline with Fraunces accent, subtitle, two CTAs, trust stats (500+ waitlist / 60+ peptides / AES-256) above a hairline divider
+  - Right: pure-CSS iPhone mockup (`rounded-[36px]` ink bezel, notch pill, `rounded-[30px]` cream screen) containing greeting, rust recovery card with animated 84% ring, quick check-in row (Smile/Zap/Moon Lucide icons), AI insight card with rust left-border accent and rotating text, next-dose reminder
+- **Nav:** scroll-aware — transparent at top, translucent backdrop-blur + border once scrolled past 12px; mobile menu fade/slide
+- **Features section:** mobile = stacked rounded cards; desktop = bordered hairline grid (md+) with scroll-stagger reveal and cream hover tint
+- **HowItWorks:** vertical gradient connector line that draws downward on scroll, numbered rust badges
+- **CTA:** dark ink section with rust ambient glow, inline email capture (ArrowRight micro-interaction), success state with checkmark
+- **Footer:** unified container, two-column with link grid
+- **Inner pages (`/features`, `/about`, `/waitlist`):**
+  - All wrapped in `mx-auto max-w-Nxl px-6 md:px-8` (`max-w-6xl` outer, narrower inner columns for readability)
+  - Top padding `pt-32 md:pt-40` clears the fixed 64px nav
+  - Above-the-fold motion uses `animate` (immediate) instead of `whileInView` to prevent SSR opacity:0 → invisible content during hydration delays
+- **Globals:** added motion easing tokens (`--ease-out-peppy`), `peppy-glow` radial helper, `peppy-noise` SVG noise utility, full `prefers-reduced-motion` reset
+- **Verified:** production build clean (TypeScript ✓, 5 routes statically prerendered), HMR compiles in 40–270ms
+- **Hydration warning** in dev logs is from browser form-filler extensions injecting `fdprocessedid` — not our code
+- **Next:** integrate Mailchimp/ConvertKit on `/waitlist`, hook up Plausible/Posthog, deploy to Vercel
