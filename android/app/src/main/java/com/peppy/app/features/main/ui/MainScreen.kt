@@ -32,6 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.peppy.app.features.checkin.ui.CheckinScreen
+import com.peppy.app.features.checkin.viewmodel.CheckinViewModel
 import com.peppy.app.features.protocols.ui.ProtocolListScreen
 import com.peppy.app.features.protocols.viewmodel.ProtocolViewModel
 import com.peppy.app.features.settings.ui.SettingsScreen
@@ -59,6 +61,7 @@ fun MainScreen(
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     val protocolViewModel: ProtocolViewModel = viewModel()
+    val checkinViewModel: CheckinViewModel = viewModel()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -98,6 +101,7 @@ fun MainScreen(
             contentAlignment = Alignment.Center
         ) {
             when (selectedTab) {
+                1 -> CheckinScreen(viewModel = checkinViewModel)
                 2 -> ProtocolListScreen(
                     viewModel = protocolViewModel,
                     onProtocolClick = onProtocolClick,

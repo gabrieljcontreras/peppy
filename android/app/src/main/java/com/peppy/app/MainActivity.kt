@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.activity.ComponentActivity
 import androidx.fragment.app.FragmentActivity
 import com.peppy.app.core.auth.BiometricAvailability
 import com.peppy.app.core.auth.BiometricResult
@@ -44,7 +43,7 @@ sealed class AppLaunchState {
     data object Ready : AppLaunchState()
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -62,7 +61,7 @@ class MainActivity : ComponentActivity() {
             fun attemptBiometric() {
                 scope.launch {
                     launchState = AppLaunchState.BiometricRequired
-                    when (val result = biometricManager.authenticate(this@MainActivity as FragmentActivity)) {
+                    when (val result = biometricManager.authenticate(this@MainActivity)) {
                         is BiometricResult.Success -> {
                             appState.setAuthenticated(
                                 com.peppy.app.core.network.UserResponse(

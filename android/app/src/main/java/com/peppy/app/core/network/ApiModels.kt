@@ -115,3 +115,63 @@ data class ProtocolListResponse(
 data class MessageResponse(
     val message: String
 )
+
+// Check-in Models
+
+@Serializable
+data class CheckinCreateRequest(
+    val date: String,
+    @SerialName("weight_kg") val weightKg: Double? = null,
+    @SerialName("energy_level") val energyLevel: Int? = null,
+    @SerialName("sleep_quality") val sleepQuality: Int? = null,
+    @SerialName("appetite_level") val appetiteLevel: Int? = null,
+    val mood: Int? = null,
+    val nausea: Int? = null,
+    @SerialName("injection_site_reaction") val injectionSiteReaction: Int? = null,
+    val fatigue: Int? = null,
+    val headache: Int? = null,
+    @SerialName("gi_issues") val giIssues: Int? = null,
+    val notes: String? = null
+)
+
+@Serializable
+data class CheckinUpdateRequest(
+    val date: String? = null,
+    @SerialName("weight_kg") val weightKg: Double? = null,
+    @SerialName("energy_level") val energyLevel: Int? = null,
+    @SerialName("sleep_quality") val sleepQuality: Int? = null,
+    @SerialName("appetite_level") val appetiteLevel: Int? = null,
+    val mood: Int? = null,
+    val nausea: Int? = null,
+    @SerialName("injection_site_reaction") val injectionSiteReaction: Int? = null,
+    val fatigue: Int? = null,
+    val headache: Int? = null,
+    @SerialName("gi_issues") val giIssues: Int? = null,
+    val notes: String? = null
+)
+
+@Serializable
+data class CheckinResponse(
+    val id: String,
+    @SerialName("user_id") val userId: String,
+    val date: String,
+    @SerialName("weight_kg") val weightKg: Double? = null,
+    @SerialName("energy_level") val energyLevel: Int? = null,
+    @SerialName("sleep_quality") val sleepQuality: Int? = null,
+    @SerialName("appetite_level") val appetiteLevel: Int? = null,
+    val mood: Int? = null,
+    val nausea: Int? = null,
+    @SerialName("injection_site_reaction") val injectionSiteReaction: Int? = null,
+    val fatigue: Int? = null,
+    val headache: Int? = null,
+    @SerialName("gi_issues") val giIssues: Int? = null,
+    val notes: String? = null,
+    @SerialName("created_at") val createdAt: String,
+    @SerialName("updated_at") val updatedAt: String
+)
+
+@Serializable
+data class WeightTrendPoint(
+    val date: String,
+    @SerialName("weight_kg") val weightKg: Double
+)

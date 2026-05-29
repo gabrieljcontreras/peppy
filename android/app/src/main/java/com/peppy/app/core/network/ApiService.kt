@@ -58,4 +58,28 @@ interface ApiService {
 
     @POST("protocols/{id}/deactivate")
     suspend fun deactivateProtocol(@Path("id") id: String): Response<ProtocolResponse>
+
+    // Check-ins
+    @GET("checkins")
+    suspend fun getCheckins(
+        @Query("limit") limit: Int = 30,
+        @Query("offset") offset: Int = 0
+    ): Response<List<CheckinResponse>>
+
+    @GET("checkins/today")
+    suspend fun getTodayCheckin(): Response<CheckinResponse?>
+
+    @GET("checkins/weight-trend")
+    suspend fun getWeightTrend(
+        @Query("days") days: Int = 30
+    ): Response<List<WeightTrendPoint>>
+
+    @POST("checkins")
+    suspend fun createCheckin(@Body request: CheckinCreateRequest): Response<CheckinResponse>
+
+    @PATCH("checkins/{id}")
+    suspend fun updateCheckin(
+        @Path("id") id: String,
+        @Body request: CheckinUpdateRequest
+    ): Response<CheckinResponse>
 }

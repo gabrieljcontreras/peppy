@@ -1,5 +1,6 @@
 package com.peppy.app.core.network
 
+import com.peppy.app.BuildConfig
 import com.peppy.app.core.storage.SecureStorage
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -48,7 +49,11 @@ class ApiClient(
     }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor.Level.BASIC
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
     }
 
     private val okHttpClient = OkHttpClient.Builder()
