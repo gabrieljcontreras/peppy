@@ -20,6 +20,7 @@ import java.time.LocalDate
 data class CheckinState(
     val today: CheckinResponse? = null,
     val recent: List<CheckinResponse> = emptyList(),
+    val rangeDays: Int? = 30,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val error: String? = null
@@ -40,15 +41,24 @@ class CheckinViewModel(
     private val _events = MutableSharedFlow<CheckinEvent>()
     val events: SharedFlow<CheckinEvent> = _events.asSharedFlow()
 
-    fun loadCheckins() {
+    fun loadCheckins(rangeDays: Int? = _state.value.rangeDays) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true, error = null)
+            _state.value = _state.value.copy(isLoading = true, rangeDays = rangeDays, error = null)
 
-            val recentResult = apiClient.execute { apiClient.service.getCheckins(limit = 14) }
+            val todayDate = LocalDate.now()
+            val startDate = rangeDays?.let { todayDate.minusDays((it - 1).toLong()).toString() }
+            val endDate = rangeDays?.let { todayDate.toString() }
+            val recentResult = apiClient.execute {
+                apiClient.service.getCheckins(
+                    startDate = startDate,
+                    endDate = endDate,
+                    limit = if (rangeDays == null) 100 else rangeDays.coerceAtLeast(14)
+                )
+            }
 
             when (recentResult) {
                 is ApiResult.Success -> {
-                    val today = recentResult.data.firstOrNull { it.date == LocalDate.now().toString() }
+                    val today = recentResult.data.firstOrNull { it.date == todayDate.toString() }
                     _state.value = _state.value.copy(
                         today = today,
                         recent = recentResult.data,

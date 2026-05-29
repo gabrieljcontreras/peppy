@@ -62,6 +62,8 @@ interface ApiService {
     // Check-ins
     @GET("checkins")
     suspend fun getCheckins(
+        @Query("start_date") startDate: String? = null,
+        @Query("end_date") endDate: String? = null,
         @Query("limit") limit: Int = 30,
         @Query("offset") offset: Int = 0
     ): Response<List<CheckinResponse>>
