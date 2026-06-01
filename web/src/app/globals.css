@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+/* ============================================================
+   peppy — design tokens (web)
+   Sourced from DESIGN_SYSTEM.md + design-mockups/landing-v4.html
+   ============================================================ */
+
+:root {
+  /* Rust (primary peach) */
+  --peppy-rust-100: #f7ddcb;
+  --peppy-rust-200: #f2cc8f;
+  --peppy-rust-300: #e5a487;
+  --peppy-rust-500: #e07a5f;
+  --peppy-rust-600: #c76b3e;
+  --peppy-rust-700: #98512e;
+  --peppy-rust-900: #663520;
+
+  /* Ink (neutrals / text) */
+  --peppy-ink-50: #fafaf9;
+  --peppy-ink-100: #e5e7eb;
+  --peppy-ink-300: #bfc1c7;
+  --peppy-ink-500: #777a82;
+  --peppy-ink-700: #4a4d54;
+  --peppy-ink-900: #1e2026;
+
+  /* Cream (page / surface) */
+  --peppy-cream-50: #fffaf3;
+  --peppy-cream-100: #faf7f0;
+  --peppy-cream-200: #f3eddf;
+
+  /* Accents (used sparingly) */
+  --peppy-success: #81b29a;
+  --peppy-info: #7eb8c9;
+  --peppy-warning: #f2cc8f;
+
+  /* Aura tints (hero gradient) */
+  --peppy-aura-peach: rgba(224, 122, 95, 0.40);
+  --peppy-aura-sage:  rgba(129, 178, 154, 0.30);
+  --peppy-aura-cream: rgba(242, 204, 143, 0.32);
+  --peppy-aura-rose:  rgba(247, 221, 203, 0.45);
+
+  /* Aliases */
+  --background: var(--peppy-cream-100);
+  --foreground: var(--peppy-ink-900);
+  --surface: var(--peppy-cream-50);
+  --surface-warm: var(--peppy-cream-200);
+  --border-subtle: var(--peppy-ink-100);
+  --border-default: var(--peppy-ink-300);
+
+  /* Radius */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-pill: 9999px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 600ms;
+}
+
+@theme inline {
+  /* Brand color utilities — usable as bg-rust-500, text-ink-900, etc. */
+  --color-rust-100: var(--peppy-rust-100);
+  --color-rust-200: var(--peppy-rust-200);
+  --color-rust-300: var(--peppy-rust-300);
+  --color-rust-500: var(--peppy-rust-500);
+  --color-rust-600: var(--peppy-rust-600);
+  --color-rust-700: var(--peppy-rust-700);
+  --color-rust-900: var(--peppy-rust-900);
+
+  --color-ink-50: var(--peppy-ink-50);
+  --color-ink-100: var(--peppy-ink-100);
+  --color-ink-300: var(--peppy-ink-300);
+  --color-ink-500: var(--peppy-ink-500);
+  --color-ink-700: var(--peppy-ink-700);
+  --color-ink-900: var(--peppy-ink-900);
+
+  --color-cream-50: var(--peppy-cream-50);
+  --color-cream-100: var(--peppy-cream-100);
+  --color-cream-200: var(--peppy-cream-200);
+
+  --color-success: var(--peppy-success);
+  --color-info: var(--peppy-info);
+  --color-warning: var(--peppy-warning);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-warm: var(--surface-warm);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+
+  --font-sans: var(--font-jakarta);
+  --font-serif: var(--font-fraunces);
+  --font-wordmark: var(--font-nunito);
+
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  --container-screen: 1280px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  font-family: var(--font-jakarta), system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--peppy-rust-500);
+  color: var(--peppy-cream-50);
+}
+
+/* ---------- Hero aura ---------- */
+.peppy-aura {
+  position: absolute;
+  inset: -200px 0 0;
+  background:
+    radial-gradient(
+      ellipse 1200px 380px at 50% 70%,
+      var(--peppy-aura-peach) 0%,
+      var(--peppy-aura-cream) 30%,
+      var(--peppy-aura-rose) 55%,
+      var(--peppy-aura-sage) 80%,
+      transparent 100%
+    );
+  filter: blur(60px);
+  z-index: 0;
+  transform: translateY(180px) scaleY(0.55);
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+/* ---------- Repeating bar-graph (mock chart) ---------- */
+.peppy-bargraph {
+  height: 48px;
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(224, 122, 95, 0), rgba(224, 122, 95, 0.20)),
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(30, 32, 38, 0.05) 18px 19px);
+  position: relative;
+}
+.peppy-bargraph::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 40%;
+  height: 1.5px;
+  background: var(--peppy-ink-900);
+  opacity: 0.8;
+  border-radius: 2px;
+}
+
+/* ---------- Tile gradients (testimonials) ---------- */
+.peppy-tile { position: relative; overflow: hidden; border-radius: 9999px; }
+.peppy-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.55), transparent 60%);
+}
+.peppy-tile-a { background: linear-gradient(135deg, #f7ddcb, #ffd0b8); }
+.peppy-tile-b { background: linear-gradient(135deg, #f2cc8f, #f7ddcb); }
+.peppy-tile-c { background: linear-gradient(135deg, #d8e8df, #f3eddf); }
+.peppy-tile-d { background: linear-gradient(135deg, #fae3cf, #e5a487); }
+.peppy-tile-e { background: linear-gradient(135deg, #f3eddf, #f7ddcb); }
+
+/* ---------- Fade-in on load ---------- */
+.peppy-fade { opacity: 0; transform: translateY(12px); animation: peppy-fade 0.8s var(--ease-out) forwards; }
+.peppy-fade-1 { animation-delay: 0.05s; }
+.peppy-fade-2 { animation-delay: 0.15s; }
+.peppy-fade-3 { animation-delay: 0.25s; }
+.peppy-fade-4 { animation-delay: 0.35s; }
+@keyframes peppy-fade { to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
