@@ -1,0 +1,11 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.local
+tests/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+peppy_dev.db

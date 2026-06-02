@@ -1,4 +1,4 @@
-import { Nav } from "@/components/Nav";
+import { PageShell } from "@/components/PageShell";
 import {
   Hero,
   Features,
@@ -6,22 +6,17 @@ import {
   NotAll,
   Testimonials,
   CTA,
-  Footer,
 } from "@/components/Sections";
 
 export default function Home() {
   return (
-    <>
-      <Nav />
-      <main>
-        <Hero />
-        <Features />
-        <Records />
-        <NotAll />
-        <Testimonials />
-        <CTA />
-      </main>
-      <Footer />
-    </>
+    <PageShell>
+      <Hero />
+      <Features />
+      <Records />
+      <NotAll />
+      <Testimonials />
+      <CTA />
+    </PageShell>
   );
 }

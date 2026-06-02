@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     # Encryption (for OAuth tokens, PHI at rest)
     encryption_key: str = _DEFAULT_ENCRYPTION_KEY
 
+    # CORS
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+
     # Redis
     redis_url: str = "redis://localhost:6379/0"
 
@@ -35,6 +38,12 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+
+    @model_validator(mode="after")
+    def fix_database_url(self):
+        if self.database_url.startswith("postgresql://"):
+            self.database_url = self.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return self
 
     @model_validator(mode="after")
     def check_production_secrets(self):

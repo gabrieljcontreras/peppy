@@ -6,14 +6,14 @@
    ============================================================ */
 
 :root {
-  /* Rust (primary peach) */
-  --peppy-rust-100: #f7ddcb;
-  --peppy-rust-200: #f2cc8f;
-  --peppy-rust-300: #e5a487;
-  --peppy-rust-500: #e07a5f;
-  --peppy-rust-600: #c76b3e;
-  --peppy-rust-700: #98512e;
-  --peppy-rust-900: #663520;
+  /* Rose (primary accent) */
+  --peppy-rust-100: #fbd5d0;
+  --peppy-rust-200: #f4b3ab;
+  --peppy-rust-300: #eb9189;
+  --peppy-rust-500: #e0706a;
+  --peppy-rust-600: #c45a55;
+  --peppy-rust-700: #9a4440;
+  --peppy-rust-900: #5e2a28;
 
   /* Ink (neutrals / text) */
   --peppy-ink-50: #fafaf9;
@@ -34,10 +34,10 @@
   --peppy-warning: #f2cc8f;
 
   /* Aura tints (hero gradient) */
-  --peppy-aura-peach: rgba(224, 122, 95, 0.40);
+  --peppy-aura-peach: rgba(224, 112, 106, 0.40);
   --peppy-aura-sage:  rgba(129, 178, 154, 0.30);
-  --peppy-aura-cream: rgba(242, 204, 143, 0.32);
-  --peppy-aura-rose:  rgba(247, 221, 203, 0.45);
+  --peppy-aura-cream: rgba(244, 179, 171, 0.32);
+  --peppy-aura-rose:  rgba(251, 213, 208, 0.45);
 
   /* Aliases */
   --background: var(--peppy-cream-100);
@@ -105,6 +105,11 @@
 
 * { box-sizing: border-box; }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
 html, body {
   background: var(--background);
   color: var(--foreground);
@@ -148,7 +153,7 @@ body {
   height: 48px;
   border-radius: 6px;
   background:
-    linear-gradient(180deg, rgba(224, 122, 95, 0), rgba(224, 122, 95, 0.20)),
+    linear-gradient(180deg, rgba(224, 112, 106, 0), rgba(224, 112, 106, 0.20)),
     repeating-linear-gradient(90deg, transparent 0 18px, rgba(30, 32, 38, 0.05) 18px 19px);
   position: relative;
 }
@@ -172,11 +177,11 @@ body {
   inset: 0;
   background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.55), transparent 60%);
 }
-.peppy-tile-a { background: linear-gradient(135deg, #f7ddcb, #ffd0b8); }
-.peppy-tile-b { background: linear-gradient(135deg, #f2cc8f, #f7ddcb); }
+.peppy-tile-a { background: linear-gradient(135deg, #fbd5d0, #f4b3ab); }
+.peppy-tile-b { background: linear-gradient(135deg, #f4b3ab, #fbd5d0); }
 .peppy-tile-c { background: linear-gradient(135deg, #d8e8df, #f3eddf); }
-.peppy-tile-d { background: linear-gradient(135deg, #fae3cf, #e5a487); }
-.peppy-tile-e { background: linear-gradient(135deg, #f3eddf, #f7ddcb); }
+.peppy-tile-d { background: linear-gradient(135deg, #f5d0ca, #eb9189); }
+.peppy-tile-e { background: linear-gradient(135deg, #f3eddf, #fbd5d0); }
 
 /* ---------- Fade-in on load ---------- */
 .peppy-fade { opacity: 0; transform: translateY(12px); animation: peppy-fade 0.8s var(--ease-out) forwards; }

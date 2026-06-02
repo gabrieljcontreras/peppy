@@ -16,8 +16,8 @@ export function Ring({ color, pct, label }: Ring) {
 export function HeroPhone() {
   return (
     <div
-      className="rounded-[38px] bg-ink-900 p-2 shadow-[0_32px_60px_-20px_rgba(30,32,38,0.35),0_8px_18px_-8px_rgba(30,32,38,0.25)]"
-      style={{ width: 280, height: 560, transform: "rotate(-6deg) translateY(20px)" }}
+      className="w-full max-w-[260px] rounded-[38px] bg-ink-900 p-2 shadow-[0_32px_60px_-20px_rgba(30,32,38,0.35),0_8px_18px_-8px_rgba(30,32,38,0.25)]"
+      style={{ aspectRatio: "1/2", transform: "rotate(-6deg) translateY(20px)" }}
     >
       <div className="flex h-full w-full flex-col gap-3 rounded-[30px] bg-cream-50 px-4 pt-5">
         <div className="flex justify-between text-[11px] font-semibold text-ink-900">
@@ -56,7 +56,7 @@ export function HeroPhone() {
 export function HeroWatch() {
   return (
     <div
-      className="rounded-[44px] bg-ink-900 p-2 shadow-[0_32px_60px_-20px_rgba(30,32,38,0.35),0_8px_18px_-8px_rgba(30,32,38,0.25)]"
+      className="hidden rounded-[44px] bg-ink-900 p-2 shadow-[0_32px_60px_-20px_rgba(30,32,38,0.35),0_8px_18px_-8px_rgba(30,32,38,0.25)] md:block"
       style={{ width: 180, height: 220, transform: "rotate(4deg)" }}
     >
       <div className="flex h-full w-full flex-col rounded-[36px] bg-ink-900 p-4 text-cream-50">
