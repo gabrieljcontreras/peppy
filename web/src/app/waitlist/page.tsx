@@ -4,9 +4,9 @@ import { WaitlistForm } from "@/components/WaitlistForm";
 import { Reveal } from "@/components/Reveal";
 
 export const metadata: Metadata = {
-  title: "Join the waitlist — peppy",
+  title: "Join the Waitlist",
   description:
-    "Get early access to peppy, the peptide protocol tracker that connects the dots so you can see what's actually working.",
+    "Get early access to peppy, the peptide protocol tracker that connects the dots so you can see what's actually working. Sign up now.",
 };
 
 const faqs = [

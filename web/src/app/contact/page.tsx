@@ -4,8 +4,9 @@ import { FeedbackForm } from "@/components/FeedbackForm";
 import { Reveal } from "@/components/Reveal";
 
 export const metadata: Metadata = {
-  title: "Contact | peppy",
-  description: "Get in touch with the peppy team.",
+  title: "Contact",
+  description:
+    "Get in touch with the peppy team. Questions, feedback, or partnership inquiries — we'd love to hear from you.",
 };
 
 export default function ContactPage() {

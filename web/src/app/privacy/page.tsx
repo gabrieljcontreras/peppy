@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/PageShell";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — peppy",
+  title: "Privacy Policy",
   description: "How peppy collects, uses, and protects your personal data.",
 };
 

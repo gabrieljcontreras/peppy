@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageShell } from "@/components/PageShell";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — peppy",
+  title: "Terms of Service",
   description: "Terms governing your use of peppy.",
 };
 

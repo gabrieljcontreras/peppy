@@ -4,9 +4,9 @@ import { PageShell } from "@/components/PageShell";
 import { Reveal } from "@/components/Reveal";
 
 export const metadata: Metadata = {
-  title: "About — peppy",
+  title: "About",
   description:
-    "Why we built peppy and what we believe about personal health tracking.",
+    "Why we built peppy and what we believe about personal health tracking. Learn about the team behind the peptide protocol tracker.",
 };
 
 const values = [
