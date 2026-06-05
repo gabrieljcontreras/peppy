@@ -1,5 +1,7 @@
 package com.peppy.app.features.main.ui
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,11 +17,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,28 +27,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.peppy.app.design.components.PepTabBar
+import com.peppy.app.design.components.PepTabItem
 import com.peppy.app.features.checkin.ui.CheckinScreen
 import com.peppy.app.features.checkin.viewmodel.CheckinViewModel
 import com.peppy.app.features.protocols.ui.ProtocolListScreen
 import com.peppy.app.features.protocols.viewmodel.ProtocolViewModel
 import com.peppy.app.features.settings.ui.SettingsScreen
+import com.peppy.app.ui.motion.PeppyMotion
 import com.peppy.app.ui.theme.PeppyTheme
 
-data class TabItem(
-    val title: String,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
-)
-
 val tabs = listOf(
-    TabItem("Home", Icons.Filled.Home, Icons.Outlined.Home),
-    TabItem("Check-in", Icons.Filled.AddCircle, Icons.Outlined.AddCircleOutline),
-    TabItem("Protocols", Icons.Filled.Science, Icons.Outlined.Science),
-    TabItem("Insights", Icons.Filled.Lightbulb, Icons.Outlined.Lightbulb),
-    TabItem("Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
+    PepTabItem("Home", Icons.Filled.Home, Icons.Outlined.Home),
+    PepTabItem("Check-in", Icons.Filled.AddCircle, Icons.Outlined.AddCircleOutline),
+    PepTabItem("Protocols", Icons.Filled.Science, Icons.Outlined.Science),
+    PepTabItem("Insights", Icons.Filled.Lightbulb, Icons.Outlined.Lightbulb),
+    PepTabItem("Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
 )
 
 @Composable
@@ -66,41 +60,23 @@ fun MainScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ) {
-                tabs.forEachIndexed { index, tab ->
-                    NavigationBarItem(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        icon = {
-                            Icon(
-                                imageVector = if (selectedTab == index) tab.selectedIcon else tab.unselectedIcon,
-                                contentDescription = tab.title
-                            )
-                        },
-                        label = { Text(tab.title) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                        )
-                    )
-                }
-            }
+            PepTabBar(
+                tabs = tabs,
+                selectedIndex = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
         }
     ) { paddingValues ->
-        Box(
+        Crossfade(
+            targetState = selectedTab,
+            animationSpec = tween(PeppyMotion.NORMAL, easing = PeppyMotion.EaseOut),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            when (selectedTab) {
+            label = "TabContent"
+        ) { tab ->
+            when (tab) {
                 1 -> CheckinScreen(viewModel = checkinViewModel)
                 2 -> ProtocolListScreen(
                     viewModel = protocolViewModel,
@@ -109,11 +85,16 @@ fun MainScreen(
                 )
                 4 -> SettingsScreen(onLogoutClick = onLogoutClick)
                 else -> {
-                    Text(
-                        text = tabs[selectedTab].title,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = tabs[tab].label,
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
                 }
             }
         }

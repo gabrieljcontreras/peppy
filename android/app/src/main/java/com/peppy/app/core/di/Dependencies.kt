@@ -6,12 +6,16 @@ import com.peppy.app.core.auth.BiometricManager
 import com.peppy.app.core.auth.BiometricManagerImpl
 import com.peppy.app.core.network.ApiClient
 import com.peppy.app.core.state.AppState
+import com.peppy.app.core.storage.OnboardingStorage
+import com.peppy.app.core.storage.OnboardingStorageImpl
 import com.peppy.app.core.storage.SecureStorage
 import com.peppy.app.core.storage.SecureStorageImpl
 
 class Dependencies private constructor(context: Context) {
 
     val secureStorage: SecureStorage = SecureStorageImpl(context.applicationContext)
+
+    val onboardingStorage: OnboardingStorage = OnboardingStorageImpl(context.applicationContext)
 
     val apiClient: ApiClient = ApiClient(secureStorage)
 

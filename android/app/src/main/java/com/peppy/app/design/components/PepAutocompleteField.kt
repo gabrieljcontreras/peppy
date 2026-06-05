@@ -42,6 +42,7 @@ fun PepAutocompleteField(
     value: String,
     onValueChange: (String) -> Unit,
     suggestions: List<String>,
+    onSuggestionSelected: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
     label: String? = null,
     placeholder: String? = null,
@@ -117,7 +118,11 @@ fun PepAutocompleteField(
                                 )
                             },
                             onClick = {
-                                onValueChange(suggestion)
+                                if (onSuggestionSelected != null) {
+                                    onSuggestionSelected(suggestion)
+                                } else {
+                                    onValueChange(suggestion)
+                                }
                                 expanded = false
                             }
                         )

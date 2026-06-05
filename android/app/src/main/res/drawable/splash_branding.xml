@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- "p" lettermark in Rust500, centered in adaptive icon safe zone -->
+    <path
+        android:fillColor="#C76B3E"
+        android:pathData="M44,36 L44,72 C44,72.55 43.55,73 43,73 L40,73 C39.45,73 39,72.55 39,72 L39,36 C39,35.45 39.45,35 40,35 L43,35 C43.55,35 44,35.45 44,36 Z M44,44 L54,44 C59.52,44 64,48.48 64,54 C64,59.52 59.52,64 54,64 L44,64 L44,59 L54,59 C56.76,59 59,56.76 59,54 C59,51.24 56.76,49 54,49 L44,49 Z" />
+</vector>

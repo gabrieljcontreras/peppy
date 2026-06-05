@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import com.peppy.app.core.auth.BiometricAvailability
 import com.peppy.app.core.auth.BiometricResult
@@ -44,14 +45,20 @@ sealed class AppLaunchState {
 }
 
 class MainActivity : FragmentActivity() {
+    private var isReady = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        splashScreen.setKeepOnScreenCondition { !isReady }
 
         val deps = Dependencies.get()
         val appState = deps.appState
         val biometricManager = deps.biometricManager
         val secureStorage = deps.secureStorage
+        val onboardingStorage = deps.onboardingStorage
 
         setContent {
             var launchState by remember { mutableStateOf<AppLaunchState>(AppLaunchState.Loading) }
@@ -71,18 +78,28 @@ class MainActivity : FragmentActivity() {
                                 )
                             )
                             launchState = AppLaunchState.Ready
+                            isReady = true
                         }
                         is BiometricResult.Failed -> {
                             launchState = AppLaunchState.BiometricFailed(result.message)
+                            isReady = true
                         }
                         is BiometricResult.Cancelled -> {
                             launchState = AppLaunchState.BiometricFailed("Authentication cancelled")
+                            isReady = true
                         }
                     }
                 }
             }
 
             LaunchedEffect(Unit) {
+                if (!onboardingStorage.isOnboardingComplete) {
+                    appState.setUnauthenticated()
+                    launchState = AppLaunchState.Ready
+                    isReady = true
+                    return@LaunchedEffect
+                }
+
                 val hasTokens = secureStorage.accessToken != null
                 val biometricEnabled = secureStorage.biometricEnabled
                 val biometricAvailable = biometricManager.canAuthenticate() == BiometricAvailability.AVAILABLE
@@ -91,6 +108,7 @@ class MainActivity : FragmentActivity() {
                     !hasTokens -> {
                         appState.setUnauthenticated()
                         launchState = AppLaunchState.Ready
+                        isReady = true
                     }
                     hasTokens && biometricEnabled && biometricAvailable -> {
                         attemptBiometric()
@@ -104,6 +122,7 @@ class MainActivity : FragmentActivity() {
                             )
                         )
                         launchState = AppLaunchState.Ready
+                        isReady = true
                     }
                 }
             }

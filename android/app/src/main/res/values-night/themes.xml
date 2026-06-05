@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.Peppy" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@color/peppy_cream_100</item>
-        <item name="android:statusBarColor">@color/peppy_cream_100</item>
-        <item name="android:navigationBarColor">@color/peppy_cream_100</item>
+        <item name="android:windowBackground">@color/peppy_dark_bg</item>
+        <item name="android:statusBarColor">@color/peppy_dark_bg</item>
+        <item name="android:navigationBarColor">@color/peppy_dark_bg</item>
     </style>
 
     <style name="Theme.Peppy.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/peppy_cream_100</item>
+        <item name="windowSplashScreenBackground">@color/peppy_dark_bg</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_branding</item>
         <item name="postSplashScreenTheme">@style/Theme.Peppy</item>
     </style>

@@ -63,6 +63,9 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.kotlinx.serialization.json)
 
+    // Splash
+    implementation(libs.androidx.splashscreen)
+
     // Security
     implementation(libs.androidx.security.crypto)
     implementation(libs.androidx.biometric)
