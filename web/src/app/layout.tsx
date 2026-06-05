@@ -43,11 +43,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "peppy" }],
   creator: "peppy",
-  metadataBase: new URL("https://getpeppy.com"),
+  metadataBase: new URL("https://get-peppy.com"),
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://getpeppy.com",
+    url: "https://get-peppy.com",
     siteName: "peppy",
     title: "peppy — track your peptide protocol, understand your body",
     description:

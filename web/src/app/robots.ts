@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/", "/feedback/"],
     },
-    sitemap: "https://getpeppy.com/sitemap.xml",
+    sitemap: "https://get-peppy.com/sitemap.xml",
   };
 }
