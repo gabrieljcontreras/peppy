@@ -5,14 +5,17 @@ import androidx.compose.ui.graphics.Color
 // peppy Design System v2 — Professional Direction
 // Three roles: Rust (brand), Ink (foreground), Cream (background)
 
-// Rust scale (brand accent)
-val Rust100 = Color(0xFFF7DDCB)
-val Rust300 = Color(0xFFE5A487)
-val Rust500 = Color(0xFFC76B3E)  // Primary brand color
-val Rust700 = Color(0xFF98512E)  // Hover/pressed states
-val Rust900 = Color(0xFF663520)
+// Rust scale (brand accent) — matched to web globals.css
+val Rust100 = Color(0xFFFBD5D0)
+val Rust200 = Color(0xFFF4B3AB)
+val Rust300 = Color(0xFFEB9189)
+val Rust500 = Color(0xFFE0706A)  // Primary brand color
+val Rust600 = Color(0xFFC45A55)  // Hover/pressed states
+val Rust700 = Color(0xFF9A4440)
+val Rust900 = Color(0xFF5E2A28)
 
 // Ink scale (text, dark buttons)
+val Ink50 = Color(0xFFFAFAF9)    // Lightest neutral
 val Ink100 = Color(0xFFE5E7EB)   // Borders, dividers
 val Ink300 = Color(0xFFBFC1C7)
 val Ink500 = Color(0xFF777A82)   // Secondary text
@@ -20,13 +23,14 @@ val Ink700 = Color(0xFF4A4D54)
 val Ink900 = Color(0xFF1E2026)   // Primary text, headlines
 
 // Cream scale (backgrounds)
-val Cream50 = Color(0xFFFCFAF5)  // Card backgrounds
+val Cream50 = Color(0xFFFFFAF3)  // Card backgrounds
 val Cream100 = Color(0xFFFAF7F0) // Default page background
 val Cream200 = Color(0xFFF3EDDF) // Elevated surfaces
 
-// Semantic colors
-val Success = Color(0xFF4E8C5B)
-val Warning = Color(0xFFD9A04A)
+// Semantic colors — matched to web globals.css
+val Success = Color(0xFF81B29A)
+val Warning = Color(0xFFF2CC8F)
+val Info = Color(0xFF7EB8C9)
 val Danger = Color(0xFFC24B3F)
 
 // ============================================
@@ -55,7 +59,7 @@ val LightOnError = Cream100
 // Per design system: Cream inverts to deep ink,
 // rust desaturates slightly, text inverts to warm off-white
 // ============================================
-val RustDark = Color(0xFFD4805A)  // Slightly desaturated rust for dark mode
+val RustDark = Color(0xFFE8918C)  // Desaturated rosy-pink for dark mode
 
 val DarkPrimary = RustDark
 val DarkPrimaryContainer = Rust900
