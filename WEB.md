@@ -33,11 +33,16 @@ web/src/
     page.tsx                Home page
     globals.css             Design tokens + base styles
     about/page.tsx          About page
+    contact/page.tsx        Contact page
     waitlist/page.tsx       Waitlist / early access signup
+    feedback/
+      bug/page.tsx          Bug report form
+      feature/page.tsx      Feature request form
     privacy/page.tsx        Privacy policy
     terms/page.tsx          Terms of service
     api/
       waitlist/route.ts     POST proxy → backend /api/v1/waitlist
+      feedback/route.ts     POST proxy → backend feedback endpoint
       health/route.ts       GET health check proxy
   components/
     Nav.tsx                 Sticky pill navbar (server component shell)
@@ -48,6 +53,7 @@ web/src/
     Reveal.tsx              Scroll-reveal animation wrapper (client)
     PageShell.tsx           Shared Nav + main + Footer layout
     WaitlistForm.tsx        Email capture form (client, posts to /api/waitlist)
+    FeedbackForm.tsx        Bug / feature feedback form (client, posts to /api/feedback)
   hooks/
     useScrollReveal.ts      IntersectionObserver hook, respects prefers-reduced-motion
   lib/
@@ -60,10 +66,14 @@ web/src/
 |------|------|-------------|
 | `/` | Static | Landing page — hero, features, records, testimonials, CTA |
 | `/about` | Static | Mission, values, CTA |
+| `/contact` | Static | Contact information |
 | `/waitlist` | Static | Email capture + FAQ |
+| `/feedback/bug` | Static | Bug report form |
+| `/feedback/feature` | Static | Feature request form |
 | `/privacy` | Static | Privacy policy |
 | `/terms` | Static | Terms of service |
 | `/api/waitlist` | Dynamic | POST — proxies to backend waitlist endpoint |
+| `/api/feedback` | Dynamic | POST — proxies to backend feedback endpoint |
 | `/api/health` | Dynamic | GET — checks web + backend health |
 
 ## Development
@@ -91,10 +101,13 @@ Set in `web/.env.local` (gitignored).
 The web app connects to the FastAPI backend via Next.js route handlers (server-side proxy). This avoids exposing the backend URL to the client and handles CORS cleanly.
 
 - **Waitlist signup**: `POST /api/waitlist` → backend `POST /api/v1/waitlist`
+- **Feedback**: `POST /api/feedback` → backend feedback endpoint
 - **Health check**: `GET /api/health` → backend `GET /health`
 - **API client**: `web/src/lib/api.ts` — thin fetch wrapper with `ApiError` class
 
 Backend CORS is configured to allow `localhost:3000` (dev) and production domains. See `backend/app/main.py`.
+
+The backend ships as a Docker image (`backend/Dockerfile`, `backend/.dockerignore`) and is deployed to Railway. The initial Alembic migration (`backend/alembic/versions/19381cefe6c7_initial_schema.py`) creates all 13 tables on first boot.
 
 ## CI/CD
 
@@ -118,6 +131,13 @@ Backend CORS is configured to allow `localhost:3000` (dev) and production domain
 
 ## Changelog
 
+### 2026-06-02 — Deployment hotfixes
+
+- Synced `web/package-lock.json` with `package.json` so Vercel `npm ci` stops failing on `@emnapi/runtime` and `@emnapi/core` drift
+- Tightened `web/vercel.json` (explicit `buildCommand`, `outputDirectory`, `installCommand`)
+- `backend/app/config.py`: strip whitespace from `DATABASE_URL` before the `postgresql://` → `postgresql+asyncpg://` conversion (Railway env values can have stray spaces)
+- `backend/alembic/env.py`: keep the `+asyncpg` driver in the URL so `async_engine_from_config` doesn't fall back to psycopg2 and crash on Railway
+
 ### 2026-06-01 — v0.2.0: Design polish, new pages, backend integration, CI/CD
 
 - Added scroll-reveal animations (IntersectionObserver) across all home sections
@@ -127,6 +147,8 @@ Backend CORS is configured to allow `localhost:3000` (dev) and production domain
 - Made phone mock responsive, hide watch on mobile
 - Added /waitlist page with email capture form
 - Added /about page with mission, values, CTA
+- Added /contact page
+- Added /feedback/bug and /feedback/feature forms (FeedbackForm + `/api/feedback` proxy)
 - Added /privacy and /terms legal pages
 - Created PageShell for shared Nav/Footer layout
 - Built API route handlers for waitlist signup and health check
@@ -134,6 +156,9 @@ Backend CORS is configured to allow `localhost:3000` (dev) and production domain
 - Tightened backend CORS from wildcard to specific origins
 - Added API client utility (lib/api.ts)
 - Set up GitHub Actions CI pipeline (lint, type-check, build)
-- Added Vercel deployment config
+- Added Vercel deployment config (`web/vercel.json`)
+- Added backend Docker image (`backend/Dockerfile`, `.dockerignore`) for Railway deploys
+- Added initial Alembic migration (`19381cefe6c7_initial_schema`) covering all 13 tables
+- Auto-fix `DATABASE_URL` prefix (`postgresql://` → `postgresql+asyncpg://`) in `backend/app/config.py` for Railway
 - Updated footer links to point to real pages
 - Updated nav CTA to "Join waitlist", logo links to "/"
