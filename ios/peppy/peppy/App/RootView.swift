@@ -4,6 +4,7 @@ struct RootView: View {
     @Environment(\.dependencies) var deps
 
     var body: some View {
+        @Bindable var appState = deps.appState
         Group {
             if deps.appState.isAuthenticated {
                 MainTabView()
@@ -11,7 +12,7 @@ struct RootView: View {
                 WelcomeView()
             }
         }
-        .pepToast($deps.appState.toast)
+        .pepToast($appState.toast)
         .task {
             await checkExistingSession()
         }
