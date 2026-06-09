@@ -20,6 +20,9 @@ python-multipart==0.0.9
 # HTTP client (for integrations)
 httpx==0.27.0
 
+# SMS
+twilio==9.10.9
+
 # Task queue
 celery==5.4.0
 redis==5.0.4
