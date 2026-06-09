@@ -610,37 +610,36 @@ export function Footer() {
           </small>
 
           <div className="mt-5 flex gap-3">
-            {["Instagram", "X", "Reddit", "YouTube"].map((label, i) => (
+            {[
+              { label: "TikTok", href: "https://www.tiktok.com/@peppyapp" },
+              { label: "Instagram", href: "https://www.instagram.com/peppy.ai/" },
+              { label: "X", href: "https://x.com/getpeppyapp" },
+              { label: "LinkedIn", href: "https://www.linkedin.com/company/peppyapp/" },
+            ].map(({ label, href }, i) => (
               <a
                 key={label}
-                href="#"
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label={label}
                 className="grid h-9 w-9 place-items-center rounded-full border border-border-subtle text-ink-700 transition-all hover:border-ink-900 hover:text-rust-500 hover:scale-110"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                   {i === 0 && (
+                    <path d="M16.6 5.8A4.3 4.3 0 0 1 13.2 4V1h-3v13.2a2.6 2.6 0 1 1-1.8-2.5V8.5a5.8 5.8 0 1 0 5 5.7V9.5a7.3 7.3 0 0 0 4.2 1.3V7.6a4.3 4.3 0 0 1-1-1.8Z" />
+                  )}
+                  {i === 1 && (
                     <g fill="none" stroke="currentColor" strokeWidth="1.8">
                       <rect x="3" y="3" width="18" height="18" rx="5" />
                       <circle cx="12" cy="12" r="4" />
                       <circle cx="17.5" cy="6.5" r="0.8" fill="currentColor" />
                     </g>
                   )}
-                  {i === 1 && (
+                  {i === 2 && (
                     <path d="M17.5 3h3.4l-7.4 8.5L22 21h-6.8l-5.3-6.9L3.8 21H.4l7.9-9.1L0 3h6.9l4.8 6.4L17.5 3Z" />
                   )}
-                  {i === 2 && (
-                    <g>
-                      <circle cx="12" cy="13" r="9" fill="none" stroke="currentColor" strokeWidth="1.6" />
-                      <circle cx="9" cy="13" r="1.2" />
-                      <circle cx="15" cy="13" r="1.2" />
-                      <path d="M8.5 16c1 .9 2.2 1.2 3.5 1.2s2.5-.3 3.5-1.2" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" />
-                    </g>
-                  )}
                   {i === 3 && (
-                    <g>
-                      <rect x="2" y="6" width="20" height="12" rx="3" />
-                      <path d="M10 9.5v5l4.5-2.5L10 9.5Z" fill="#fff" />
-                    </g>
+                    <path d="M20.45 2H3.55A1.55 1.55 0 0 0 2 3.55v16.9A1.55 1.55 0 0 0 3.55 22h16.9A1.55 1.55 0 0 0 22 20.45V3.55A1.55 1.55 0 0 0 20.45 2ZM8.12 18.74H5.37V9.73h2.75v9.01ZM6.74 8.5a1.59 1.59 0 1 1 0-3.18 1.59 1.59 0 0 1 0 3.18Zm12 10.24h-2.75v-4.38c0-1.04-.02-2.38-1.45-2.38-1.45 0-1.67 1.13-1.67 2.3v4.46h-2.75V9.73h2.64v1.23h.04a2.89 2.89 0 0 1 2.6-1.43c2.79 0 3.3 1.83 3.3 4.22v4.99Z" />
                   )}
                 </svg>
               </a>
