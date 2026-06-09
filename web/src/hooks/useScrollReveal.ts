@@ -8,24 +8,20 @@ interface ScrollRevealOptions {
   once?: boolean;
 }
 
-function prefersReducedMotion() {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
-}
-
 export function useScrollReveal({
   threshold = 0.15,
   rootMargin = "0px 0px -60px 0px",
   once = true,
 }: ScrollRevealOptions = {}) {
-  const [isVisible, setIsVisible] = useState(prefersReducedMotion);
+  const [isVisible, setIsVisible] = useState(false);
   const elementRef = useRef<Element | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
-    if (prefersReducedMotion()) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setIsVisible(true);
+      return;
+    }
 
     observerRef.current = new IntersectionObserver(
       ([entry]) => {

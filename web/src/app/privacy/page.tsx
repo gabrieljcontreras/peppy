@@ -85,10 +85,10 @@ export default function PrivacyPage() {
             <p className="mt-3">
               Questions about this policy? Reach us at{" "}
               <a
-                href="mailto:privacy@peppy.app"
+                href="mailto:legal@get-peppy.com"
                 className="text-rust-500 underline underline-offset-2 hover:text-rust-700"
               >
-                privacy@peppy.app
+                legal@get-peppy.com
               </a>
               .
             </p>

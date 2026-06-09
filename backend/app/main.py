@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.api.routes import auth, protocols, checkins, labs, insights, health, wearables, notifications, waitlist
+from app.api.routes import auth, protocols, checkins, labs, insights, health, wearables, notifications, waitlist, feedback
 
 settings = get_settings()
 
@@ -36,6 +36,7 @@ app.include_router(insights.router, prefix="/api/v1/insights", tags=["insights"]
 app.include_router(wearables.router, prefix="/api/v1/wearables", tags=["wearables"])
 app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["notifications"])
 app.include_router(waitlist.router, prefix="/api/v1/waitlist", tags=["waitlist"])
+app.include_router(feedback.router, prefix="/api/v1/feedback", tags=["feedback"])
 
 
 @app.on_event("startup")

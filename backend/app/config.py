@@ -34,6 +34,13 @@ class Settings(BaseSettings):
     twilio_auth_token: str = ""
     twilio_phone_number: str = ""
 
+    # SMTP (for feedback emails)
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "noreply@get-peppy.com"
+
     # External APIs
     oura_client_id: str = ""
     oura_client_secret: str = ""

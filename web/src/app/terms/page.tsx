@@ -97,10 +97,10 @@ export default function TermsPage() {
             <p className="mt-3">
               Questions? Contact us at{" "}
               <a
-                href="mailto:legal@peppy.app"
+                href="mailto:legal@get-peppy.com"
                 className="text-rust-500 underline underline-offset-2 hover:text-rust-700"
               >
-                legal@peppy.app
+                legal@get-peppy.com
               </a>
               .
             </p>
