@@ -302,15 +302,15 @@ export function Features() {
                 tint: "var(--peppy-tint-sage)",
                 title: "Check-ins",
                 copy: "30 seconds a day. Weight, energy, sleep, appetite, and mood.",
-                src: "/app/checkin-detail.webp",
+                src: "/app/check_in.png",
                 alt: "peppy check-in detail screen — daily ratings for weight, energy, sleep, appetite, and mood",
               },
               {
                 tint: "var(--peppy-tint-butter)",
                 title: "Insights",
                 copy: "Trends and patterns over time — see what's actually moving the needle.",
-                src: "/app/checkins.webp",
-                alt: "peppy check-in history screen — weight trend chart and weekly averages",
+                src: "/app/insights_page.png",
+                alt: "peppy insights screen — visualizations of health trends and patterns",
               },
             ] as const
           ).map((card, i) => (
@@ -448,85 +448,8 @@ export function FeatureRows() {
   );
 }
 
-/* ---------------------- NOT ALL — ACCORDION ROWS --------------------- */
-const accordion = [
-  {
-    title: "AI weekly summary",
-    body: "A short, plain-English readout of how your week went and what to try next.",
-    active: true,
-  },
-  {
-    title: "Lab uploads",
-    body: "Snap a photo or attach a PDF. peppy parses the values and tracks them over time.",
-  },
-  {
-    title: "Provider-ready exports",
-    body: "Generate a clean PDF of your protocol and metrics to share with your clinician.",
-  },
-  {
-    title: "Guided onboarding",
-    body: "Answer a few questions and peppy sets up your protocol, reminders, and baselines for you.",
-  },
-];
-
-export function NotAll() {
-  return (
-    <section className="py-24">
-      <div className="mx-auto grid max-w-[1180px] items-center gap-16 px-6 md:grid-cols-[1.05fr_0.95fr]">
-        <div>
-          <Reveal>
-            <h2 className="text-[clamp(32px,4.4vw,56px)] font-semibold leading-[1.05] tracking-[-0.02em] text-ink-900">
-              And that&apos;s
-              <br />
-              <em className="font-serif italic font-medium">not all.</em>
-            </h2>
-            <p className="mt-3 text-ink-700">peppy also includes:</p>
-          </Reveal>
-
-          <div className="mt-8 flex flex-col gap-3">
-            {accordion.map((row, i) => (
-              <Reveal key={i} delay={i * 80}>
-                <div
-                  className={`group flex items-start justify-between gap-4 rounded-2xl border p-6 transition-all duration-300 ${
-                    row.active
-                      ? "border-rust-500/20 bg-rust-500/10"
-                      : "border-border-subtle bg-cream-50 hover:border-border-default hover:bg-cream-200/60"
-                  }`}
-                >
-                  <div>
-                    <h3 className="text-[18px] font-semibold text-ink-900">
-                      {row.title}
-                    </h3>
-                    <p className="mt-1 text-[14px] text-ink-700">{row.body}</p>
-                  </div>
-                  <span
-                    className={`grid h-9 w-9 flex-none place-items-center rounded-full border border-border-subtle text-ink-900 transition-all group-hover:border-ink-900 group-hover:bg-ink-900 group-hover:text-cream-50 group-hover:translate-x-1 ${
-                      row.active ? "bg-ink-900 text-cream-50 border-ink-900" : ""
-                    }`}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M5 12h14M13 6l6 6-6 6" />
-                    </svg>
-                  </span>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-
-        <Reveal direction="left" delay={150}>
-          <div className="flex justify-center">
-            <PhoneFrame
-              src="/app/ready.webp"
-              alt="peppy onboarding complete — active protocol, quick check-in, and connected data preview"
-              width={300}
-            />
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
+/* ---------------------- NOT ALL — INTERACTIVE TABS ------------------- */
+export { NotAll } from "./NotAllSection";
 
 /* ------------------------------ PRIVACY ------------------------------ */
 export function Privacy() {
