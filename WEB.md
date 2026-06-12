@@ -16,7 +16,11 @@ Marketing and landing site for the peppy peptide protocol tracking app.
 
 ## Design System
 
-- **Palette**: Rust `#E07A5F` (primary), Ink `#1E2026` (dark), Cream `#FFFAF3` (surface), Success `#81B29A`, Info `#7EB8C9`, Warning `#F2CC8F`
+Sourced from the iOS app designs in `web/src/Peppy IOS.fig` — colors sampled directly from the exported screens, so web and app share one visual language.
+
+- **Palette**: Coral `#EA584C` (primary, `rust-500`; scale 100–900), Ink `#212126` (text, `ink-900`; scale 50–900), Cream `#FCF8F3` (page bg, `cream-100`) / `#FEFBF8` (cards, `cream-50`)
+- **Pastel tints** (feature cards, icon chips): Rose `#FBE5E0`, Sage `#E5EFE4`, Sky `#E4ECF5`, Butter `#FBF0D9`, Lavender `#ECE7F7` — usable as `bg-tint-rose` etc.
+- **Borders**: subtle `#F0E9E0`, default `#E2D9CC`
 - **Radius**: sm `10px`, md `16px`, lg `24px`, pill `9999px`
 - **Motion**: `cubic-bezier(0.19, 1, 0.22, 1)` — durations 150 / 250 / 600ms
 - **Scroll reveal**: IntersectionObserver via `useScrollReveal` hook + `<Reveal>` wrapper — no external deps
@@ -27,7 +31,11 @@ Tokens live in `web/src/app/globals.css` as CSS custom properties and are mapped
 ## Directory Structure
 
 ```
+web/
+  public/app/             Real app screens (webp) extracted from Peppy IOS.fig, shown in PhoneFrame
+  scripts/screenshot.mjs  Playwright visual-QA script (desktop/tablet/mobile captures)
 web/src/
+  Peppy IOS.fig           Figma design source (not imported by code)
   app/
     layout.tsx              Root layout (fonts, metadata)
     page.tsx                Home page
@@ -48,8 +56,8 @@ web/src/
     Nav.tsx                 Sticky pill navbar (server component shell)
     NavShell.tsx            Client wrapper — scroll-aware opacity transition
     Logo.tsx                SVG logo + wordmark
-    PhoneMock.tsx           Hero device mockups (responsive)
-    Sections.tsx            All home-page sections (Hero, Features, Records, NotAll, Testimonials, CTA, Footer)
+    PhoneMock.tsx           PhoneFrame — device frame around real app screenshots (next/image)
+    Sections.tsx            All home-page sections (Hero, WorksWith, Features, FeatureRows, NotAll, Privacy, Testimonials, CTA, Footer)
     Reveal.tsx              Scroll-reveal animation wrapper (client)
     PageShell.tsx           Shared Nav + main + Footer layout
     WaitlistForm.tsx        Email capture form (client, posts to /api/waitlist)
@@ -81,11 +89,16 @@ web/src/
 ```sh
 cd web
 npm install
-npm run dev          # Dev server on port 3000
+npm run dev          # Dev server on port 3000 (use `npx next dev -p 3005` if 3000 is taken)
 npm run build        # Production build
 npm run lint         # ESLint
 npm run type-check   # TypeScript check (tsc --noEmit)
+
+# Visual QA — captures desktop/tablet/mobile screenshots into web/screenshots/<TAG>/
+URL=http://localhost:3005 TAG=my-run node scripts/screenshot.mjs
 ```
+
+Note: the screenshot script scrolls with `behavior: "instant"` — the site sets `scroll-behavior: smooth`, which would otherwise animate past sections and IntersectionObserver reveals at the bottom of the page would never fire.
 
 ## Environment Variables
 
@@ -130,6 +143,25 @@ The backend ships as a Docker image (`backend/Dockerfile`, `backend/.dockerignor
 - No external animation libraries — pure CSS transitions + IntersectionObserver
 
 ## Changelog
+
+### 2026-06-11 — v0.3.0: Homepage redesign from Figma (Peppy IOS.fig)
+
+Homepage rebuilt around the iOS app designs in `web/src/Peppy IOS.fig`, with bevel.health as the polish benchmark.
+
+- Extracted 56 screen renders from the .fig (it's a ZIP archive); optimized 10 of them to `web/public/app/*.webp` (720px wide, q90, 50–85KB each)
+- Resampled all design tokens from the .fig renders: coral `#EA584C` replaces `#E07A5F`, ink `#212126`, cream `#FCF8F3`/`#FEFBF8`, plus five pastel tints (rose/sage/sky/butter/lavender) — full scales in `globals.css`
+- Rewrote `PhoneMock.tsx` as `PhoneFrame`: dark device frame around real app screenshots via next/image (replaces the hand-drawn CSS mockup)
+- Rewrote `Sections.tsx`:
+  - **Hero** — "Your protocol, understood." with home screen in PhoneFrame + four floating stat cards (weight trend, check-in streak, next dose, sleep) on `peppy-float` animation
+  - **WorksWith** — marquee of integration chips (Apple Health, Oura, Whoop, Garmin) via `.peppy-marquee` (CSS mask edges, 32s loop, pauses on hover)
+  - **Features** — Protocols / Check-ins / Insights trio, app screens cropped inside pastel-tinted cards with hover lift
+  - **FeatureRows** — alternating rows (connect health data / notifications / side-effects) with eyebrow labels and check-chip bullets
+  - **NotAll** — accordion (AI weekly summary, lab uploads, provider exports, guided onboarding) beside the "ready" screen
+  - **Privacy** — dark ink-900 card: "Private by design." with encrypted/never-sold/export chips
+  - **CTA** — coral card "Make this week make sense." → /waitlist
+- `globals.css`: added `.peppy-marquee` and `.peppy-float` animations, retuned `.peppy-tile-*` gradients and `.peppy-aura`; removed `.peppy-bargraph`
+- `scripts/screenshot.mjs`: scroll-through pass so IntersectionObserver reveals fire before capture, using `behavior: "instant"` (smooth scrolling animated past bottom sections, leaving them unrevealed in tablet captures); section-level captures updated to new section ids
+- `useScrollReveal.ts`: reduced-motion path sets visibility inside requestAnimationFrame (fixes `react-hooks/set-state-in-effect` lint error)
 
 ### 2026-06-02 — Deployment hotfixes
 

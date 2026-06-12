@@ -37,6 +37,19 @@ for (const v of viewports) {
   // give fonts + fade-ins a moment to settle
   await page.waitForTimeout(900);
 
+  // scroll through the page so IntersectionObserver reveals fire
+  // (behavior: "instant" — the site sets scroll-behavior: smooth, which
+  // would otherwise animate past sections without ever landing on them)
+  await page.evaluate(async () => {
+    const step = window.innerHeight / 2;
+    for (let y = 0; y <= document.body.scrollHeight; y += step) {
+      window.scrollTo({ top: y, behavior: "instant" });
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    window.scrollTo({ top: 0, behavior: "instant" });
+  });
+  await page.waitForTimeout(900);
+
   await page.screenshot({
     path: join(out, `${v.name}-full.png`),
     fullPage: true,
@@ -50,8 +63,8 @@ for (const v of viewports) {
     const sectionSelectors = [
       ["hero", "header"],
       ["features", "#features"],
-      ["records", "#records"],
       ["more", "#more"],
+      ["privacy", "#privacy"],
       ["testimonials", "#testimonials"],
       ["cta", "#download"],
       ["footer", "footer"],

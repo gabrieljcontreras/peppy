@@ -2,50 +2,57 @@
 
 /* ============================================================
    peppy — design tokens (web)
-   Sourced from DESIGN_SYSTEM.md + design-mockups/landing-v4.html
+   Sourced from Peppy IOS.fig (sampled) + DESIGN_SYSTEM.md
    ============================================================ */
 
 :root {
-  /* Rose (primary accent) */
-  --peppy-rust-100: #fbd5d0;
-  --peppy-rust-200: #f4b3ab;
-  --peppy-rust-300: #eb9189;
-  --peppy-rust-500: #e0706a;
-  --peppy-rust-600: #c45a55;
-  --peppy-rust-700: #9a4440;
-  --peppy-rust-900: #5e2a28;
+  /* Coral (primary accent — sampled from .fig: #EA584C) */
+  --peppy-rust-100: #fbded9;
+  --peppy-rust-200: #f7beb6;
+  --peppy-rust-300: #f0958b;
+  --peppy-rust-500: #ea584c;
+  --peppy-rust-600: #d2443a;
+  --peppy-rust-700: #a8352c;
+  --peppy-rust-900: #5e1f1a;
 
-  /* Ink (neutrals / text) */
+  /* Ink (neutrals / text — sampled: #212126) */
   --peppy-ink-50: #fafaf9;
-  --peppy-ink-100: #e5e7eb;
-  --peppy-ink-300: #bfc1c7;
-  --peppy-ink-500: #777a82;
-  --peppy-ink-700: #4a4d54;
-  --peppy-ink-900: #1e2026;
+  --peppy-ink-100: #e9e6e0;
+  --peppy-ink-300: #bdbec4;
+  --peppy-ink-500: #75767e;
+  --peppy-ink-700: #494a51;
+  --peppy-ink-900: #212126;
 
-  /* Cream (page / surface) */
-  --peppy-cream-50: #fffaf3;
-  --peppy-cream-100: #faf7f0;
-  --peppy-cream-200: #f3eddf;
+  /* Cream (page / surface — sampled: #FCF8F3 page, #FEFBF8 card) */
+  --peppy-cream-50: #fefbf8;
+  --peppy-cream-100: #fcf8f3;
+  --peppy-cream-200: #f6efe6;
+
+  /* Pastel tints (icon chips / feature cards — from .fig) */
+  --peppy-tint-rose: #fbe5e0;
+  --peppy-tint-sage: #e5efe4;
+  --peppy-tint-sky: #e4ecf5;
+  --peppy-tint-butter: #fbf0d9;
+  --peppy-tint-lavender: #ece7f7;
 
   /* Accents (used sparingly) */
-  --peppy-success: #81b29a;
-  --peppy-info: #7eb8c9;
-  --peppy-warning: #f2cc8f;
+  --peppy-success: #57975f;
+  --peppy-info: #6f9fc8;
+  --peppy-warning: #e2932e;
 
   /* Aura tints (hero gradient) */
-  --peppy-aura-peach: rgba(224, 112, 106, 0.40);
-  --peppy-aura-sage:  rgba(129, 178, 154, 0.30);
-  --peppy-aura-cream: rgba(244, 179, 171, 0.32);
-  --peppy-aura-rose:  rgba(251, 213, 208, 0.45);
+  --peppy-aura-peach: rgba(234, 88, 76, 0.30);
+  --peppy-aura-sage:  rgba(140, 180, 150, 0.24);
+  --peppy-aura-cream: rgba(247, 190, 182, 0.30);
+  --peppy-aura-rose:  rgba(251, 222, 217, 0.45);
 
   /* Aliases */
   --background: var(--peppy-cream-100);
   --foreground: var(--peppy-ink-900);
   --surface: var(--peppy-cream-50);
   --surface-warm: var(--peppy-cream-200);
-  --border-subtle: var(--peppy-ink-100);
-  --border-default: var(--peppy-ink-300);
+  --border-subtle: #f0e9e0;
+  --border-default: #e2d9cc;
 
   /* Radius */
   --r-sm: 10px;
@@ -80,6 +87,12 @@
   --color-cream-50: var(--peppy-cream-50);
   --color-cream-100: var(--peppy-cream-100);
   --color-cream-200: var(--peppy-cream-200);
+
+  --color-tint-rose: var(--peppy-tint-rose);
+  --color-tint-sage: var(--peppy-tint-sage);
+  --color-tint-sky: var(--peppy-tint-sky);
+  --color-tint-butter: var(--peppy-tint-butter);
+  --color-tint-lavender: var(--peppy-tint-lavender);
 
   --color-success: var(--peppy-success);
   --color-info: var(--peppy-info);
@@ -148,25 +161,32 @@ body {
   pointer-events: none;
 }
 
-/* ---------- Repeating bar-graph (mock chart) ---------- */
-.peppy-bargraph {
-  height: 48px;
-  border-radius: 6px;
-  background:
-    linear-gradient(180deg, rgba(224, 112, 106, 0), rgba(224, 112, 106, 0.20)),
-    repeating-linear-gradient(90deg, transparent 0 18px, rgba(30, 32, 38, 0.05) 18px 19px);
-  position: relative;
+/* ---------- Marquee (works-with logos) ---------- */
+.peppy-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
 }
-.peppy-bargraph::after {
-  content: "";
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: 40%;
-  height: 1.5px;
-  background: var(--peppy-ink-900);
-  opacity: 0.8;
-  border-radius: 2px;
+.peppy-marquee-track {
+  display: flex;
+  width: max-content;
+  gap: 14px;
+  animation: peppy-marquee 32s linear infinite;
+}
+.peppy-marquee:hover .peppy-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes peppy-marquee {
+  to { transform: translateX(calc(-50% - 7px)); }
+}
+
+/* ---------- Gentle float (hero cards) ---------- */
+@keyframes peppy-float {
+  0%, 100% { transform: translateY(0) rotate(var(--float-rot, 0deg)); }
+  50% { transform: translateY(-10px) rotate(var(--float-rot, 0deg)); }
+}
+.peppy-float {
+  animation: peppy-float 6s ease-in-out infinite;
 }
 
 /* ---------- Tile gradients (testimonials) ---------- */
@@ -177,11 +197,11 @@ body {
   inset: 0;
   background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.55), transparent 60%);
 }
-.peppy-tile-a { background: linear-gradient(135deg, #fbd5d0, #f4b3ab); }
-.peppy-tile-b { background: linear-gradient(135deg, #f4b3ab, #fbd5d0); }
-.peppy-tile-c { background: linear-gradient(135deg, #d8e8df, #f3eddf); }
-.peppy-tile-d { background: linear-gradient(135deg, #f5d0ca, #eb9189); }
-.peppy-tile-e { background: linear-gradient(135deg, #f3eddf, #fbd5d0); }
+.peppy-tile-a { background: linear-gradient(135deg, #fbded9, #f7beb6); }
+.peppy-tile-b { background: linear-gradient(135deg, #f7beb6, #fbded9); }
+.peppy-tile-c { background: linear-gradient(135deg, #e5efe4, #f6efe6); }
+.peppy-tile-d { background: linear-gradient(135deg, #fbe5e0, #f0958b); }
+.peppy-tile-e { background: linear-gradient(135deg, #f6efe6, #fbded9); }
 
 /* ---------- Fade-in on load ---------- */
 .peppy-fade { opacity: 0; transform: translateY(12px); animation: peppy-fade 0.8s var(--ease-out) forwards; }
