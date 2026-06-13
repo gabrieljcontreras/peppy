@@ -5,15 +5,15 @@ enum Tab: String, CaseIterable {
     case checkin = "Check-in"
     case protocols = "Protocols"
     case insights = "Insights"
-    case profile = "Profile"
+    case profile = "More"
 
     var icon: String {
         switch self {
-        case .home: return "house.fill"
-        case .checkin: return "plus.circle.fill"
-        case .protocols: return "pills.fill"
-        case .insights: return "lightbulb.fill"
-        case .profile: return "person.circle.fill"
+        case .home: return "house"
+        case .checkin: return "checkmark.circle"
+        case .protocols: return "cross.case"
+        case .insights: return "chart.bar"
+        case .profile: return "ellipsis"
         }
     }
 }
@@ -98,8 +98,8 @@ struct InsightsTab: View {
 struct ProfileTab: View {
     var body: some View {
         NavigationStack {
-            PlaceholderView(title: "Settings", icon: "person.circle.fill")
-                .navigationTitle("Profile")
+            PlaceholderView(title: "Settings", icon: "ellipsis.circle")
+                .navigationTitle("More")
         }
     }
 }

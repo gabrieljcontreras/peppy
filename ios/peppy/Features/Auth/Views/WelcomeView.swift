@@ -6,47 +6,65 @@ struct WelcomeView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: Spacing.xl) {
-                Spacer()
+            GeometryReader { proxy in
+                let width = proxy.size.width
 
-                VStack(spacing: Spacing.md) {
-                    Image(systemName: "waveform.path.ecg")
-                        .font(.system(size: 80))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.pepPrimary, .pepPrimaryLight],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                VStack(spacing: 0) {
+                    PeppyLogo(size: 52, showsWordmark: true)
+                        .padding(.top, 30)
 
-                    Text("Peppy")
-                        .font(.system(size: 48, weight: .bold))
-                        .foregroundColor(.pepTextPrimary)
+                    VStack(spacing: 12) {
+                        Text("Your protocol,")
+                            .font(.system(size: 35, weight: .bold))
+                            .foregroundColor(.pepTextPrimary)
 
-                    Text("Your personalized peptide protocol engine")
-                        .font(.title3)
+                        Text("understood.")
+                            .font(.system(size: 39, weight: .semibold, design: .serif))
+                            .italic()
+                            .foregroundColor(.pepPrimary)
+                            .offset(y: -8)
+                    }
+                    .padding(.top, 30)
+
+                    Text("Track your peptide protocol, daily check-ins,\nweight, symptoms, labs, and wearable data\nin one private place.")
+                        .font(.system(size: 14))
                         .foregroundColor(.pepTextSecondary)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, Spacing.xl)
-                }
+                        .lineSpacing(6)
+                        .padding(.top, 10)
 
-                Spacer()
+                    Image("WelcomeHero")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: width - 18)
+                        .padding(.top, 4)
 
-                VStack(spacing: Spacing.md) {
-                    PepButton(title: "Get Started", style: .primary) {
-                        showRegister = true
+                    Spacer(minLength: 4)
+
+                    VStack(spacing: 11) {
+                        PepButton(title: "Create account", style: .primary) {
+                            showRegister = true
+                        }
+
+                        PepButton(title: "Sign in", style: .secondary) {
+                            showLogin = true
+                        }
                     }
+                    .padding(.horizontal, 32)
 
-                    PepButton(title: "I Already Have an Account", style: .ghost) {
-                        showLogin = true
-                    }
+                    Label(
+                        "Your health data stays private and encrypted.",
+                        systemImage: "lock"
+                    )
+                    .font(.system(size: 11))
+                    .foregroundColor(.pepTextSecondary)
+                    .symbolRenderingMode(.monochrome)
+                    .padding(.top, 18)
+                    .padding(.bottom, 8)
                 }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.bottom, Spacing.xxl)
+                .frame(width: width, height: proxy.size.height)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.pepBackground)
+            .background(Color.pepBackground.ignoresSafeArea())
             .navigationDestination(isPresented: $showLogin) {
                 LoginView()
             }
@@ -54,6 +72,7 @@ struct WelcomeView: View {
                 RegisterView()
             }
         }
+        .tint(.pepTextPrimary)
     }
 }
 

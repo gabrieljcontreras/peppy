@@ -8,7 +8,7 @@ struct PeppyApp: App {
         WindowGroup {
             RootView()
                 .withDependencies(dependencies)
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(.light)
         }
     }
 }

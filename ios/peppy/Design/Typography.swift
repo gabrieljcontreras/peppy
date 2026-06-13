@@ -2,17 +2,17 @@ import SwiftUI
 
 extension View {
     func pepLargeTitle() -> some View {
-        self.font(.largeTitle).fontWeight(.bold)
+        self.font(.system(size: 36, weight: .bold, design: .rounded))
             .foregroundColor(.pepTextPrimary)
     }
 
     func pepTitle() -> some View {
-        self.font(.title).fontWeight(.bold)
+        self.font(.system(size: 30, weight: .bold, design: .rounded))
             .foregroundColor(.pepTextPrimary)
     }
 
     func pepTitle2() -> some View {
-        self.font(.title2).fontWeight(.bold)
+        self.font(.system(size: 24, weight: .bold, design: .rounded))
             .foregroundColor(.pepTextPrimary)
     }
 

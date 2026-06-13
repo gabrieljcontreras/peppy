@@ -8,9 +8,9 @@ enum PepButtonStyle {
 
     var backgroundColor: Color {
         switch self {
-        case .primary: return .pepPrimary
-        case .secondary: return .clear
-        case .ghost: return .pepSurfaceElevated
+        case .primary: return .pepInk
+        case .secondary: return .pepSurface
+        case .ghost: return .clear
         case .destructive: return .pepError
         }
     }
@@ -18,14 +18,13 @@ enum PepButtonStyle {
     var foregroundColor: Color {
         switch self {
         case .primary, .destructive: return .white
-        case .secondary: return .pepPrimary
-        case .ghost: return .pepTextPrimary
+        case .secondary, .ghost: return .pepTextPrimary
         }
     }
 
     var borderColor: Color? {
         switch self {
-        case .secondary: return .pepPrimary
+        case .secondary: return .pepBorder
         default: return nil
         }
     }
@@ -46,18 +45,17 @@ struct PepButton: View {
                         .tint(style.foregroundColor)
                 }
                 Text(title)
-                    .font(.headline)
+                    .font(.system(size: 15, weight: .medium))
             }
             .frame(maxWidth: .infinity)
             .frame(height: 50)
             .foregroundColor(style.foregroundColor)
             .background(style.backgroundColor)
-            .cornerRadius(CornerRadius.sm)
+            .clipShape(Capsule())
             .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.sm)
-                    .stroke(style.borderColor ?? .clear, lineWidth: style.borderColor != nil ? 2 : 0)
+                Capsule()
+                    .stroke(style.borderColor ?? .clear, lineWidth: style.borderColor != nil ? 1.2 : 0)
             )
-            .opacity(isDisabled ? 0.5 : 1.0)
         }
         .disabled(isLoading || isDisabled)
     }

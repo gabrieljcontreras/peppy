@@ -6,17 +6,64 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		49C364942FD4DE7E00C1F5DE /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364732FD4DE4B00C1F5DE /* AppState.swift */; };
+		49C364952FD4DE7E00C1F5DE /* Dependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364742FD4DE4B00C1F5DE /* Dependencies.swift */; };
+		49C364962FD4DE7E00C1F5DE /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364752FD4DE4B00C1F5DE /* MainTabView.swift */; };
+		49C364972FD4DE7E00C1F5DE /* PeppyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364762FD4DE4B00C1F5DE /* PeppyApp.swift */; };
+		49C364982FD4DE7E00C1F5DE /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364772FD4DE4B00C1F5DE /* RootView.swift */; };
+		49C364992FD4DE7E00C1F5DE /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364792FD4DE4B00C1F5DE /* APIClient.swift */; };
+		49C3649A2FD4DE7E00C1F5DE /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3647A2FD4DE4B00C1F5DE /* APIError.swift */; };
+		49C3649B2FD4DE7E00C1F5DE /* APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3647B2FD4DE4B00C1F5DE /* APIModels.swift */; };
+		49C3649C2FD4DE7E00C1F5DE /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3647C2FD4DE4B00C1F5DE /* Endpoint.swift */; };
+		49C3649D2FD4DE7E00C1F5DE /* MockAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3647D2FD4DE4B00C1F5DE /* MockAPIClient.swift */; };
+		49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3647F2FD4DE4B00C1F5DE /* KeychainService.swift */; };
+		49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364822FD4DE4B00C1F5DE /* PepBadge.swift */; };
+		49C364A02FD4DE7E00C1F5DE /* PepButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364832FD4DE4B00C1F5DE /* PepButton.swift */; };
+		49C364A12FD4DE7E00C1F5DE /* PepCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364842FD4DE4B00C1F5DE /* PepCard.swift */; };
+		49C364A22FD4DE7E00C1F5DE /* PepEmptyState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364852FD4DE4B00C1F5DE /* PepEmptyState.swift */; };
+		49C364A32FD4DE7E00C1F5DE /* PepLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364862FD4DE4B00C1F5DE /* PepLoadingView.swift */; };
+		49C364A42FD4DE7E00C1F5DE /* PepTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364872FD4DE4B00C1F5DE /* PepTextField.swift */; };
+		49C364A52FD4DE7E00C1F5DE /* PepToast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364882FD4DE4B00C1F5DE /* PepToast.swift */; };
+		49C364A62FD4DE7E00C1F5DE /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648A2FD4DE4B00C1F5DE /* Colors.swift */; };
+		49C364A72FD4DE7E00C1F5DE /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */; };
+		49C364A82FD4DE7E00C1F5DE /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648C2FD4DE4B00C1F5DE /* Typography.swift */; };
+		49C364A92FD4DE7E00C1F5DE /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648E2FD4DE4B00C1F5DE /* LoginView.swift */; };
+		49C364AA2FD4DE7E00C1F5DE /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648F2FD4DE4B00C1F5DE /* RegisterView.swift */; };
+		49C364AB2FD4DE7E00C1F5DE /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364902FD4DE4B00C1F5DE /* WelcomeView.swift */; };
+		49C364AD2FDCFBCD00C1F5DE /* PeppyLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364AC2FDCFBCD00C1F5DE /* PeppyLogo.swift */; };
+		49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		49C363BA2FD4D81900C1F5DE /* peppy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = peppy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		49C364732FD4DE4B00C1F5DE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		49C364742FD4DE4B00C1F5DE /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
+		49C364752FD4DE4B00C1F5DE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		49C364762FD4DE4B00C1F5DE /* PeppyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeppyApp.swift; sourceTree = "<group>"; };
+		49C364772FD4DE4B00C1F5DE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		49C364792FD4DE4B00C1F5DE /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		49C3647A2FD4DE4B00C1F5DE /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
+		49C3647B2FD4DE4B00C1F5DE /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIModels.swift; sourceTree = "<group>"; };
+		49C3647C2FD4DE4B00C1F5DE /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
+		49C3647D2FD4DE4B00C1F5DE /* MockAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAPIClient.swift; sourceTree = "<group>"; };
+		49C3647F2FD4DE4B00C1F5DE /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		49C364822FD4DE4B00C1F5DE /* PepBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepBadge.swift; sourceTree = "<group>"; };
+		49C364832FD4DE4B00C1F5DE /* PepButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepButton.swift; sourceTree = "<group>"; };
+		49C364842FD4DE4B00C1F5DE /* PepCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepCard.swift; sourceTree = "<group>"; };
+		49C364852FD4DE4B00C1F5DE /* PepEmptyState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepEmptyState.swift; sourceTree = "<group>"; };
+		49C364862FD4DE4B00C1F5DE /* PepLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepLoadingView.swift; sourceTree = "<group>"; };
+		49C364872FD4DE4B00C1F5DE /* PepTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepTextField.swift; sourceTree = "<group>"; };
+		49C364882FD4DE4B00C1F5DE /* PepToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepToast.swift; sourceTree = "<group>"; };
+		49C3648A2FD4DE4B00C1F5DE /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
+		49C3648C2FD4DE4B00C1F5DE /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		49C3648E2FD4DE4B00C1F5DE /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		49C3648F2FD4DE4B00C1F5DE /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
+		49C364902FD4DE4B00C1F5DE /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		49C364AC2FDCFBCD00C1F5DE /* PeppyLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeppyLogo.swift; sourceTree = "<group>"; };
+		49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets 2.xcassets"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		49C363BC2FD4D81900C1F5DE /* peppy */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = peppy;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		49C363B72FD4D81900C1F5DE /* Frameworks */ = {
@@ -32,7 +79,10 @@
 		49C363B12FD4D81900C1F5DE = {
 			isa = PBXGroup;
 			children = (
-				49C363BC2FD4D81900C1F5DE /* peppy */,
+				49C364782FD4DE4B00C1F5DE /* App */,
+				49C364812FD4DE4B00C1F5DE /* Core */,
+				49C3648D2FD4DE4B00C1F5DE /* Design */,
+				49C364932FD4DE4B00C1F5DE /* Features */,
 				49C363BB2FD4D81900C1F5DE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +93,100 @@
 				49C363BA2FD4D81900C1F5DE /* peppy.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		49C364782FD4DE4B00C1F5DE /* App */ = {
+			isa = PBXGroup;
+			children = (
+				49C364732FD4DE4B00C1F5DE /* AppState.swift */,
+				49C364742FD4DE4B00C1F5DE /* Dependencies.swift */,
+				49C364752FD4DE4B00C1F5DE /* MainTabView.swift */,
+				49C364762FD4DE4B00C1F5DE /* PeppyApp.swift */,
+				49C364772FD4DE4B00C1F5DE /* RootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		49C3647E2FD4DE4B00C1F5DE /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				49C364792FD4DE4B00C1F5DE /* APIClient.swift */,
+				49C3647A2FD4DE4B00C1F5DE /* APIError.swift */,
+				49C3647B2FD4DE4B00C1F5DE /* APIModels.swift */,
+				49C3647C2FD4DE4B00C1F5DE /* Endpoint.swift */,
+				49C3647D2FD4DE4B00C1F5DE /* MockAPIClient.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		49C364802FD4DE4B00C1F5DE /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				49C3647F2FD4DE4B00C1F5DE /* KeychainService.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		49C364812FD4DE4B00C1F5DE /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				49C3647E2FD4DE4B00C1F5DE /* Network */,
+				49C364802FD4DE4B00C1F5DE /* Storage */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		49C364892FD4DE4B00C1F5DE /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				49C364822FD4DE4B00C1F5DE /* PepBadge.swift */,
+				49C364832FD4DE4B00C1F5DE /* PepButton.swift */,
+				49C364842FD4DE4B00C1F5DE /* PepCard.swift */,
+				49C364852FD4DE4B00C1F5DE /* PepEmptyState.swift */,
+				49C364862FD4DE4B00C1F5DE /* PepLoadingView.swift */,
+				49C364872FD4DE4B00C1F5DE /* PepTextField.swift */,
+				49C364882FD4DE4B00C1F5DE /* PepToast.swift */,
+				49C364AC2FDCFBCD00C1F5DE /* PeppyLogo.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		49C3648D2FD4DE4B00C1F5DE /* Design */ = {
+			isa = PBXGroup;
+			children = (
+				49C364892FD4DE4B00C1F5DE /* Components */,
+				49C3648A2FD4DE4B00C1F5DE /* Colors.swift */,
+				49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */,
+				49C3648C2FD4DE4B00C1F5DE /* Typography.swift */,
+				49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */,
+			);
+			path = Design;
+			sourceTree = "<group>";
+		};
+		49C364912FD4DE4B00C1F5DE /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				49C3648E2FD4DE4B00C1F5DE /* LoginView.swift */,
+				49C3648F2FD4DE4B00C1F5DE /* RegisterView.swift */,
+				49C364902FD4DE4B00C1F5DE /* WelcomeView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		49C364922FD4DE4B00C1F5DE /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				49C364912FD4DE4B00C1F5DE /* Views */,
+			);
+			path = Auth;
+			sourceTree = "<group>";
+		};
+		49C364932FD4DE4B00C1F5DE /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				49C364922FD4DE4B00C1F5DE /* Auth */,
+			);
+			path = Features;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -59,9 +203,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				49C363BC2FD4D81900C1F5DE /* peppy */,
 			);
 			name = peppy;
 			packageProductDependencies = (
@@ -109,6 +250,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +261,31 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49C364942FD4DE7E00C1F5DE /* AppState.swift in Sources */,
+				49C364952FD4DE7E00C1F5DE /* Dependencies.swift in Sources */,
+				49C364962FD4DE7E00C1F5DE /* MainTabView.swift in Sources */,
+				49C364972FD4DE7E00C1F5DE /* PeppyApp.swift in Sources */,
+				49C364982FD4DE7E00C1F5DE /* RootView.swift in Sources */,
+				49C364992FD4DE7E00C1F5DE /* APIClient.swift in Sources */,
+				49C364AD2FDCFBCD00C1F5DE /* PeppyLogo.swift in Sources */,
+				49C3649A2FD4DE7E00C1F5DE /* APIError.swift in Sources */,
+				49C3649B2FD4DE7E00C1F5DE /* APIModels.swift in Sources */,
+				49C3649C2FD4DE7E00C1F5DE /* Endpoint.swift in Sources */,
+				49C3649D2FD4DE7E00C1F5DE /* MockAPIClient.swift in Sources */,
+				49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */,
+				49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */,
+				49C364A02FD4DE7E00C1F5DE /* PepButton.swift in Sources */,
+				49C364A12FD4DE7E00C1F5DE /* PepCard.swift in Sources */,
+				49C364A22FD4DE7E00C1F5DE /* PepEmptyState.swift in Sources */,
+				49C364A32FD4DE7E00C1F5DE /* PepLoadingView.swift in Sources */,
+				49C364A42FD4DE7E00C1F5DE /* PepTextField.swift in Sources */,
+				49C364A52FD4DE7E00C1F5DE /* PepToast.swift in Sources */,
+				49C364A62FD4DE7E00C1F5DE /* Colors.swift in Sources */,
+				49C364A72FD4DE7E00C1F5DE /* Spacing.swift in Sources */,
+				49C364A82FD4DE7E00C1F5DE /* Typography.swift in Sources */,
+				49C364A92FD4DE7E00C1F5DE /* LoginView.swift in Sources */,
+				49C364AA2FD4DE7E00C1F5DE /* RegisterView.swift in Sources */,
+				49C364AB2FD4DE7E00C1F5DE /* WelcomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
