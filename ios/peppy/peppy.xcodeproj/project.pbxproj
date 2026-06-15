@@ -33,10 +33,23 @@
 		49C364AB2FD4DE7E00C1F5DE /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364902FD4DE4B00C1F5DE /* WelcomeView.swift */; };
 		49C364AD2FDCFBCD00C1F5DE /* PeppyLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364AC2FDCFBCD00C1F5DE /* PeppyLogo.swift */; };
 		49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */; };
+		49C364B02FEE000100C1F5DE /* OnboardingDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		49C364B92FEE000100C1F5DE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49C363B22FD4D81900C1F5DE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 49C363B92FD4D81900C1F5DE;
+			remoteInfo = peppy;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		49C363BA2FD4D81900C1F5DE /* peppy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = peppy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraftTests.swift; sourceTree = "<group>"; };
+		49C364B22FEE000100C1F5DE /* peppyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = peppyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		49C364732FD4DE4B00C1F5DE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		49C364742FD4DE4B00C1F5DE /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
 		49C364752FD4DE4B00C1F5DE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -73,6 +86,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		49C364B32FEE000100C1F5DE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -83,6 +103,7 @@
 				49C364812FD4DE4B00C1F5DE /* Core */,
 				49C3648D2FD4DE4B00C1F5DE /* Design */,
 				49C364932FD4DE4B00C1F5DE /* Features */,
+				49C364B62FEE000100C1F5DE /* peppyTests */,
 				49C363BB2FD4D81900C1F5DE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -91,8 +112,17 @@
 			isa = PBXGroup;
 			children = (
 				49C363BA2FD4D81900C1F5DE /* peppy.app */,
+				49C364B22FEE000100C1F5DE /* peppyTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		49C364B62FEE000100C1F5DE /* peppyTests */ = {
+			isa = PBXGroup;
+			children = (
+				49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */,
+			);
+			path = peppyTests;
 			sourceTree = "<group>";
 		};
 		49C364782FD4DE4B00C1F5DE /* App */ = {
@@ -211,6 +241,26 @@
 			productReference = 49C363BA2FD4D81900C1F5DE /* peppy.app */;
 			productType = "com.apple.product-type.application";
 		};
+		49C364B72FEE000100C1F5DE /* peppyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 49C364BC2FEE000100C1F5DE /* Build configuration list for PBXNativeTarget "peppyTests" */;
+			buildPhases = (
+				49C364B52FEE000100C1F5DE /* Sources */,
+				49C364B32FEE000100C1F5DE /* Frameworks */,
+				49C364B42FEE000100C1F5DE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				49C364B82FEE000100C1F5DE /* PBXTargetDependency */,
+			);
+			name = peppyTests;
+			packageProductDependencies = (
+			);
+			productName = peppyTests;
+			productReference = 49C364B22FEE000100C1F5DE /* peppyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -223,6 +273,10 @@
 				TargetAttributes = {
 					49C363B92FD4D81900C1F5DE = {
 						CreatedOnToolsVersion = 26.5;
+					};
+					49C364B72FEE000100C1F5DE = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = 49C363B92FD4D81900C1F5DE;
 					};
 				};
 			};
@@ -241,6 +295,7 @@
 			projectRoot = "";
 			targets = (
 				49C363B92FD4D81900C1F5DE /* peppy */,
+				49C364B72FEE000100C1F5DE /* peppyTests */,
 			);
 		};
 /* End PBXProject section */
@@ -251,6 +306,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49C364B42FEE000100C1F5DE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,7 +351,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		49C364B52FEE000100C1F5DE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				49C364B02FEE000100C1F5DE /* OnboardingDraftTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		49C364B82FEE000100C1F5DE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 49C363B92FD4D81900C1F5DE /* peppy */;
+			targetProxy = 49C364B92FEE000100C1F5DE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		49C363C32FD4D81B00C1F5DE /* Debug */ = {
@@ -479,6 +557,62 @@
 			};
 			name = Release;
 		};
+		49C364BA2FEE000100C1F5DE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8U5CH9W9C4;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gabriel.peppyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/peppy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/peppy";
+			};
+			name = Debug;
+		};
+		49C364BB2FEE000100C1F5DE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8U5CH9W9C4;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gabriel.peppyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/peppy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/peppy";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -496,6 +630,15 @@
 			buildConfigurations = (
 				49C363C62FD4D81B00C1F5DE /* Debug */,
 				49C363C72FD4D81B00C1F5DE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		49C364BC2FEE000100C1F5DE /* Build configuration list for PBXNativeTarget "peppyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				49C364BA2FEE000100C1F5DE /* Debug */,
+				49C364BB2FEE000100C1F5DE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
