@@ -1,68 +1,70 @@
-import { apiFetch, ApiError } from "@/lib/api";
-import { appendToWaitlistSheet } from "@/lib/sheets";
+import { appendToWaitlistSheet, SheetWriteError } from "@/lib/sheets";
 
 const PHONE_RE = /^\+?[1-9]\d{6,14}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function normalizePhone(raw: string): string {
+  return raw.replace(/[\s\-().]+/g, "");
+}
+
 export async function POST(request: Request) {
+  let payload: { name?: unknown; phone?: unknown; email?: unknown };
   try {
-    const { phone, email } = await request.json();
+    payload = await request.json();
+  } catch {
+    return Response.json({ detail: "Invalid request." }, { status: 400 });
+  }
 
-    const digits = (phone || "").replace(/[\s\-().]+/g, "");
-    if (!digits || !PHONE_RE.test(digits)) {
-      return Response.json(
-        { detail: "Please enter a valid phone number." },
-        { status: 400 },
-      );
-    }
+  const name = typeof payload.name === "string" ? payload.name.trim() : "";
+  const rawPhone = typeof payload.phone === "string" ? payload.phone : "";
+  const rawEmail = typeof payload.email === "string" ? payload.email : "";
 
-    if (email && !EMAIL_RE.test(email)) {
-      return Response.json(
-        { detail: "Please enter a valid email address." },
-        { status: 400 },
-      );
-    }
+  if (!name) {
+    return Response.json(
+      { detail: "Please enter your name." },
+      { status: 400 },
+    );
+  }
 
-    const payload: { phone: string; email?: string } = { phone: digits };
-    if (email) payload.email = email;
+  const phone = rawPhone ? normalizePhone(rawPhone) : "";
+  if (phone && !PHONE_RE.test(phone)) {
+    return Response.json(
+      { detail: "Please enter a valid phone number." },
+      { status: 400 },
+    );
+  }
 
-    // Write to Google Sheet (fire-and-forget — don't block the response)
-    const sheetPromise = appendToWaitlistSheet(digits, email).catch(() => {});
+  const email = rawEmail ? rawEmail.trim().toLowerCase() : "";
+  if (email && !EMAIL_RE.test(email)) {
+    return Response.json(
+      { detail: "Please enter a valid email address." },
+      { status: 400 },
+    );
+  }
 
-    // Try the backend as well
-    let backendOk = false;
-    let data: unknown = null;
-    try {
-      data = await apiFetch("/api/v1/waitlist", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-      backendOk = true;
-    } catch {
-      // Backend unreachable — sheet is the fallback
-    }
+  if (!phone && !email) {
+    return Response.json(
+      { detail: "Add a phone number or email so we can reach you." },
+      { status: 400 },
+    );
+  }
 
-    await sheetPromise;
-
-    if (backendOk) {
-      return Response.json(data);
-    }
-
-    return Response.json({
-      message: "You're on the list! We'll be in touch.",
-      phone: digits,
-      email: email || null,
-    });
+  try {
+    await appendToWaitlistSheet({ name, phone, email });
   } catch (err) {
-    if (err instanceof ApiError) {
-      return Response.json(
-        { detail: err.message },
-        { status: err.status },
-      );
+    if (err instanceof SheetWriteError) {
+      console.error("[waitlist]", err.message);
+    } else {
+      console.error("[waitlist] unexpected error", err);
     }
     return Response.json(
-      { detail: "Unable to reach the server. Please try again later." },
+      { detail: "Unable to save your spot. Please try again." },
       { status: 503 },
     );
   }
+
+  return Response.json({
+    message: "You're on the list! We'll be in touch.",
+    name,
+  });
 }
