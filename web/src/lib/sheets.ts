@@ -1,32 +1,48 @@
-import { google } from "googleapis";
+export type WaitlistRow = {
+  name: string;
+  phone: string;
+  email: string;
+};
 
-const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
-
-function getAuth() {
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  const sheetId = process.env.GOOGLE_SHEET_ID;
-
-  if (!email || !key || !sheetId) return null;
-
-  return {
-    auth: new google.auth.JWT({ email, key, scopes: SCOPES }),
-    sheetId,
-  };
+export class SheetWriteError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SheetWriteError";
+  }
 }
 
-export async function appendToWaitlistSheet(phone: string, email?: string) {
-  const config = getAuth();
-  if (!config) return;
+export async function appendToWaitlistSheet(row: WaitlistRow): Promise<void> {
+  const url = process.env.WAITLIST_SHEET_WEBHOOK_URL;
+  const secret = process.env.WAITLIST_SHEET_SECRET;
 
-  const sheets = google.sheets({ version: "v4", auth: config.auth });
+  if (!url || !secret) {
+    throw new SheetWriteError("Waitlist sheet webhook is not configured.");
+  }
 
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: config.sheetId,
-    range: "Sheet1!A:C",
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [[phone, email || "", new Date().toISOString()]],
-    },
-  });
+  const body = {
+    secret,
+    name: row.name,
+    phone: row.phone,
+    email: row.email,
+    timestamp: new Date().toISOString(),
+  };
+
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    throw new SheetWriteError(
+      `Sheet webhook fetch failed: ${(err as Error).message}`,
+    );
+  }
+
+  if (!res.ok) {
+    throw new SheetWriteError(
+      `Sheet webhook returned status ${res.status}`,
+    );
+  }
 }
