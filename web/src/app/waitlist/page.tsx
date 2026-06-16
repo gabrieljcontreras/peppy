@@ -61,7 +61,7 @@ export default function WaitlistPage() {
 
           <Reveal delay={200}>
             <p className="mt-4 text-[13px] text-ink-500">
-              No spam, ever. We&apos;ll only text you about your early access invite.
+              No spam, ever. We&apos;ll only reach out about your early access invite.
             </p>
           </Reveal>
         </div>
