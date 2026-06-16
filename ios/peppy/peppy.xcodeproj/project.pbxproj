@@ -37,6 +37,10 @@
 		49C364BD2FEE100100C1F5DE /* OnboardingDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */; };
 		49C364C12FEE200100C1F5DE /* OnboardingStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */; };
 		49C364C32FEE200100C1F5DE /* OnboardingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364C42FEE200100C1F5DE /* OnboardingStore.swift */; };
+		49C364C52FEE300100C1F5DE /* PermissionServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364C62FEE300100C1F5DE /* PermissionServiceTests.swift */; };
+		49C364C72FEE300100C1F5DE /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364C82FEE300100C1F5DE /* HealthKitService.swift */; };
+		49C364C92FEE300100C1F5DE /* NotificationPermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364CA2FEE300100C1F5DE /* NotificationPermissionService.swift */; };
+		49C364CD2FEE300100C1F5DE /* PermissionOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +60,11 @@
 		49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraft.swift; sourceTree = "<group>"; };
 		49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStoreTests.swift; sourceTree = "<group>"; };
 		49C364C42FEE200100C1F5DE /* OnboardingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStore.swift; sourceTree = "<group>"; };
+		49C364C62FEE300100C1F5DE /* PermissionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionServiceTests.swift; sourceTree = "<group>"; };
+		49C364C82FEE300100C1F5DE /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		49C364CA2FEE300100C1F5DE /* NotificationPermissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermissionService.swift; sourceTree = "<group>"; };
+		49C364CC2FEE300100C1F5DE /* peppy.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = peppy.entitlements; sourceTree = "<group>"; };
+		49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionOutcome.swift; sourceTree = "<group>"; };
 		49C364732FD4DE4B00C1F5DE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		49C364742FD4DE4B00C1F5DE /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
 		49C364752FD4DE4B00C1F5DE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -110,6 +119,7 @@
 				49C3648D2FD4DE4B00C1F5DE /* Design */,
 				49C364932FD4DE4B00C1F5DE /* Features */,
 				49C364B62FEE000100C1F5DE /* peppyTests */,
+				49C364CC2FEE300100C1F5DE /* peppy.entitlements */,
 				49C363BB2FD4D81900C1F5DE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -128,6 +138,7 @@
 			children = (
 				49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */,
 				49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */,
+				49C364C62FEE300100C1F5DE /* PermissionServiceTests.swift */,
 			);
 			path = peppyTests;
 			sourceTree = "<group>";
@@ -165,10 +176,21 @@
 			path = Storage;
 			sourceTree = "<group>";
 		};
+		49C364CB2FEE300100C1F5DE /* Permissions */ = {
+			isa = PBXGroup;
+			children = (
+				49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */,
+				49C364C82FEE300100C1F5DE /* HealthKitService.swift */,
+				49C364CA2FEE300100C1F5DE /* NotificationPermissionService.swift */,
+			);
+			path = Permissions;
+			sourceTree = "<group>";
+		};
 		49C364812FD4DE4B00C1F5DE /* Core */ = {
 			isa = PBXGroup;
 			children = (
 				49C3647E2FD4DE4B00C1F5DE /* Network */,
+				49C364CB2FEE300100C1F5DE /* Permissions */,
 				49C364802FD4DE4B00C1F5DE /* Storage */,
 			);
 			path = Core;
@@ -298,6 +320,11 @@
 				TargetAttributes = {
 					49C363B92FD4D81900C1F5DE = {
 						CreatedOnToolsVersion = 26.5;
+						SystemCapabilities = {
+							com.apple.HealthKit = {
+								enabled = 1;
+							};
+						};
 					};
 					49C364B72FEE000100C1F5DE = {
 						CreatedOnToolsVersion = 26.5;
@@ -361,7 +388,10 @@
 				49C3649D2FD4DE7E00C1F5DE /* MockAPIClient.swift in Sources */,
 				49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */,
 				49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */,
+				49C364C72FEE300100C1F5DE /* HealthKitService.swift in Sources */,
 				49C364C32FEE200100C1F5DE /* OnboardingStore.swift in Sources */,
+				49C364C92FEE300100C1F5DE /* NotificationPermissionService.swift in Sources */,
+				49C364CD2FEE300100C1F5DE /* PermissionOutcome.swift in Sources */,
 				49C364A02FD4DE7E00C1F5DE /* PepButton.swift in Sources */,
 				49C364A12FD4DE7E00C1F5DE /* PepCard.swift in Sources */,
 				49C364A22FD4DE7E00C1F5DE /* PepEmptyState.swift in Sources */,
@@ -384,6 +414,7 @@
 			files = (
 				49C364B02FEE000100C1F5DE /* OnboardingDraftTests.swift in Sources */,
 				49C364C12FEE200100C1F5DE /* OnboardingStoreTests.swift in Sources */,
+				49C364C52FEE300100C1F5DE /* PermissionServiceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -524,11 +555,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = peppy.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8U5CH9W9C4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Peppy reads selected health data to personalize your baseline, trends, and insights.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -557,11 +590,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = peppy.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8U5CH9W9C4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Peppy reads selected health data to personalize your baseline, trends, and insights.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -6,17 +6,23 @@ final class Dependencies {
     let keychain: KeychainServiceProtocol
     let appState: AppState
     let onboardingStore: OnboardingStoreProtocol
+    let healthKit: HealthKitServiceProtocol
+    let notifications: NotificationPermissionServiceProtocol
 
     init(
         api: APIClientProtocol,
         keychain: KeychainServiceProtocol,
         appState: AppState,
-        onboardingStore: OnboardingStoreProtocol
+        onboardingStore: OnboardingStoreProtocol,
+        healthKit: HealthKitServiceProtocol,
+        notifications: NotificationPermissionServiceProtocol
     ) {
         self.api = api
         self.keychain = keychain
         self.appState = appState
         self.onboardingStore = onboardingStore
+        self.healthKit = healthKit
+        self.notifications = notifications
     }
 
     static func live() -> Dependencies {
@@ -24,12 +30,16 @@ final class Dependencies {
         let appState = AppState()
         let api = APIClient(keychain: keychain)
         let onboardingStore = UserDefaultsOnboardingStore()
+        let healthKit = HealthKitService()
+        let notifications = NotificationPermissionService()
 
         return Dependencies(
             api: api,
             keychain: keychain,
             appState: appState,
-            onboardingStore: onboardingStore
+            onboardingStore: onboardingStore,
+            healthKit: healthKit,
+            notifications: notifications
         )
     }
 
@@ -38,12 +48,16 @@ final class Dependencies {
         let appState = AppState()
         let api = MockAPIClient()
         let onboardingStore = InMemoryOnboardingStore()
+        let healthKit = MockHealthKitService(outcome: .requested)
+        let notifications = MockNotificationPermissionService(outcome: .authorized)
 
         return Dependencies(
             api: api,
             keychain: keychain,
             appState: appState,
-            onboardingStore: onboardingStore
+            onboardingStore: onboardingStore,
+            healthKit: healthKit,
+            notifications: notifications
         )
     }
 }

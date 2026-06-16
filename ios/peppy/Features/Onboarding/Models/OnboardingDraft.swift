@@ -16,15 +16,6 @@ enum PermissionChoice: String, Codable {
     case skipped
 }
 
-enum PermissionOutcome: String, Codable {
-    case notDetermined
-    case requested
-    case authorized
-    case denied
-    case unavailable
-    case failed
-}
-
 enum OnboardingGoal: String, Codable, CaseIterable, Identifiable {
     case trackProtocols
     case understandBody
