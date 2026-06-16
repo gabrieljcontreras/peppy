@@ -1,23 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  randomPhoneSample,
+  randomEmailSample,
+} from "@/lib/placeholders";
 
 type Status = "idle" | "loading" | "success" | "error";
 
 const PHONE_RE = /^\+?[1-9]\d{6,14}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function normalizePhone(raw: string): string {
+  return raw.replace(/[\s\-().]+/g, "");
+}
+
 export function WaitlistForm() {
+  const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [showEmail, setShowEmail] = useState(false);
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
-  const digits = phone.replace(/[\s\-().]+/g, "");
-  const isValidPhone = PHONE_RE.test(digits);
-  const isValidEmail = !email || EMAIL_RE.test(email);
-  const canSubmit = isValidPhone && isValidEmail;
+  const phonePlaceholder = useMemo(() => randomPhoneSample(), []);
+  const emailPlaceholder = useMemo(() => randomEmailSample(), []);
+
+  const trimmedName = name.trim();
+  const normalizedPhone = phone ? normalizePhone(phone) : "";
+  const trimmedEmail = email.trim();
+
+  const hasValidPhone = normalizedPhone !== "" && PHONE_RE.test(normalizedPhone);
+  const hasValidEmail = trimmedEmail !== "" && EMAIL_RE.test(trimmedEmail);
+
+  const phoneFieldValid = normalizedPhone === "" || hasValidPhone;
+  const emailFieldValid = trimmedEmail === "" || hasValidEmail;
+
+  const canSubmit =
+    trimmedName.length > 0 &&
+    phoneFieldValid &&
+    emailFieldValid &&
+    (hasValidPhone || hasValidEmail);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,17 +49,20 @@ export function WaitlistForm() {
     setErrorMsg("");
 
     try {
-      const payload: { phone: string; email?: string } = { phone: digits };
-      if (email) payload.email = email;
-
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          name: trimmedName,
+          phone: normalizedPhone,
+          email: trimmedEmail,
+        }),
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ detail: "Something went wrong." }));
+        const data = await res
+          .json()
+          .catch(() => ({ detail: "Something went wrong." }));
         throw new Error(data.detail || "Something went wrong.");
       }
 
@@ -50,7 +75,7 @@ export function WaitlistForm() {
 
   if (status === "success") {
     return (
-      <div className="rounded-2xl border border-success/30 bg-success/10 px-6 py-8 text-center">
+      <div className="rounded-2xl border border-success/30 bg-success/10 p-6 text-center">
         <div className="text-[28px]">&#10003;</div>
         <h3 className="mt-2 text-[20px] font-semibold text-ink-900">
           You&apos;re on the list
@@ -63,48 +88,101 @@ export function WaitlistForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <input
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="+1 (555) 123-4567"
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-2xl border border-border-default bg-cream-50 p-6 text-left"
+    >
+      <div className="flex flex-col gap-4">
+        <Field
+          id="waitlist-name"
+          label="Your name"
+          value={name}
+          onChange={setName}
+          placeholder="Alex Rivera"
+          type="text"
+          autoComplete="name"
           required
-          className="flex-1 rounded-full border border-border-default bg-cream-50 px-5 py-3.5 text-[15px] text-ink-900 placeholder:text-ink-500 outline-none transition-colors focus:border-rust-500 focus:ring-2 focus:ring-rust-500/20"
         />
+
+        <Field
+          id="waitlist-phone"
+          label="Phone number"
+          value={phone}
+          onChange={setPhone}
+          placeholder={phonePlaceholder}
+          type="tel"
+          autoComplete="tel"
+        />
+
+        <Field
+          id="waitlist-email"
+          label="Email"
+          value={email}
+          onChange={setEmail}
+          placeholder={emailPlaceholder}
+          type="email"
+          autoComplete="email"
+        />
+
+        <p className="text-[13px] text-ink-500">
+          We&apos;ll use whatever you prefer.
+        </p>
+
         <button
           type="submit"
           disabled={!canSubmit || status === "loading"}
-          className="rounded-full bg-ink-900 px-6 py-3.5 text-[15px] font-semibold text-cream-50 transition-all hover:bg-ink-700 hover:-translate-y-px disabled:opacity-50 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
+          className="w-full rounded-xl bg-ink-900 px-6 py-3.5 text-[15px] font-semibold text-cream-50 transition-all hover:bg-ink-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {status === "loading" ? "Joining..." : "Join the waitlist"}
         </button>
+
+        {status === "error" && (
+          <p className="text-[13px] text-rust-600">{errorMsg}</p>
+        )}
       </div>
-
-      {!showEmail && (
-        <button
-          type="button"
-          onClick={() => setShowEmail(true)}
-          className="self-start text-[13px] text-ink-500 underline decoration-ink-300 underline-offset-2 transition-colors hover:text-rust-500 hover:decoration-rust-400"
-        >
-          + Add an email too
-        </button>
-      )}
-
-      {showEmail && (
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com (optional)"
-          className="rounded-full border border-border-default bg-cream-50 px-5 py-3.5 text-[15px] text-ink-900 placeholder:text-ink-500 outline-none transition-colors focus:border-rust-500 focus:ring-2 focus:ring-rust-500/20"
-        />
-      )}
-
-      {status === "error" && (
-        <p className="text-[13px] text-rust-600">{errorMsg}</p>
-      )}
     </form>
+  );
+}
+
+type FieldProps = {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (next: string) => void;
+  placeholder: string;
+  type: "text" | "tel" | "email";
+  autoComplete?: string;
+  required?: boolean;
+};
+
+function Field({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+  type,
+  autoComplete,
+  required,
+}: FieldProps) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label
+        htmlFor={id}
+        className="text-[13px] font-medium text-ink-700"
+      >
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        required={required}
+        className="rounded-xl border border-border-default bg-cream-50 px-4 py-3 text-[15px] text-ink-900 placeholder:text-ink-500 outline-none transition-colors focus:border-rust-500 focus:ring-2 focus:ring-rust-500/20"
+      />
+    </div>
   );
 }
