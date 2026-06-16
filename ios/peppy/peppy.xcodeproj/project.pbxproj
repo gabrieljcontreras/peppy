@@ -34,6 +34,7 @@
 		49C364AD2FDCFBCD00C1F5DE /* PeppyLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364AC2FDCFBCD00C1F5DE /* PeppyLogo.swift */; };
 		49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */; };
 		49C364B02FEE000100C1F5DE /* OnboardingDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */; };
+		49C364BD2FEE100100C1F5DE /* OnboardingDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +51,7 @@
 		49C363BA2FD4D81900C1F5DE /* peppy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = peppy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraftTests.swift; sourceTree = "<group>"; };
 		49C364B22FEE000100C1F5DE /* peppyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = peppyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraft.swift; sourceTree = "<group>"; };
 		49C364732FD4DE4B00C1F5DE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		49C364742FD4DE4B00C1F5DE /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
 		49C364752FD4DE4B00C1F5DE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -211,10 +213,27 @@
 			path = Auth;
 			sourceTree = "<group>";
 		};
+		49C364BF2FEE100100C1F5DE /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				49C364C02FEE100100C1F5DE /* Models */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		49C364C02FEE100100C1F5DE /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		49C364932FD4DE4B00C1F5DE /* Features */ = {
 			isa = PBXGroup;
 			children = (
 				49C364922FD4DE4B00C1F5DE /* Auth */,
+				49C364BF2FEE100100C1F5DE /* Onboarding */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -348,6 +367,7 @@
 				49C364A92FD4DE7E00C1F5DE /* LoginView.swift in Sources */,
 				49C364AA2FD4DE7E00C1F5DE /* RegisterView.swift in Sources */,
 				49C364AB2FD4DE7E00C1F5DE /* WelcomeView.swift in Sources */,
+				49C364BD2FEE100100C1F5DE /* OnboardingDraft.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
