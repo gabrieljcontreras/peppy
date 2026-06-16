@@ -98,7 +98,7 @@ export function WaitlistForm() {
           label="Your name"
           value={name}
           onChange={setName}
-          placeholder="Alex Rivera"
+          placeholder="Your full name"
           type="text"
           autoComplete="name"
           required
