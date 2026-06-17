@@ -9,6 +9,7 @@ final class Dependencies {
     let healthKit: HealthKitServiceProtocol
     let notifications: NotificationPermissionServiceProtocol
     let flow: AppFlowCoordinator
+    let onboardingViewModel: OnboardingViewModel
 
     init(
         api: APIClientProtocol,
@@ -17,7 +18,8 @@ final class Dependencies {
         onboardingStore: OnboardingStoreProtocol,
         healthKit: HealthKitServiceProtocol,
         notifications: NotificationPermissionServiceProtocol,
-        flow: AppFlowCoordinator
+        flow: AppFlowCoordinator,
+        onboardingViewModel: OnboardingViewModel
     ) {
         self.api = api
         self.keychain = keychain
@@ -26,6 +28,7 @@ final class Dependencies {
         self.healthKit = healthKit
         self.notifications = notifications
         self.flow = flow
+        self.onboardingViewModel = onboardingViewModel
     }
 
     static func live() -> Dependencies {
@@ -41,6 +44,11 @@ final class Dependencies {
             appState: appState,
             onboardingStore: onboardingStore
         )
+        let onboardingViewModel = OnboardingViewModel(
+            store: onboardingStore,
+            healthKit: healthKit,
+            notifications: notifications
+        )
 
         return Dependencies(
             api: api,
@@ -49,7 +57,8 @@ final class Dependencies {
             onboardingStore: onboardingStore,
             healthKit: healthKit,
             notifications: notifications,
-            flow: flow
+            flow: flow,
+            onboardingViewModel: onboardingViewModel
         )
     }
 
@@ -66,6 +75,11 @@ final class Dependencies {
             appState: appState,
             onboardingStore: onboardingStore
         )
+        let onboardingViewModel = OnboardingViewModel(
+            store: onboardingStore,
+            healthKit: healthKit,
+            notifications: notifications
+        )
 
         return Dependencies(
             api: api,
@@ -74,7 +88,8 @@ final class Dependencies {
             onboardingStore: onboardingStore,
             healthKit: healthKit,
             notifications: notifications,
-            flow: flow
+            flow: flow,
+            onboardingViewModel: onboardingViewModel
         )
     }
 }
