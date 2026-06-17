@@ -53,6 +53,12 @@
 		49C364E42FEE700100C1F5DE /* OnboardingIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364E52FEE700100C1F5DE /* OnboardingIntroView.swift */; };
 		49C364E62FEE700100C1F5DE /* BaselineStepsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364E72FEE700100C1F5DE /* BaselineStepsView.swift */; };
 		49C364E82FEE700100C1F5DE /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364E92FEE700100C1F5DE /* OnboardingFlowView.swift */; };
+		49C364EA2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364EB2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift */; };
+		49C364EC2FEE900100C1F5DE /* PeptideCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364ED2FEE900100C1F5DE /* PeptideCatalog.swift */; };
+		49C364EE2FEE900100C1F5DE /* PeptidesStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364EF2FEE900100C1F5DE /* PeptidesStepView.swift */; };
+		49C364F02FEE900100C1F5DE /* MedicationsStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364F12FEE900100C1F5DE /* MedicationsStepView.swift */; };
+		49C364F22FEE900100C1F5DE /* WorkoutStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364F32FEE900100C1F5DE /* WorkoutStepView.swift */; };
+		49C364F42FEE900100C1F5DE /* GoalsStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364F52FEE900100C1F5DE /* GoalsStepView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -89,6 +95,12 @@
 		49C364E52FEE700100C1F5DE /* OnboardingIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingIntroView.swift; sourceTree = "<group>"; };
 		49C364E72FEE700100C1F5DE /* BaselineStepsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaselineStepsView.swift; sourceTree = "<group>"; };
 		49C364E92FEE700100C1F5DE /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
+		49C364EB2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingQuestionnaireStepsTests.swift; sourceTree = "<group>"; };
+		49C364ED2FEE900100C1F5DE /* PeptideCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeptideCatalog.swift; sourceTree = "<group>"; };
+		49C364EF2FEE900100C1F5DE /* PeptidesStepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeptidesStepView.swift; sourceTree = "<group>"; };
+		49C364F12FEE900100C1F5DE /* MedicationsStepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicationsStepView.swift; sourceTree = "<group>"; };
+		49C364F32FEE900100C1F5DE /* WorkoutStepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStepView.swift; sourceTree = "<group>"; };
+		49C364F52FEE900100C1F5DE /* GoalsStepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsStepView.swift; sourceTree = "<group>"; };
 		49C364732FD4DE4B00C1F5DE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		49C364742FD4DE4B00C1F5DE /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
 		49C364752FD4DE4B00C1F5DE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -164,6 +176,7 @@
 				49C364E32FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift */,
 				49C364DA2FEE600100C1F5DE /* OnboardingComponentTests.swift */,
 				49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */,
+				49C364EB2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift */,
 				49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */,
 				49C364D52FEE500100C1F5DE /* OnboardingViewModelTests.swift */,
 				49C364C62FEE300100C1F5DE /* PermissionServiceTests.swift */,
@@ -218,11 +231,20 @@
 		49C364812FD4DE4B00C1F5DE /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				49C364F62FEE900100C1F5DE /* Data */,
 				49C3647E2FD4DE4B00C1F5DE /* Network */,
 				49C364CB2FEE300100C1F5DE /* Permissions */,
 				49C364802FD4DE4B00C1F5DE /* Storage */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		49C364F62FEE900100C1F5DE /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				49C364ED2FEE900100C1F5DE /* PeptideCatalog.swift */,
+			);
+			path = Data;
 			sourceTree = "<group>";
 		};
 		49C364892FD4DE4B00C1F5DE /* Components */ = {
@@ -302,9 +324,13 @@
 			isa = PBXGroup;
 			children = (
 				49C364E72FEE700100C1F5DE /* BaselineStepsView.swift */,
+				49C364F52FEE900100C1F5DE /* GoalsStepView.swift */,
+				49C364F12FEE900100C1F5DE /* MedicationsStepView.swift */,
 				49C364E92FEE700100C1F5DE /* OnboardingFlowView.swift */,
 				49C364E52FEE700100C1F5DE /* OnboardingIntroView.swift */,
 				49C364E02FEE600100C1F5DE /* OnboardingScaffold.swift */,
+				49C364EF2FEE900100C1F5DE /* PeptidesStepView.swift */,
+				49C364F32FEE900100C1F5DE /* WorkoutStepView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -455,10 +481,15 @@
 				49C364E42FEE700100C1F5DE /* OnboardingIntroView.swift in Sources */,
 				49C364A42FD4DE7E00C1F5DE /* PepTextField.swift in Sources */,
 				49C364E62FEE700100C1F5DE /* BaselineStepsView.swift in Sources */,
+				49C364F02FEE900100C1F5DE /* MedicationsStepView.swift in Sources */,
+				49C364F42FEE900100C1F5DE /* GoalsStepView.swift in Sources */,
 				49C364A52FD4DE7E00C1F5DE /* PepToast.swift in Sources */,
+				49C364EC2FEE900100C1F5DE /* PeptideCatalog.swift in Sources */,
 				49C364DF2FEE600100C1F5DE /* OnboardingScaffold.swift in Sources */,
 				49C364E82FEE700100C1F5DE /* OnboardingFlowView.swift in Sources */,
+				49C364EE2FEE900100C1F5DE /* PeptidesStepView.swift in Sources */,
 				49C364A62FD4DE7E00C1F5DE /* Colors.swift in Sources */,
+				49C364F22FEE900100C1F5DE /* WorkoutStepView.swift in Sources */,
 				49C364A72FD4DE7E00C1F5DE /* Spacing.swift in Sources */,
 				49C364A82FD4DE7E00C1F5DE /* Typography.swift in Sources */,
 				49C364A92FD4DE7E00C1F5DE /* LoginView.swift in Sources */,
@@ -476,6 +507,7 @@
 				49C364E22FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift in Sources */,
 				49C364D92FEE600100C1F5DE /* OnboardingComponentTests.swift in Sources */,
 				49C364B02FEE000100C1F5DE /* OnboardingDraftTests.swift in Sources */,
+				49C364EA2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift in Sources */,
 				49C364C12FEE200100C1F5DE /* OnboardingStoreTests.swift in Sources */,
 				49C364D42FEE500100C1F5DE /* OnboardingViewModelTests.swift in Sources */,
 				49C364C52FEE300100C1F5DE /* PermissionServiceTests.swift in Sources */,

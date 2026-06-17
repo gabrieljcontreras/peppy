@@ -28,7 +28,7 @@ struct OnboardingFlowView: View {
                 )
             case .questionnaire(let step):
                 questionnaire(model: model, step: step) {
-                    baselineContent(for: model.draft.currentStep, model: model)
+                    questionnaireContent(for: model.draft.currentStep, model: model)
                 }
             case .placeholder:
                 Color.pepBackground
@@ -68,13 +68,45 @@ struct OnboardingFlowView: View {
                     subtitle: "This creates your starting point. You can update it during daily check-ins."
                 )
             )
-        case .peptides, .medications, .workout, .goals, .health, .notifications:
+        case .peptides:
+            return .questionnaire(
+                OnboardingQuestionnaireStep(
+                    step: 4,
+                    title: "What peptides are you taking?",
+                    subtitle: "Select any you're currently using or planning to start. You can always update this later."
+                )
+            )
+        case .medications:
+            return .questionnaire(
+                OnboardingQuestionnaireStep(
+                    step: 5,
+                    title: "Any other medications?",
+                    subtitle: "This is optional. It helps peppy flag potential interactions and provide safer insights."
+                )
+            )
+        case .workout:
+            return .questionnaire(
+                OnboardingQuestionnaireStep(
+                    step: 6,
+                    title: "How often do you work out?",
+                    subtitle: "This helps peppy understand your activity level and tailor recovery insights."
+                )
+            )
+        case .goals:
+            return .questionnaire(
+                OnboardingQuestionnaireStep(
+                    step: 7,
+                    title: "What do you hope to get out of peppy?",
+                    subtitle: "Pick as many as you'd like. This helps us shape your experience."
+                )
+            )
+        case .health, .notifications:
             return .placeholder
         }
     }
 
     @ViewBuilder
-    private func baselineContent(for step: OnboardingStep, model: OnboardingViewModel) -> some View {
+    private func questionnaireContent(for step: OnboardingStep, model: OnboardingViewModel) -> some View {
         @Bindable var model = model
 
         switch step {
@@ -107,7 +139,33 @@ struct OnboardingFlowView: View {
                     set: { model.setWeightKilograms(model.draft.weightKilograms, unit: $0) }
                 )
             )
-        case .intro, .peptides, .medications, .workout, .goals, .health, .notifications:
+        case .peptides:
+            PeptidesStepView(
+                selected: model.draft.selectedPeptides,
+                toggle: model.togglePeptide
+            )
+        case .medications:
+            MedicationsStepView(
+                text: Binding(
+                    get: { model.draft.otherMedications ?? "" },
+                    set: { model.setOtherMedications(MedicationsStepView.limitedText($0)) }
+                )
+            )
+        case .workout:
+            WorkoutStepView(
+                selectedDays: model.draft.workoutDaysPerWeek,
+                select: model.setWorkoutDays
+            )
+        case .goals:
+            GoalsStepView(
+                selected: model.draft.goals,
+                toggle: model.toggleGoal,
+                customGoal: Binding(
+                    get: { model.draft.customGoal ?? "" },
+                    set: model.setCustomGoal
+                )
+            )
+        case .intro, .health, .notifications:
             EmptyView()
         }
     }
@@ -163,5 +221,15 @@ struct OnboardingFlowView: View {
     return OnboardingFlowView()
         .withDependencies(deps)
         .environment(\.dynamicTypeSize, .accessibility3)
+        .previewLayout(.fixed(width: 393, height: 852))
+}
+
+#Preview("Onboarding Flow - Peptides") {
+    let deps = Dependencies.mock()
+    deps.onboardingViewModel.draft.currentStep = .peptides
+    deps.onboardingViewModel.draft.selectedPeptides = ["Retatrutide", "BPC-157"]
+
+    return OnboardingFlowView()
+        .withDependencies(deps)
         .previewLayout(.fixed(width: 393, height: 852))
 }
