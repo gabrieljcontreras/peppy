@@ -99,11 +99,50 @@ final class OnboardingBaselineFlowTests: XCTestCase {
         )
     }
 
-    func testFlowUsesPlaceholderForLaterStepsUntilTasksNineAndTen() {
-        XCTAssertEqual(OnboardingFlowView.screen(for: .peptides), .placeholder)
-        XCTAssertEqual(OnboardingFlowView.screen(for: .medications), .placeholder)
-        XCTAssertEqual(OnboardingFlowView.screen(for: .workout), .placeholder)
-        XCTAssertEqual(OnboardingFlowView.screen(for: .goals), .placeholder)
+    func testFlowScreenMetadataMatchesQuestionnaireCompletionSteps() {
+        XCTAssertEqual(
+            OnboardingFlowView.screen(for: .peptides),
+            .questionnaire(
+                OnboardingQuestionnaireStep(
+                    step: 4,
+                    title: "What peptides are you taking?",
+                    subtitle: "Select any you're currently using or planning to start. You can always update this later."
+                )
+            )
+        )
+        XCTAssertEqual(
+            OnboardingFlowView.screen(for: .medications),
+            .questionnaire(
+                OnboardingQuestionnaireStep(
+                    step: 5,
+                    title: "Any other medications?",
+                    subtitle: "This is optional. It helps peppy flag potential interactions and provide safer insights."
+                )
+            )
+        )
+        XCTAssertEqual(
+            OnboardingFlowView.screen(for: .workout),
+            .questionnaire(
+                OnboardingQuestionnaireStep(
+                    step: 6,
+                    title: "How often do you work out?",
+                    subtitle: "This helps peppy understand your activity level and tailor recovery insights."
+                )
+            )
+        )
+        XCTAssertEqual(
+            OnboardingFlowView.screen(for: .goals),
+            .questionnaire(
+                OnboardingQuestionnaireStep(
+                    step: 7,
+                    title: "What do you hope to get out of peppy?",
+                    subtitle: "Pick as many as you'd like. This helps us shape your experience."
+                )
+            )
+        )
+    }
+
+    func testFlowUsesPlaceholderForPermissionStepsUntilTaskTen() {
         XCTAssertEqual(OnboardingFlowView.screen(for: .health), .placeholder)
         XCTAssertEqual(OnboardingFlowView.screen(for: .notifications), .placeholder)
     }

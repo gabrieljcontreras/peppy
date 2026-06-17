@@ -31,4 +31,19 @@ final class OnboardingDraftTests: XCTestCase {
         XCTAssertNil(draft.weightKilograms)
         XCTAssertTrue(draft.selectedPeptides.isEmpty)
     }
+
+    func testPeptideCatalogIsAlphabetizedUniqueAndHasNoDoseGuidance() {
+        XCTAssertEqual(
+            PeptideCatalog.names,
+            PeptideCatalog.names.sorted {
+                $0.localizedCaseInsensitiveCompare($1) == .orderedAscending
+            }
+        )
+        XCTAssertEqual(Set(PeptideCatalog.names).count, PeptideCatalog.names.count)
+        XCTAssertFalse(
+            PeptideCatalog.names.contains { name in
+                name.range(of: #"\d+\s*(mg|mcg|IU)"#, options: .regularExpression) != nil
+            }
+        )
+    }
 }
