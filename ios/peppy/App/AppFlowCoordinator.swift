@@ -20,6 +20,7 @@ enum AppRoute: Equatable {
 final class AppFlowCoordinator {
     var route: AppRoute = .launching
     var launchError: APIError?
+    private var authenticationBackStack: [AppRoute] = []
 
     private let api: APIClientProtocol
     private let keychain: KeychainServiceProtocol
@@ -40,6 +41,7 @@ final class AppFlowCoordinator {
 
     func resolveLaunch() async {
         launchError = nil
+        authenticationBackStack = []
 
         guard keychain.get(KeychainKeys.accessToken) != nil else {
             resolveSignedOutRoute()
@@ -67,14 +69,39 @@ final class AppFlowCoordinator {
     }
 
     func showSignIn() {
+        switch route {
+        case .onboarding:
+            authenticationBackStack = [.onboarding]
+        case .readySummary:
+            authenticationBackStack = [.readySummary]
+        case .authentication(.register):
+            if authenticationBackStack.last == .authentication(.signIn) {
+                authenticationBackStack.removeLast()
+            } else if authenticationBackStack.isEmpty && hasCompletedAnonymousDraft {
+                authenticationBackStack = [.readySummary]
+            }
+        default:
+            if hasCompletedAnonymousDraft {
+                authenticationBackStack = [.readySummary]
+            }
+        }
         route = .authentication(.signIn)
     }
 
     func showRegistration() {
+        switch route {
+        case .readySummary, .futurePaywall:
+            authenticationBackStack = [.readySummary]
+        case .authentication(.signIn):
+            authenticationBackStack.append(.authentication(.signIn))
+        default:
+            authenticationBackStack = hasCompletedAnonymousDraft ? [.readySummary] : []
+        }
         route = .authentication(.register)
     }
 
     func showReadySummary() {
+        authenticationBackStack = []
         route = .readySummary
     }
 
@@ -83,12 +110,14 @@ final class AppFlowCoordinator {
     }
 
     func advancePastFuturePaywall() {
+        authenticationBackStack = [.readySummary]
         route = .authentication(.register)
     }
 
     func didAuthenticate(user: User) {
         onboardingStore.associateAnonymousDraft(with: user.id)
         appState.login(user: user)
+        authenticationBackStack = []
         route = .dashboard
     }
 
@@ -96,16 +125,31 @@ final class AppFlowCoordinator {
         keychain.delete(KeychainKeys.accessToken)
         keychain.delete(KeychainKeys.refreshToken)
         appState.logout()
+        authenticationBackStack = []
         route = .authentication(.signIn)
+    }
+
+    var shouldShowAuthenticationBackButton: Bool {
+        !authenticationBackStack.isEmpty
+    }
+
+    func goBackFromAuthentication() {
+        guard let previousRoute = authenticationBackStack.popLast() else { return }
+        route = previousRoute
     }
 
     private func resolveSignedOutRoute() {
         if onboardingStore.hasKnownAccount {
+            authenticationBackStack = []
             route = .authentication(.signIn)
         } else if onboardingStore.loadAnonymousDraft()?.isComplete == true {
             route = .readySummary
         } else {
             route = .onboarding
         }
+    }
+
+    private var hasCompletedAnonymousDraft: Bool {
+        onboardingStore.loadAnonymousDraft()?.isComplete == true
     }
 }

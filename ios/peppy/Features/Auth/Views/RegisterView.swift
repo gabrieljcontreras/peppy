@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct RegisterView: View {
+    static let backButtonAccessibilityLabel = "Back"
+
     @Environment(\.dependencies) var deps
-    @Environment(\.dismiss) var dismiss
 
     @State private var fullName = ""
     @State private var email = ""
@@ -17,7 +18,9 @@ struct RegisterView: View {
                 VStack(spacing: 0) {
                     ZStack {
                         HStack {
-                            backButton
+                            if deps.flow.shouldShowAuthenticationBackButton {
+                                backButton
+                            }
                             Spacer()
                         }
                         PeppyLogo(size: 35, showsWordmark: true)
@@ -88,7 +91,10 @@ struct RegisterView: View {
                     HStack(spacing: 3) {
                         Text("Already have an account?")
                             .foregroundColor(.pepTextSecondary)
-                        NavigationLink("Sign in.", destination: LoginView())
+                        Button("Sign in.") {
+                            deps.flow.showSignIn()
+                        }
+                        .buttonStyle(.plain)
                             .foregroundColor(.pepPrimary)
                     }
                     .font(.system(size: 14, weight: .medium))
@@ -106,7 +112,7 @@ struct RegisterView: View {
 
     private var backButton: some View {
         Button {
-            dismiss()
+            deps.flow.goBackFromAuthentication()
         } label: {
             Image(systemName: "chevron.left")
                 .font(.system(size: 15, weight: .semibold))
@@ -116,6 +122,7 @@ struct RegisterView: View {
                 .clipShape(Circle())
                 .pepCardShadow()
         }
+        .accessibilityLabel(Self.backButtonAccessibilityLabel)
     }
 
     private var termsButton: some View {
@@ -185,13 +192,18 @@ struct RegisterView: View {
             try deps.keychain.save(auth.accessToken, for: KeychainKeys.accessToken)
             try deps.keychain.save(auth.refreshToken, for: KeychainKeys.refreshToken)
             let user: User = try await deps.api.execute(.me)
-            deps.appState.login(user: user)
-            deps.appState.showSuccess("Welcome to Peppy!")
+            Self.completeRegistration(user: user, deps: deps)
         } catch let error as APIError {
             deps.appState.showError(error)
         } catch {
             deps.appState.showError(.unknown(error.localizedDescription))
         }
+    }
+
+    @MainActor
+    static func completeRegistration(user: User, deps: Dependencies) {
+        deps.flow.didAuthenticate(user: user)
+        deps.appState.showSuccess("Welcome to Peppy!")
     }
 }
 

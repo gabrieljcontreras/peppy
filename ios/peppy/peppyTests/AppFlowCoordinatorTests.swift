@@ -125,6 +125,121 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertNil(fixture.keychain.get(KeychainKeys.refreshToken))
     }
 
+    func testLogoutRoutesToSignInWithoutClearingKnownAccount() {
+        let fixture = Fixture()
+        let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
+
+        fixture.coordinator.didAuthenticate(user: user)
+        fixture.coordinator.logout()
+
+        XCTAssertEqual(fixture.coordinator.route, .authentication(.signIn))
+        XCTAssertTrue(fixture.store.hasKnownAccount)
+    }
+
+    func testAuthenticationBackRouteReturnsCompletedDraftToReadySummary() {
+        let fixture = Fixture()
+        var draft = OnboardingDraft()
+        draft.isComplete = true
+        fixture.store.saveAnonymousDraft(draft)
+
+        fixture.coordinator.showRegistration()
+
+        XCTAssertTrue(fixture.coordinator.shouldShowAuthenticationBackButton)
+        fixture.coordinator.goBackFromAuthentication()
+        XCTAssertEqual(fixture.coordinator.route, .readySummary)
+    }
+
+    func testKnownSignedOutSignInDoesNotShowBackButton() async {
+        let fixture = Fixture()
+        fixture.store.hasKnownAccount = true
+
+        await fixture.coordinator.resolveLaunch()
+
+        XCTAssertEqual(fixture.coordinator.route, .authentication(.signIn))
+        XCTAssertFalse(fixture.coordinator.shouldShowAuthenticationBackButton)
+    }
+
+    func testOnboardingSignInBackReturnsToOnboarding() {
+        let fixture = Fixture()
+        fixture.coordinator.route = .onboarding
+
+        fixture.coordinator.showSignIn()
+
+        XCTAssertTrue(fixture.coordinator.shouldShowAuthenticationBackButton)
+        fixture.coordinator.goBackFromAuthentication()
+        XCTAssertEqual(fixture.coordinator.route, .onboarding)
+    }
+
+    func testRegistrationBackPreservesOnboardingSignInBackRoute() {
+        let fixture = Fixture()
+        fixture.coordinator.route = .onboarding
+        fixture.coordinator.showSignIn()
+
+        fixture.coordinator.showRegistration()
+        fixture.coordinator.goBackFromAuthentication()
+
+        XCTAssertEqual(fixture.coordinator.route, .authentication(.signIn))
+        XCTAssertTrue(fixture.coordinator.shouldShowAuthenticationBackButton)
+        fixture.coordinator.goBackFromAuthentication()
+        XCTAssertEqual(fixture.coordinator.route, .onboarding)
+    }
+
+    func testRootDestinationFollowsCoordinatorRouteInsteadOfAppState() {
+        let deps = Dependencies.mock()
+        deps.appState.login(
+            user: User(id: UUID(), email: "alex@example.com", createdAt: Date())
+        )
+        deps.flow.route = .onboarding
+
+        XCTAssertEqual(RootView.destination(for: deps), .onboarding)
+    }
+
+    func testRootOnlyResolvesLaunchWhileLaunching() {
+        let deps = Dependencies.mock()
+
+        deps.flow.route = .futurePaywall
+        XCTAssertFalse(RootView.shouldResolveLaunch(for: deps))
+
+        deps.flow.route = .launching
+        XCTAssertTrue(RootView.shouldResolveLaunch(for: deps))
+    }
+
+    func testLoginCompletionUsesCoordinatorAuthenticationHandoff() {
+        let deps = Dependencies.mock()
+        let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
+        var draft = OnboardingDraft()
+        draft.isComplete = true
+        deps.onboardingStore.saveAnonymousDraft(draft)
+
+        LoginView.completeLogin(user: user, deps: deps)
+
+        XCTAssertEqual(deps.flow.route, .dashboard)
+        XCTAssertTrue(deps.appState.isAuthenticated)
+        XCTAssertNil(deps.onboardingStore.loadAnonymousDraft())
+        XCTAssertNotNil(deps.onboardingStore.loadDraft(for: user.id))
+    }
+
+    func testRegistrationCompletionUsesCoordinatorAuthenticationHandoffAndToast() {
+        let deps = Dependencies.mock()
+        let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
+        var draft = OnboardingDraft()
+        draft.isComplete = true
+        deps.onboardingStore.saveAnonymousDraft(draft)
+
+        RegisterView.completeRegistration(user: user, deps: deps)
+
+        XCTAssertEqual(deps.flow.route, .dashboard)
+        XCTAssertTrue(deps.appState.isAuthenticated)
+        XCTAssertNil(deps.onboardingStore.loadAnonymousDraft())
+        XCTAssertNotNil(deps.onboardingStore.loadDraft(for: user.id))
+        XCTAssertEqual(deps.appState.toast?.message, "Welcome to Peppy!")
+    }
+
+    func testAuthBackButtonsExposeAccessibleBackLabel() {
+        XCTAssertEqual(LoginView.backButtonAccessibilityLabel, "Back")
+        XCTAssertEqual(RegisterView.backButtonAccessibilityLabel, "Back")
+    }
+
     private struct Fixture {
         let api = MockAPIClient()
         let keychain = MockKeychainService()
