@@ -49,6 +49,10 @@
 		49C364DB2FEE600100C1F5DE /* PepOnboardingProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364DC2FEE600100C1F5DE /* PepOnboardingProgress.swift */; };
 		49C364DD2FEE600100C1F5DE /* PepSelectionChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364DE2FEE600100C1F5DE /* PepSelectionChip.swift */; };
 		49C364DF2FEE600100C1F5DE /* OnboardingScaffold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364E02FEE600100C1F5DE /* OnboardingScaffold.swift */; };
+		49C364E22FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364E32FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift */; };
+		49C364E42FEE700100C1F5DE /* OnboardingIntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364E52FEE700100C1F5DE /* OnboardingIntroView.swift */; };
+		49C364E62FEE700100C1F5DE /* BaselineStepsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364E72FEE700100C1F5DE /* BaselineStepsView.swift */; };
+		49C364E82FEE700100C1F5DE /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364E92FEE700100C1F5DE /* OnboardingFlowView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +85,10 @@
 		49C364DC2FEE600100C1F5DE /* PepOnboardingProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepOnboardingProgress.swift; sourceTree = "<group>"; };
 		49C364DE2FEE600100C1F5DE /* PepSelectionChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepSelectionChip.swift; sourceTree = "<group>"; };
 		49C364E02FEE600100C1F5DE /* OnboardingScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingScaffold.swift; sourceTree = "<group>"; };
+		49C364E32FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingBaselineFlowTests.swift; sourceTree = "<group>"; };
+		49C364E52FEE700100C1F5DE /* OnboardingIntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingIntroView.swift; sourceTree = "<group>"; };
+		49C364E72FEE700100C1F5DE /* BaselineStepsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaselineStepsView.swift; sourceTree = "<group>"; };
+		49C364E92FEE700100C1F5DE /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
 		49C364732FD4DE4B00C1F5DE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		49C364742FD4DE4B00C1F5DE /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
 		49C364752FD4DE4B00C1F5DE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -153,6 +161,7 @@
 			isa = PBXGroup;
 			children = (
 				49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */,
+				49C364E32FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift */,
 				49C364DA2FEE600100C1F5DE /* OnboardingComponentTests.swift */,
 				49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */,
 				49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */,
@@ -292,6 +301,9 @@
 		49C364E12FEE600100C1F5DE /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				49C364E72FEE700100C1F5DE /* BaselineStepsView.swift */,
+				49C364E92FEE700100C1F5DE /* OnboardingFlowView.swift */,
+				49C364E52FEE700100C1F5DE /* OnboardingIntroView.swift */,
 				49C364E02FEE600100C1F5DE /* OnboardingScaffold.swift */,
 			);
 			path = Views;
@@ -440,9 +452,12 @@
 				49C364A32FD4DE7E00C1F5DE /* PepLoadingView.swift in Sources */,
 				49C364DB2FEE600100C1F5DE /* PepOnboardingProgress.swift in Sources */,
 				49C364DD2FEE600100C1F5DE /* PepSelectionChip.swift in Sources */,
+				49C364E42FEE700100C1F5DE /* OnboardingIntroView.swift in Sources */,
 				49C364A42FD4DE7E00C1F5DE /* PepTextField.swift in Sources */,
+				49C364E62FEE700100C1F5DE /* BaselineStepsView.swift in Sources */,
 				49C364A52FD4DE7E00C1F5DE /* PepToast.swift in Sources */,
 				49C364DF2FEE600100C1F5DE /* OnboardingScaffold.swift in Sources */,
+				49C364E82FEE700100C1F5DE /* OnboardingFlowView.swift in Sources */,
 				49C364A62FD4DE7E00C1F5DE /* Colors.swift in Sources */,
 				49C364A72FD4DE7E00C1F5DE /* Spacing.swift in Sources */,
 				49C364A82FD4DE7E00C1F5DE /* Typography.swift in Sources */,
@@ -458,6 +473,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49C364D02FEE400100C1F5DE /* AppFlowCoordinatorTests.swift in Sources */,
+				49C364E22FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift in Sources */,
 				49C364D92FEE600100C1F5DE /* OnboardingComponentTests.swift in Sources */,
 				49C364B02FEE000100C1F5DE /* OnboardingDraftTests.swift in Sources */,
 				49C364C12FEE200100C1F5DE /* OnboardingStoreTests.swift in Sources */,
