@@ -142,8 +142,8 @@ final class OnboardingBaselineFlowTests: XCTestCase {
         )
     }
 
-    func testFlowUsesPlaceholderForPermissionStepsUntilTaskTen() {
-        XCTAssertEqual(OnboardingFlowView.screen(for: .health), .placeholder)
-        XCTAssertEqual(OnboardingFlowView.screen(for: .notifications), .placeholder)
+    func testFlowScreenMetadataMatchesPermissionSteps() {
+        XCTAssertEqual(OnboardingFlowView.screen(for: .health), .healthPermission)
+        XCTAssertEqual(OnboardingFlowView.screen(for: .notifications), .notificationPermission)
     }
 }

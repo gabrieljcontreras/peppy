@@ -160,6 +160,41 @@ final class OnboardingViewModelTests: XCTestCase {
         XCTAssertTrue(store.loadAnonymousDraft()?.isComplete == true)
     }
 
+    func testSkippingNotificationPermissionCompletesAndShowsReadySummary() {
+        let store = InMemoryOnboardingStore()
+        let model = makeModel(store: store)
+        model.draft.currentStep = .notifications
+        let coordinator = AppFlowCoordinator(
+            api: MockAPIClient(),
+            keychain: MockKeychainService(),
+            appState: AppState(),
+            onboardingStore: store
+        )
+
+        OnboardingFlowView.skipNotificationPermission(model: model, flow: coordinator)
+
+        XCTAssertTrue(model.draft.isComplete)
+        XCTAssertEqual(coordinator.route, .readySummary)
+    }
+
+    func testRequestingNotificationPermissionCompletesAndShowsReadySummary() async {
+        let store = InMemoryOnboardingStore()
+        let model = makeModel(store: store)
+        model.draft.currentStep = .notifications
+        let coordinator = AppFlowCoordinator(
+            api: MockAPIClient(),
+            keychain: MockKeychainService(),
+            appState: AppState(),
+            onboardingStore: store
+        )
+
+        await OnboardingFlowView.requestNotificationPermission(model: model, flow: coordinator)
+
+        XCTAssertTrue(model.draft.isComplete)
+        XCTAssertEqual(model.draft.notificationOutcome, .authorized)
+        XCTAssertEqual(coordinator.route, .readySummary)
+    }
+
     private func makeModel(store: InMemoryOnboardingStore) -> OnboardingViewModel {
         OnboardingViewModel(
             store: store,

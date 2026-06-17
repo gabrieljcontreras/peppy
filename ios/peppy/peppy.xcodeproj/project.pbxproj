@@ -59,6 +59,9 @@
 		49C364F02FEE900100C1F5DE /* MedicationsStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364F12FEE900100C1F5DE /* MedicationsStepView.swift */; };
 		49C364F22FEE900100C1F5DE /* WorkoutStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364F32FEE900100C1F5DE /* WorkoutStepView.swift */; };
 		49C364F42FEE900100C1F5DE /* GoalsStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364F52FEE900100C1F5DE /* GoalsStepView.swift */; };
+		49C364F62FEEA00100C1F5DE /* HealthPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364F72FEEA00100C1F5DE /* HealthPermissionView.swift */; };
+		49C364F82FEEA00100C1F5DE /* NotificationPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364F92FEEA00100C1F5DE /* NotificationPermissionView.swift */; };
+		49C364FA2FEEA00100C1F5DE /* ReadySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364FB2FEEA00100C1F5DE /* ReadySummaryView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,6 +104,9 @@
 		49C364F12FEE900100C1F5DE /* MedicationsStepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicationsStepView.swift; sourceTree = "<group>"; };
 		49C364F32FEE900100C1F5DE /* WorkoutStepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStepView.swift; sourceTree = "<group>"; };
 		49C364F52FEE900100C1F5DE /* GoalsStepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsStepView.swift; sourceTree = "<group>"; };
+		49C364F72FEEA00100C1F5DE /* HealthPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthPermissionView.swift; sourceTree = "<group>"; };
+		49C364F92FEEA00100C1F5DE /* NotificationPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermissionView.swift; sourceTree = "<group>"; };
+		49C364FB2FEEA00100C1F5DE /* ReadySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadySummaryView.swift; sourceTree = "<group>"; };
 		49C364732FD4DE4B00C1F5DE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		49C364742FD4DE4B00C1F5DE /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
 		49C364752FD4DE4B00C1F5DE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -325,11 +331,14 @@
 			children = (
 				49C364E72FEE700100C1F5DE /* BaselineStepsView.swift */,
 				49C364F52FEE900100C1F5DE /* GoalsStepView.swift */,
+				49C364F72FEEA00100C1F5DE /* HealthPermissionView.swift */,
 				49C364F12FEE900100C1F5DE /* MedicationsStepView.swift */,
+				49C364F92FEEA00100C1F5DE /* NotificationPermissionView.swift */,
 				49C364E92FEE700100C1F5DE /* OnboardingFlowView.swift */,
 				49C364E52FEE700100C1F5DE /* OnboardingIntroView.swift */,
 				49C364E02FEE600100C1F5DE /* OnboardingScaffold.swift */,
 				49C364EF2FEE900100C1F5DE /* PeptidesStepView.swift */,
+				49C364FB2FEEA00100C1F5DE /* ReadySummaryView.swift */,
 				49C364F32FEE900100C1F5DE /* WorkoutStepView.swift */,
 			);
 			path = Views;
@@ -483,12 +492,15 @@
 				49C364E62FEE700100C1F5DE /* BaselineStepsView.swift in Sources */,
 				49C364F02FEE900100C1F5DE /* MedicationsStepView.swift in Sources */,
 				49C364F42FEE900100C1F5DE /* GoalsStepView.swift in Sources */,
+				49C364F62FEEA00100C1F5DE /* HealthPermissionView.swift in Sources */,
 				49C364A52FD4DE7E00C1F5DE /* PepToast.swift in Sources */,
 				49C364EC2FEE900100C1F5DE /* PeptideCatalog.swift in Sources */,
 				49C364DF2FEE600100C1F5DE /* OnboardingScaffold.swift in Sources */,
 				49C364E82FEE700100C1F5DE /* OnboardingFlowView.swift in Sources */,
+				49C364F82FEEA00100C1F5DE /* NotificationPermissionView.swift in Sources */,
 				49C364EE2FEE900100C1F5DE /* PeptidesStepView.swift in Sources */,
 				49C364A62FD4DE7E00C1F5DE /* Colors.swift in Sources */,
+				49C364FA2FEEA00100C1F5DE /* ReadySummaryView.swift in Sources */,
 				49C364F22FEE900100C1F5DE /* WorkoutStepView.swift in Sources */,
 				49C364A72FD4DE7E00C1F5DE /* Spacing.swift in Sources */,
 				49C364A82FD4DE7E00C1F5DE /* Typography.swift in Sources */,

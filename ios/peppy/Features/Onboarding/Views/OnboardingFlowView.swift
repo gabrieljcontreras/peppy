@@ -9,7 +9,8 @@ struct OnboardingQuestionnaireStep: Equatable {
 enum OnboardingFlowScreen: Equatable {
     case intro
     case questionnaire(OnboardingQuestionnaireStep)
-    case placeholder
+    case healthPermission
+    case notificationPermission
 }
 
 struct OnboardingFlowView: View {
@@ -30,9 +31,34 @@ struct OnboardingFlowView: View {
                 questionnaire(model: model, step: step) {
                     questionnaireContent(for: model.draft.currentStep, model: model)
                 }
-            case .placeholder:
-                Color.pepBackground
-                    .ignoresSafeArea()
+            case .healthPermission:
+                HealthPermissionView(
+                    isLoading: model.isRequestingPermission,
+                    requestAction: {
+                        Task { await model.requestHealthAccess() }
+                    },
+                    skipAction: model.skipCurrentStep,
+                    backAction: model.goBack
+                )
+            case .notificationPermission:
+                NotificationPermissionView(
+                    isLoading: model.isRequestingPermission,
+                    requestAction: {
+                        Task {
+                            await Self.requestNotificationPermission(
+                                model: model,
+                                flow: deps.flow
+                            )
+                        }
+                    },
+                    skipAction: {
+                        Self.skipNotificationPermission(
+                            model: model,
+                            flow: deps.flow
+                        )
+                    },
+                    backAction: model.goBack
+                )
             }
         }
         .id(model.draft.currentStep)
@@ -100,8 +126,30 @@ struct OnboardingFlowView: View {
                     subtitle: "Pick as many as you'd like. This helps us shape your experience."
                 )
             )
-        case .health, .notifications:
-            return .placeholder
+        case .health:
+            return .healthPermission
+        case .notifications:
+            return .notificationPermission
+        }
+    }
+
+    static func skipNotificationPermission(
+        model: OnboardingViewModel,
+        flow: AppFlowCoordinator
+    ) {
+        model.skipCurrentStep()
+        if model.draft.isComplete {
+            flow.showReadySummary()
+        }
+    }
+
+    static func requestNotificationPermission(
+        model: OnboardingViewModel,
+        flow: AppFlowCoordinator
+    ) async {
+        await model.requestNotifications()
+        if model.draft.isComplete {
+            flow.showReadySummary()
         }
     }
 
