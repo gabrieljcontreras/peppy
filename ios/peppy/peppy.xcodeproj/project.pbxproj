@@ -41,6 +41,8 @@
 		49C364C72FEE300100C1F5DE /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364C82FEE300100C1F5DE /* HealthKitService.swift */; };
 		49C364C92FEE300100C1F5DE /* NotificationPermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364CA2FEE300100C1F5DE /* NotificationPermissionService.swift */; };
 		49C364CD2FEE300100C1F5DE /* PermissionOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */; };
+		49C364D02FEE400100C1F5DE /* AppFlowCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */; };
+		49C364D22FEE400100C1F5DE /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364D32FEE400100C1F5DE /* AppFlowCoordinator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +67,8 @@
 		49C364CA2FEE300100C1F5DE /* NotificationPermissionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermissionService.swift; sourceTree = "<group>"; };
 		49C364CC2FEE300100C1F5DE /* peppy.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = peppy.entitlements; sourceTree = "<group>"; };
 		49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionOutcome.swift; sourceTree = "<group>"; };
+		49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinatorTests.swift; sourceTree = "<group>"; };
+		49C364D32FEE400100C1F5DE /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		49C364732FD4DE4B00C1F5DE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		49C364742FD4DE4B00C1F5DE /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
 		49C364752FD4DE4B00C1F5DE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -136,6 +140,7 @@
 		49C364B62FEE000100C1F5DE /* peppyTests */ = {
 			isa = PBXGroup;
 			children = (
+				49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */,
 				49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */,
 				49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */,
 				49C364C62FEE300100C1F5DE /* PermissionServiceTests.swift */,
@@ -146,6 +151,7 @@
 		49C364782FD4DE4B00C1F5DE /* App */ = {
 			isa = PBXGroup;
 			children = (
+				49C364D32FEE400100C1F5DE /* AppFlowCoordinator.swift */,
 				49C364732FD4DE4B00C1F5DE /* AppState.swift */,
 				49C364742FD4DE4B00C1F5DE /* Dependencies.swift */,
 				49C364752FD4DE4B00C1F5DE /* MainTabView.swift */,
@@ -392,6 +398,7 @@
 				49C364C32FEE200100C1F5DE /* OnboardingStore.swift in Sources */,
 				49C364C92FEE300100C1F5DE /* NotificationPermissionService.swift in Sources */,
 				49C364CD2FEE300100C1F5DE /* PermissionOutcome.swift in Sources */,
+				49C364D22FEE400100C1F5DE /* AppFlowCoordinator.swift in Sources */,
 				49C364A02FD4DE7E00C1F5DE /* PepButton.swift in Sources */,
 				49C364A12FD4DE7E00C1F5DE /* PepCard.swift in Sources */,
 				49C364A22FD4DE7E00C1F5DE /* PepEmptyState.swift in Sources */,
@@ -412,6 +419,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				49C364D02FEE400100C1F5DE /* AppFlowCoordinatorTests.swift in Sources */,
 				49C364B02FEE000100C1F5DE /* OnboardingDraftTests.swift in Sources */,
 				49C364C12FEE200100C1F5DE /* OnboardingStoreTests.swift in Sources */,
 				49C364C52FEE300100C1F5DE /* PermissionServiceTests.swift in Sources */,

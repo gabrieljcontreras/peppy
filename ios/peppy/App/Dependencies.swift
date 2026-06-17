@@ -8,6 +8,7 @@ final class Dependencies {
     let onboardingStore: OnboardingStoreProtocol
     let healthKit: HealthKitServiceProtocol
     let notifications: NotificationPermissionServiceProtocol
+    let flow: AppFlowCoordinator
 
     init(
         api: APIClientProtocol,
@@ -15,7 +16,8 @@ final class Dependencies {
         appState: AppState,
         onboardingStore: OnboardingStoreProtocol,
         healthKit: HealthKitServiceProtocol,
-        notifications: NotificationPermissionServiceProtocol
+        notifications: NotificationPermissionServiceProtocol,
+        flow: AppFlowCoordinator
     ) {
         self.api = api
         self.keychain = keychain
@@ -23,6 +25,7 @@ final class Dependencies {
         self.onboardingStore = onboardingStore
         self.healthKit = healthKit
         self.notifications = notifications
+        self.flow = flow
     }
 
     static func live() -> Dependencies {
@@ -32,6 +35,12 @@ final class Dependencies {
         let onboardingStore = UserDefaultsOnboardingStore()
         let healthKit = HealthKitService()
         let notifications = NotificationPermissionService()
+        let flow = AppFlowCoordinator(
+            api: api,
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: onboardingStore
+        )
 
         return Dependencies(
             api: api,
@@ -39,7 +48,8 @@ final class Dependencies {
             appState: appState,
             onboardingStore: onboardingStore,
             healthKit: healthKit,
-            notifications: notifications
+            notifications: notifications,
+            flow: flow
         )
     }
 
@@ -50,6 +60,12 @@ final class Dependencies {
         let onboardingStore = InMemoryOnboardingStore()
         let healthKit = MockHealthKitService(outcome: .requested)
         let notifications = MockNotificationPermissionService(outcome: .authorized)
+        let flow = AppFlowCoordinator(
+            api: api,
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: onboardingStore
+        )
 
         return Dependencies(
             api: api,
@@ -57,7 +73,8 @@ final class Dependencies {
             appState: appState,
             onboardingStore: onboardingStore,
             healthKit: healthKit,
-            notifications: notifications
+            notifications: notifications,
+            flow: flow
         )
     }
 }
