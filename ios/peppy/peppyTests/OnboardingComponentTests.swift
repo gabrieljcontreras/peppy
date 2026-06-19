@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import XCTest
 @testable import peppy
 
@@ -67,5 +68,21 @@ final class OnboardingComponentTests: XCTestCase {
         XCTAssertFalse(scaffold.canGoBack)
         XCTAssertFalse(scaffold.showsSkip)
         XCTAssertTrue(scaffold.isPrimaryLoading)
+    }
+
+    func testLaunchBrandingAssetsResolveFromTheAppBundle() {
+        XCTAssertNotNil(UIImage(named: "LaunchLogo"))
+        XCTAssertNotNil(UIColor(named: "LaunchBackground"))
+    }
+
+    func testAppUsesLaunchScreenStoryboard() {
+        XCTAssertEqual(
+            Bundle.main.object(forInfoDictionaryKey: "UILaunchStoryboardName") as? String,
+            "LaunchScreen"
+        )
+    }
+
+    func testLaunchResolutionUsesNativeLaunchLogoFrameLength() {
+        XCTAssertEqual(LaunchResolutionView.logoFrameLength, 128)
     }
 }

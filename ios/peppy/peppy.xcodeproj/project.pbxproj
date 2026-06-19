@@ -62,6 +62,7 @@
 		49C364F62FEEA00100C1F5DE /* HealthPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364F72FEEA00100C1F5DE /* HealthPermissionView.swift */; };
 		49C364F82FEEA00100C1F5DE /* NotificationPermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364F92FEEA00100C1F5DE /* NotificationPermissionView.swift */; };
 		49C364FA2FEEA00100C1F5DE /* ReadySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364FB2FEEA00100C1F5DE /* ReadySummaryView.swift */; };
+		49E6E4432FE4EA64003B96CE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 49E6E4422FE4EA64003B96CE /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,6 +77,32 @@
 
 /* Begin PBXFileReference section */
 		49C363BA2FD4D81900C1F5DE /* peppy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = peppy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		49C364732FD4DE4B00C1F5DE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		49C364742FD4DE4B00C1F5DE /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
+		49C364752FD4DE4B00C1F5DE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		49C364762FD4DE4B00C1F5DE /* PeppyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeppyApp.swift; sourceTree = "<group>"; };
+		49C364772FD4DE4B00C1F5DE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		49C364792FD4DE4B00C1F5DE /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		49C3647A2FD4DE4B00C1F5DE /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
+		49C3647B2FD4DE4B00C1F5DE /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIModels.swift; sourceTree = "<group>"; };
+		49C3647C2FD4DE4B00C1F5DE /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
+		49C3647D2FD4DE4B00C1F5DE /* MockAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAPIClient.swift; sourceTree = "<group>"; };
+		49C3647F2FD4DE4B00C1F5DE /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
+		49C364822FD4DE4B00C1F5DE /* PepBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepBadge.swift; sourceTree = "<group>"; };
+		49C364832FD4DE4B00C1F5DE /* PepButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepButton.swift; sourceTree = "<group>"; };
+		49C364842FD4DE4B00C1F5DE /* PepCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepCard.swift; sourceTree = "<group>"; };
+		49C364852FD4DE4B00C1F5DE /* PepEmptyState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepEmptyState.swift; sourceTree = "<group>"; };
+		49C364862FD4DE4B00C1F5DE /* PepLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepLoadingView.swift; sourceTree = "<group>"; };
+		49C364872FD4DE4B00C1F5DE /* PepTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepTextField.swift; sourceTree = "<group>"; };
+		49C364882FD4DE4B00C1F5DE /* PepToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepToast.swift; sourceTree = "<group>"; };
+		49C3648A2FD4DE4B00C1F5DE /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
+		49C3648C2FD4DE4B00C1F5DE /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		49C3648E2FD4DE4B00C1F5DE /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		49C3648F2FD4DE4B00C1F5DE /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
+		49C364902FD4DE4B00C1F5DE /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		49C364AC2FDCFBCD00C1F5DE /* PeppyLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeppyLogo.swift; sourceTree = "<group>"; };
+		49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets 2.xcassets"; sourceTree = "<group>"; };
 		49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraftTests.swift; sourceTree = "<group>"; };
 		49C364B22FEE000100C1F5DE /* peppyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = peppyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraft.swift; sourceTree = "<group>"; };
@@ -107,32 +134,7 @@
 		49C364F72FEEA00100C1F5DE /* HealthPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthPermissionView.swift; sourceTree = "<group>"; };
 		49C364F92FEEA00100C1F5DE /* NotificationPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermissionView.swift; sourceTree = "<group>"; };
 		49C364FB2FEEA00100C1F5DE /* ReadySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadySummaryView.swift; sourceTree = "<group>"; };
-		49C364732FD4DE4B00C1F5DE /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
-		49C364742FD4DE4B00C1F5DE /* Dependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dependencies.swift; sourceTree = "<group>"; };
-		49C364752FD4DE4B00C1F5DE /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
-		49C364762FD4DE4B00C1F5DE /* PeppyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeppyApp.swift; sourceTree = "<group>"; };
-		49C364772FD4DE4B00C1F5DE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		49C364792FD4DE4B00C1F5DE /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
-		49C3647A2FD4DE4B00C1F5DE /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
-		49C3647B2FD4DE4B00C1F5DE /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIModels.swift; sourceTree = "<group>"; };
-		49C3647C2FD4DE4B00C1F5DE /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
-		49C3647D2FD4DE4B00C1F5DE /* MockAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAPIClient.swift; sourceTree = "<group>"; };
-		49C3647F2FD4DE4B00C1F5DE /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
-		49C364822FD4DE4B00C1F5DE /* PepBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepBadge.swift; sourceTree = "<group>"; };
-		49C364832FD4DE4B00C1F5DE /* PepButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepButton.swift; sourceTree = "<group>"; };
-		49C364842FD4DE4B00C1F5DE /* PepCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepCard.swift; sourceTree = "<group>"; };
-		49C364852FD4DE4B00C1F5DE /* PepEmptyState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepEmptyState.swift; sourceTree = "<group>"; };
-		49C364862FD4DE4B00C1F5DE /* PepLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepLoadingView.swift; sourceTree = "<group>"; };
-		49C364872FD4DE4B00C1F5DE /* PepTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepTextField.swift; sourceTree = "<group>"; };
-		49C364882FD4DE4B00C1F5DE /* PepToast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepToast.swift; sourceTree = "<group>"; };
-		49C3648A2FD4DE4B00C1F5DE /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
-		49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
-		49C3648C2FD4DE4B00C1F5DE /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
-		49C3648E2FD4DE4B00C1F5DE /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		49C3648F2FD4DE4B00C1F5DE /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
-		49C364902FD4DE4B00C1F5DE /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
-		49C364AC2FDCFBCD00C1F5DE /* PeppyLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeppyLogo.swift; sourceTree = "<group>"; };
-		49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets 2.xcassets"; sourceTree = "<group>"; };
+		49E6E4422FE4EA64003B96CE /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,6 +158,7 @@
 		49C363B12FD4D81900C1F5DE = {
 			isa = PBXGroup;
 			children = (
+				49E6E4422FE4EA64003B96CE /* LaunchScreen.storyboard */,
 				49C364782FD4DE4B00C1F5DE /* App */,
 				49C364812FD4DE4B00C1F5DE /* Core */,
 				49C3648D2FD4DE4B00C1F5DE /* Design */,
@@ -173,21 +176,6 @@
 				49C364B22FEE000100C1F5DE /* peppyTests.xctest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		49C364B62FEE000100C1F5DE /* peppyTests */ = {
-			isa = PBXGroup;
-			children = (
-				49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */,
-				49C364E32FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift */,
-				49C364DA2FEE600100C1F5DE /* OnboardingComponentTests.swift */,
-				49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */,
-				49C364EB2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift */,
-				49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */,
-				49C364D52FEE500100C1F5DE /* OnboardingViewModelTests.swift */,
-				49C364C62FEE300100C1F5DE /* PermissionServiceTests.swift */,
-			);
-			path = peppyTests;
 			sourceTree = "<group>";
 		};
 		49C364782FD4DE4B00C1F5DE /* App */ = {
@@ -224,16 +212,6 @@
 			path = Storage;
 			sourceTree = "<group>";
 		};
-		49C364CB2FEE300100C1F5DE /* Permissions */ = {
-			isa = PBXGroup;
-			children = (
-				49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */,
-				49C364C82FEE300100C1F5DE /* HealthKitService.swift */,
-				49C364CA2FEE300100C1F5DE /* NotificationPermissionService.swift */,
-			);
-			path = Permissions;
-			sourceTree = "<group>";
-		};
 		49C364812FD4DE4B00C1F5DE /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -243,14 +221,6 @@
 				49C364802FD4DE4B00C1F5DE /* Storage */,
 			);
 			path = Core;
-			sourceTree = "<group>";
-		};
-		49C364F62FEE900100C1F5DE /* Data */ = {
-			isa = PBXGroup;
-			children = (
-				49C364ED2FEE900100C1F5DE /* PeptideCatalog.swift */,
-			);
-			path = Data;
 			sourceTree = "<group>";
 		};
 		49C364892FD4DE4B00C1F5DE /* Components */ = {
@@ -300,6 +270,30 @@
 			path = Auth;
 			sourceTree = "<group>";
 		};
+		49C364932FD4DE4B00C1F5DE /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				49C364922FD4DE4B00C1F5DE /* Auth */,
+				49C364BF2FEE100100C1F5DE /* Onboarding */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		49C364B62FEE000100C1F5DE /* peppyTests */ = {
+			isa = PBXGroup;
+			children = (
+				49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */,
+				49C364E32FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift */,
+				49C364DA2FEE600100C1F5DE /* OnboardingComponentTests.swift */,
+				49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */,
+				49C364EB2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift */,
+				49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */,
+				49C364D52FEE500100C1F5DE /* OnboardingViewModelTests.swift */,
+				49C364C62FEE300100C1F5DE /* PermissionServiceTests.swift */,
+			);
+			path = peppyTests;
+			sourceTree = "<group>";
+		};
 		49C364BF2FEE100100C1F5DE /* Onboarding */ = {
 			isa = PBXGroup;
 			children = (
@@ -316,6 +310,16 @@
 				49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		49C364CB2FEE300100C1F5DE /* Permissions */ = {
+			isa = PBXGroup;
+			children = (
+				49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */,
+				49C364C82FEE300100C1F5DE /* HealthKitService.swift */,
+				49C364CA2FEE300100C1F5DE /* NotificationPermissionService.swift */,
+			);
+			path = Permissions;
 			sourceTree = "<group>";
 		};
 		49C364D82FEE500100C1F5DE /* ViewModels */ = {
@@ -344,13 +348,12 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		49C364932FD4DE4B00C1F5DE /* Features */ = {
+		49C364F62FEE900100C1F5DE /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				49C364922FD4DE4B00C1F5DE /* Auth */,
-				49C364BF2FEE100100C1F5DE /* Onboarding */,
+				49C364ED2FEE900100C1F5DE /* PeptideCatalog.swift */,
 			);
-			path = Features;
+			path = Data;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -445,6 +448,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */,
+				49E6E4432FE4EA64003B96CE /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -672,7 +676,8 @@
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Peppy reads selected health data to personalize your baseline, trends, and insights.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -707,7 +712,8 @@
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Peppy reads selected health data to personalize your baseline, trends, and insights.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

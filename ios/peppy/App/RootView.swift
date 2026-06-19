@@ -60,18 +60,28 @@ struct RootView: View {
 }
 
 struct LaunchResolutionView: View {
+    static let logoFrameLength: CGFloat = 128
+
     let error: APIError?
     let retry: () -> Void
 
     var body: some View {
         ZStack {
-            Color.pepBackground
+            Color("LaunchBackground")
                 .ignoresSafeArea()
 
-            VStack(spacing: 18) {
-                PeppyLogo(size: 88)
+            Image("LaunchLogo")
+                .resizable()
+                .scaledToFit()
+                .frame(
+                    width: Self.logoFrameLength,
+                    height: Self.logoFrameLength
+                )
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Peppy")
 
-                if let error {
+            if let error {
+                VStack(spacing: 18) {
                     Text(error.userMessage)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.pepTextSecondary)
@@ -81,11 +91,13 @@ struct LaunchResolutionView: View {
 
                     PepButton(title: "Retry", style: .secondary, action: retry)
                         .frame(maxWidth: 220)
-                } else {
-                    ProgressView()
-                        .tint(.pepPrimary)
-                        .accessibilityLabel("Loading Peppy")
                 }
+                .offset(y: Self.logoFrameLength)
+            } else {
+                ProgressView()
+                    .tint(.pepPrimary)
+                    .offset(y: Self.logoFrameLength / 2 + 32)
+                    .accessibilityLabel("Loading Peppy")
             }
         }
     }
