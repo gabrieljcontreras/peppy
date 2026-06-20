@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct LoginView: View {
+    static let backButtonAccessibilityLabel = "Back"
+
     @Environment(\.dependencies) var deps
-    @Environment(\.dismiss) var dismiss
 
     @State private var email = ""
     @State private var password = ""
@@ -13,7 +14,9 @@ struct LoginView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     HStack {
-                        backButton
+                        if deps.flow.shouldShowAuthenticationBackButton {
+                            backButton
+                        }
                         Spacer()
                     }
                     .padding(.top, 12)
@@ -85,7 +88,10 @@ struct LoginView: View {
                     HStack(spacing: 3) {
                         Text("New here?")
                             .foregroundColor(.pepTextSecondary)
-                        NavigationLink("Create account.", destination: RegisterView())
+                        Button("Create account.") {
+                            deps.flow.showRegistration()
+                        }
+                        .buttonStyle(.plain)
                             .foregroundColor(.pepPrimary)
                     }
                     .font(.system(size: 14, weight: .medium))
@@ -112,7 +118,7 @@ struct LoginView: View {
 
     private var backButton: some View {
         Button {
-            dismiss()
+            deps.flow.goBackFromAuthentication()
         } label: {
             Image(systemName: "chevron.left")
                 .font(.system(size: 15, weight: .semibold))
@@ -122,6 +128,7 @@ struct LoginView: View {
                 .clipShape(Circle())
                 .pepCardShadow()
         }
+        .accessibilityLabel(Self.backButtonAccessibilityLabel)
     }
 
     private var isFormValid: Bool {
@@ -139,12 +146,17 @@ struct LoginView: View {
             try deps.keychain.save(auth.accessToken, for: KeychainKeys.accessToken)
             try deps.keychain.save(auth.refreshToken, for: KeychainKeys.refreshToken)
             let user: User = try await deps.api.execute(.me)
-            deps.appState.login(user: user)
+            Self.completeLogin(user: user, deps: deps)
         } catch let error as APIError {
             deps.appState.showError(error)
         } catch {
             deps.appState.showError(.unknown(error.localizedDescription))
         }
+    }
+
+    @MainActor
+    static func completeLogin(user: User, deps: Dependencies) {
+        deps.flow.didAuthenticate(user: user)
     }
 }
 

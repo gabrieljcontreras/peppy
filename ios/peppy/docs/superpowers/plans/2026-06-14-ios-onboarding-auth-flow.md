@@ -1789,7 +1789,7 @@ git commit -m "feat: add onboarding intro and baseline steps"
 - Create: `Features/Onboarding/Views/GoalsStepView.swift`
 - Modify: `Features/Onboarding/Views/OnboardingFlowView.swift`
 
-- [ ] **Step 1: Port the shared peptide names**
+- [x] **Step 1: Port the shared peptide names**
 
 Create `Core/Data/PeptideCatalog.swift` as an alphabetized, deduplicated Swift array matching Android's existing `PeptideData.kt` names. The public API is:
 
@@ -1864,7 +1864,7 @@ enum PeptideCatalog {
 
 Add `XCTAssertEqual(Set(PeptideCatalog.names).count, PeptideCatalog.names.count)` to `OnboardingDraftTests` to protect the catalog from duplicate display options. Do not include dose guidance in onboarding.
 
-- [ ] **Step 2: Implement searchable peptide multi-select**
+- [x] **Step 2: Implement searchable peptide multi-select**
 
 `PeptidesStepView` contains a Figma-styled search field, selected chips, and a bounded suggestion list:
 
@@ -1976,26 +1976,32 @@ private struct FlowLayout: Layout {
 }
 ```
 
-- [ ] **Step 3: Implement medications and workouts**
+- [x] **Step 3: Implement medications and workouts**
 
 `MedicationsStepView` uses an optional multiline `TextEditor` with a 200-character counter and the medical-context disclaimer.
 
 `WorkoutStepView` renders 0 through 7 as tappable circles, shows `Rest-focused` for 0 and `2–5 days per week` style summary text for selected ranges, and calls `setWorkoutDays`.
 
-- [ ] **Step 4: Implement goals**
+- [x] **Step 4: Implement goals**
 
 `GoalsStepView` lays out the six `OnboardingGoal` options in a two-column adaptive grid using `PepSelectionChip`, followed by an optional `PepTextField` for "Anything else?".
 
-- [ ] **Step 5: Wire all four cases into the flow**
+- [x] **Step 5: Wire all four cases into the flow**
 
 Add `.peptides`, `.medications`, `.workout`, and `.goals` cases with exact 4/7 through 7/7 progress, Figma copy, and persisted bindings.
 
-- [ ] **Step 6: Build and commit questionnaire completion**
+- [x] **Step 6: Build questionnaire completion**
 
 ```bash
-git add Core/Data Features/Onboarding/Views peppy.xcodeproj
-git commit -m "feat: complete onboarding questionnaire"
+xcodebuild -project peppy.xcodeproj -scheme peppy -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 ```
+
+Completed locally on 2026-06-16:
+- Added `PeptideCatalog` and the four SwiftUI step views.
+- Wired `.peptides`, `.medications`, `.workout`, and `.goals` into `OnboardingFlowView` as questionnaire steps 4 through 7.
+- Added focused tests for catalog uniqueness, peptide suggestions/custom options, medication limits, workout summaries, goal options, and Task 9 flow metadata.
+- Verification passed: focused Task 9 tests, full iOS suite with 47 tests, generic simulator debug build with `CODE_SIGNING_ALLOWED=NO`, and `git diff --check`.
+- Commit intentionally deferred; continue task-by-task unless a commit is requested.
 
 ## Task 10: Implement Permission Screens and Ready Summary
 
@@ -2005,7 +2011,7 @@ git commit -m "feat: complete onboarding questionnaire"
 - Create: `Features/Onboarding/Views/ReadySummaryView.swift`
 - Modify: `Features/Onboarding/Views/OnboardingFlowView.swift`
 
-- [ ] **Step 1: Implement Apple Health explanation**
+- [x] **Step 1: Implement Apple Health explanation**
 
 The screen lists the seven read categories from the Figma and provides:
 
@@ -2025,11 +2031,11 @@ Button("Not now") {
 
 Use the Apple Health icon from SF Symbols where permitted, a read-only access card, and copy stating users can change access in the Health app.
 
-- [ ] **Step 2: Implement notification explanation**
+- [x] **Step 2: Implement notification explanation**
 
 Match the Figma "Stay consistent without the noise" frame with cards for dose reminders, check-in reminders, and important insights. The primary action calls `requestNotifications()`; "Not now" marks the draft complete.
 
-- [ ] **Step 3: Implement the truthful personalized summary**
+- [x] **Step 3: Implement the truthful personalized summary**
 
 Create `ReadySummaryView` with:
 
@@ -2112,7 +2118,7 @@ struct ReadySummaryView: View {
 
 Do not display protocol names, check-in streaks, or connected-source counts unless the draft actually contains them.
 
-- [ ] **Step 4: Complete the flow transition**
+- [x] **Step 4: Complete the flow transition**
 
 When `.notifications` finishes or is skipped:
 
@@ -2122,12 +2128,19 @@ When `.notifications` finishes or is skipped:
 4. Primary action sets `.futurePaywall`.
 5. The future-paywall route immediately calls `advancePastFuturePaywall()` and ends on `.authentication(.register)`.
 
-- [ ] **Step 5: Build and commit post-questionnaire screens**
+- [x] **Step 5: Build post-questionnaire screens**
 
 ```bash
-git add Features/Onboarding/Views peppy.xcodeproj
-git commit -m "feat: add onboarding permissions and summary"
+xcodebuild -project peppy.xcodeproj -scheme peppy -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
 ```
+
+Completed locally on 2026-06-17:
+- Added `HealthPermissionView`, `NotificationPermissionView`, and `ReadySummaryView`.
+- Wired `.health` and `.notifications` in `OnboardingFlowView`; notification request and skip now complete the draft before showing the ready-summary route.
+- Added focused tests for permission screen metadata, Health read categories, notification cards, truthful ready-summary rows, and notification completion routing.
+- Verification passed: Task 10 red test failed for missing permission flow cases, focused Task 10 tests, full iOS suite with 54 tests on `iPhone 17` iOS 26.5, generic simulator debug build with `CODE_SIGNING_ALLOWED=NO`, and `git diff --check`.
+- Root-level rendering of `.readySummary`, future-paywall bypass rendering, and authentication handoff remain in Task 11 as planned.
+- Commit intentionally deferred; continue task-by-task unless a commit is requested.
 
 ## Task 11: Replace Root Routing and Connect Authentication
 
@@ -2139,7 +2152,7 @@ git commit -m "feat: add onboarding permissions and summary"
 - Modify: `Features/Auth/Views/WelcomeView.swift`
 - Test: `peppyTests/AppFlowCoordinatorTests.swift`
 
-- [ ] **Step 1: Add auth association tests**
+- [x] **Step 1: Add auth association tests**
 
 Add:
 
@@ -2181,7 +2194,7 @@ func testReadySummaryPassesThroughFuturePaywallRoute() {
 
 Run coordinator tests and confirm the association test passes with Task 5's implementation.
 
-- [ ] **Step 2: Replace conditional root rendering**
+- [x] **Step 2: Replace conditional root rendering**
 
 `RootView` switches on `deps.flow.route`:
 
@@ -2221,7 +2234,7 @@ Keep `.pepToast($appState.toast)` at the root and call `resolveLaunch()` once fr
 
 `LaunchResolutionView` visually matches the native launch screen. If `error` is non-nil, show its user message and a Retry button without exposing onboarding or auth.
 
-- [ ] **Step 3: Connect registration success**
+- [x] **Step 3: Connect registration success**
 
 In `RegisterView.register()`, replace direct `appState.login(user:)` with:
 
@@ -2232,7 +2245,7 @@ deps.appState.showSuccess("Welcome to Peppy!")
 
 Keep tokens saved before fetching `/auth/me`. Preserve the current form and toast behavior on failure.
 
-- [ ] **Step 4: Connect sign-in success**
+- [x] **Step 4: Connect sign-in success**
 
 In `LoginView.login()`, replace direct `appState.login(user:)` with:
 
@@ -2255,7 +2268,7 @@ let hasCompletedAnonymousDraft =
 - "Already have an account? Sign in" calls `showSignIn()`.
 - "Create account" from sign-in calls `showRegistration()`.
 
-- [ ] **Step 5: Retire the old welcome route**
+- [x] **Step 5: Retire the old welcome route**
 
 `WelcomeView` is no longer the launch destination. Keep it temporarily only if another preview or product reference uses it; otherwise remove it from the target after confirming no references with:
 
@@ -2265,7 +2278,7 @@ rg -n "WelcomeView" .
 
 If removed, delete it through Xcode so the project file stays valid.
 
-- [ ] **Step 6: Build, test, and commit routing**
+- [x] **Step 6: Build and test routing**
 
 Run all unit tests and the generic simulator build.
 
@@ -2273,6 +2286,19 @@ Run all unit tests and the generic simulator build.
 git add App Features/Auth peppyTests/AppFlowCoordinatorTests.swift peppy.xcodeproj
 git commit -m "feat: connect onboarding to authentication"
 ```
+
+Completed locally on 2026-06-17:
+- Added Task 11 coverage for coordinator auth back-routing, root route destination selection, login completion handoff, registration completion handoff, known-account logout behavior, fresh onboarding sign-in back routing, and auth back-button accessibility labels.
+- Replaced `RootView`'s `appState.isAuthenticated` conditional with `deps.flow.route` rendering for launch, onboarding, ready summary, future-paywall bypass, authentication, and dashboard routes.
+- Added `LaunchResolutionView` with retry/error handling for launch resolution without exposing onboarding or auth while a retryable launch error is active.
+- Guarded root launch resolution so `resolveLaunch()` only runs while the coordinator is still on `.launching`.
+- Connected registration and sign-in success to `AppFlowCoordinator.didAuthenticate(user:)`; registration still shows the existing success toast.
+- Replaced nested auth `NavigationLink` handoffs with coordinator route switches and coordinator-owned auth back behavior.
+- Fixed the review-found fresh-onboarding sign-in trap: intro sign-in can now return to onboarding, sign-in to registration preserves that back path, and known signed-out launch sign-in still hides back.
+- Added accessible Back labels to auth icon back buttons.
+- Retired `WelcomeView` from launch routing; it remains in the target temporarily for preview/product reference only.
+- Verification passed: Task 11 red tests failed for missing coordinator/root/auth helper seams, the root launch-resolution guard, and auth back-button accessibility labels; focused `AppFlowCoordinatorTests` with 20 tests, full iOS suite with 64 tests on `iPhone 17` iOS 26.5, and generic simulator debug build with `CODE_SIGNING_ALLOWED=NO`.
+- Commit intentionally deferred; continue task-by-task unless a commit is requested.
 
 ## Task 12: Create the App Icon and Native Launch Screen
 
