@@ -3,6 +3,7 @@ import SwiftUI
 struct LoginView: View {
     static let backButtonAccessibilityLabel = "Back"
     static let backButtonTapTarget: CGFloat = 44
+    static let bottomSafeAreaPadding: CGFloat = 28
 
     @Environment(\.dependencies) var deps
 
@@ -108,12 +109,13 @@ struct LoginView: View {
                     )
                     .font(.system(size: 11))
                     .foregroundColor(.pepTextSecondary)
-                    .padding(.bottom, 10)
+                    .padding(.bottom, Self.bottomSafeAreaPadding)
                 }
                 .padding(.horizontal, 30)
                 .frame(minHeight: proxy.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
+            .safeAreaPadding(.bottom, Self.bottomSafeAreaPadding)
         }
         .background(Color.pepBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)

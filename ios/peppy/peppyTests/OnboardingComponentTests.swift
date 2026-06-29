@@ -37,6 +37,23 @@ final class OnboardingComponentTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(RegisterView.backButtonTapTarget, minimumTapTarget)
     }
 
+    func testPrimaryScreensReserveBottomSafeAreaForActions() {
+        let minimumBottomPadding: CGFloat = 24
+
+        XCTAssertGreaterThanOrEqual(OnboardingIntroView.bottomSafeAreaPadding, minimumBottomPadding)
+        XCTAssertGreaterThanOrEqual(OnboardingScaffold<EmptyView>.bottomSafeAreaPadding, minimumBottomPadding)
+        XCTAssertGreaterThanOrEqual(OnboardingPermissionScaffold<EmptyView>.bottomSafeAreaPadding, minimumBottomPadding)
+        XCTAssertGreaterThanOrEqual(ReadySummaryView.bottomSafeAreaPadding, minimumBottomPadding)
+        XCTAssertGreaterThanOrEqual(LoginView.bottomSafeAreaPadding, minimumBottomPadding)
+        XCTAssertGreaterThanOrEqual(RegisterView.bottomSafeAreaPadding, minimumBottomPadding)
+    }
+
+    func testReadySummaryHeadingAccentsReadyOnly() {
+        XCTAssertEqual(ReadySummaryView.headingLeadText, "You're")
+        XCTAssertEqual(ReadySummaryView.headingAccentText, "Ready.")
+        XCTAssertTrue(ReadySummaryView.headingAccentIsItalic)
+    }
+
     func testScaffoldDefaultsMatchQuestionnaireNavigation() {
         let scaffold = OnboardingScaffold(
             step: 2,

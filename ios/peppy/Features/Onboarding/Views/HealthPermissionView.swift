@@ -84,6 +84,8 @@ struct HealthPermissionView: View {
 }
 
 struct OnboardingPermissionScaffold<Content: View>: View {
+    static var bottomSafeAreaPadding: CGFloat { 28 }
+
     let icon: String
     let title: String
     let subtitle: String
@@ -190,7 +192,7 @@ struct OnboardingPermissionScaffold<Content: View>: View {
         }
         .padding(.horizontal, 24)
         .padding(.top, 8)
-        .padding(.bottom, 12)
+        .padding(.bottom, Self.bottomSafeAreaPadding)
         .background(Color.pepBackground.ignoresSafeArea())
     }
 }

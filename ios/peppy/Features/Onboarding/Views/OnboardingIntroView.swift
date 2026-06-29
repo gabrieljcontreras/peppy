@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct OnboardingIntroView: View {
+    static let bottomSafeAreaPadding: CGFloat = 28
+
     let continueAction: () -> Void
     let signInAction: () -> Void
 
@@ -64,9 +66,10 @@ struct OnboardingIntroView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 24)
-            .padding(.bottom, 10)
+            .padding(.bottom, Self.bottomSafeAreaPadding)
         }
         .scrollBounceBehavior(.basedOnSize)
+        .safeAreaPadding(.bottom, Self.bottomSafeAreaPadding)
         .background(Color.pepBackground.ignoresSafeArea())
     }
 

@@ -16,18 +16,27 @@ struct AgeStepView: View {
             value: displayedAge,
             suffix: "years",
             decrement: decrementAge,
-            increment: incrementAge
+            increment: incrementAge,
+            setValue: setAge
         )
         .accessibilityLabel("Age")
         .accessibilityValue("\(displayedAge) years")
     }
 
+    static func clampedAge(_ value: Int) -> Int {
+        min(max(value, minimumAge), maximumAge)
+    }
+
+    func setAge(_ value: Int) {
+        age = Self.clampedAge(value)
+    }
+
     func decrementAge() {
-        age = max(Self.minimumAge, displayedAge - 1)
+        setAge(displayedAge - 1)
     }
 
     func incrementAge() {
-        age = min(Self.maximumAge, displayedAge + 1)
+        setAge(displayedAge + 1)
     }
 }
 
@@ -43,6 +52,11 @@ struct HeightStepView: View {
     static let maximumFeet = 8
     static let minimumCentimeters = 100
     static let maximumCentimeters = 250
+    static let imperialValueCardWidth: CGFloat = 156
+    static let imperialCardSpacing: CGFloat = 12
+    static var imperialCardsMinimumWidth: CGFloat {
+        imperialValueCardWidth * 2 + imperialCardSpacing
+    }
 
     init(centimeters: Binding<Double?>, unit: Binding<HeightUnit>) {
         self._centimeters = centimeters
@@ -69,26 +83,34 @@ struct HeightStepView: View {
             .pickerStyle(.segmented)
 
             if unit == .feetAndInches {
-                HStack(spacing: 18) {
+                HStack(spacing: Self.imperialCardSpacing) {
                     NumericValueCard(
                         value: feet,
                         suffix: "ft",
+                        style: .compact,
                         decrement: decrementFeet,
-                        increment: incrementFeet
+                        increment: incrementFeet,
+                        setValue: setFeet
                     )
+                    .frame(width: Self.imperialValueCardWidth)
+
                     NumericValueCard(
                         value: inches,
                         suffix: "in",
+                        style: .compact,
                         decrement: decrementInches,
-                        increment: incrementInches
+                        increment: incrementInches,
+                        setValue: setInches
                     )
+                    .frame(width: Self.imperialValueCardWidth)
                 }
             } else {
                 NumericValueCard(
                     value: displayedCentimeters,
                     suffix: "cm",
                     decrement: { adjustCentimeters(by: -1) },
-                    increment: { adjustCentimeters(by: 1) }
+                    increment: { adjustCentimeters(by: 1) },
+                    setValue: setCentimeters
                 )
             }
         }
@@ -116,32 +138,50 @@ struct HeightStepView: View {
         return (feet, inches)
     }
 
-    func decrementFeet() {
-        feet = max(Self.minimumFeet, feet - 1)
+    static func clampedFeet(_ value: Int) -> Int {
+        min(max(value, minimumFeet), maximumFeet)
+    }
+
+    static func clampedInches(_ value: Int) -> Int {
+        min(max(value, 0), 11)
+    }
+
+    static func clampedCentimeters(_ value: Int) -> Int {
+        min(max(value, minimumCentimeters), maximumCentimeters)
+    }
+
+    func setFeet(_ value: Int) {
+        feet = Self.clampedFeet(value)
         syncImperial()
+    }
+
+    func setInches(_ value: Int) {
+        inches = Self.clampedInches(value)
+        syncImperial()
+    }
+
+    func setCentimeters(_ value: Int) {
+        centimeters = Double(Self.clampedCentimeters(value))
+    }
+
+    func decrementFeet() {
+        setFeet(feet - 1)
     }
 
     func incrementFeet() {
-        feet = min(Self.maximumFeet, feet + 1)
-        syncImperial()
+        setFeet(feet + 1)
     }
 
     func decrementInches() {
-        inches = max(0, inches - 1)
-        syncImperial()
+        setInches(inches - 1)
     }
 
     func incrementInches() {
-        inches = min(11, inches + 1)
-        syncImperial()
+        setInches(inches + 1)
     }
 
     func adjustCentimeters(by delta: Int) {
-        let nextValue = min(
-            max(displayedCentimeters + delta, Self.minimumCentimeters),
-            Self.maximumCentimeters
-        )
-        centimeters = Double(nextValue)
+        setCentimeters(displayedCentimeters + delta)
     }
 
     private func hydrateImperialFromDraft() {
@@ -192,7 +232,8 @@ struct WeightStepView: View {
                 value: displayedValue,
                 suffix: suffix,
                 decrement: { adjustWeight(by: -1) },
-                increment: { adjustWeight(by: 1) }
+                increment: { adjustWeight(by: 1) },
+                setValue: setDisplayedValue
             )
         }
         .onAppear(perform: hydrateFromDraft)
@@ -214,6 +255,11 @@ struct WeightStepView: View {
         }
     }
 
+    static func clampedDisplayedValue(_ value: Int, unit: WeightUnit) -> Int {
+        let bounds = unit == .pounds ? poundRange : kilogramRange
+        return min(max(value, bounds.lowerBound), bounds.upperBound)
+    }
+
     static func kilograms(from displayedValue: Int, unit: WeightUnit) -> Double {
         switch unit {
         case .pounds:
@@ -223,10 +269,13 @@ struct WeightStepView: View {
         }
     }
 
-    func adjustWeight(by delta: Int) {
-        let bounds = unit == .pounds ? Self.poundRange : Self.kilogramRange
-        displayedValue = min(max(displayedValue + delta, bounds.lowerBound), bounds.upperBound)
+    func setDisplayedValue(_ value: Int) {
+        displayedValue = Self.clampedDisplayedValue(value, unit: unit)
         kilograms = Self.kilograms(from: displayedValue, unit: unit)
+    }
+
+    func adjustWeight(by delta: Int) {
+        setDisplayedValue(displayedValue + delta)
     }
 
     private func hydrateFromDraft() {
@@ -234,46 +283,34 @@ struct WeightStepView: View {
     }
 }
 
+private enum NumericValueCardStyle {
+    case standard
+    case compact
+}
+
 private struct NumericValueCard: View {
     let value: Int
     let suffix: String
+    var style: NumericValueCardStyle = .standard
     let decrement: () -> Void
     let increment: () -> Void
+    let setValue: (Int) -> Void
+
+    @State private var draftValue = ""
+    @FocusState private var isEditing: Bool
 
     var body: some View {
-        HStack(spacing: 18) {
-            Button(action: decrement) {
-                Image(systemName: "minus")
-                    .font(.system(size: 17, weight: .semibold))
-                    .frame(width: 44, height: 44)
+        Group {
+            switch style {
+            case .standard:
+                standardBody
+            case .compact:
+                compactBody
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Decrease")
-
-            VStack(spacing: 2) {
-                Text("\(value)")
-                    .font(.system(size: 64, weight: .medium))
-                    .foregroundStyle(Color.pepTextPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.65)
-
-                Text(suffix)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color.pepTextSecondary)
-            }
-            .frame(minWidth: 96)
-
-            Button(action: increment) {
-                Image(systemName: "plus")
-                    .font(.system(size: 17, weight: .semibold))
-                    .frame(width: 44, height: 44)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Increase")
         }
         .foregroundStyle(Color.pepTextPrimary)
-        .padding(.vertical, 24)
-        .padding(.horizontal, 12)
+        .padding(.vertical, style == .standard ? 24 : 22)
+        .padding(.horizontal, style == .standard ? 12 : 4)
         .frame(maxWidth: .infinity)
         .background(Color.pepSurface)
         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.md))
@@ -281,6 +318,110 @@ private struct NumericValueCard: View {
             RoundedRectangle(cornerRadius: CornerRadius.md)
                 .stroke(Color.pepBorder, lineWidth: 1)
         }
+        .onAppear {
+            draftValue = "\(value)"
+        }
+        .onChange(of: value) { _, newValue in
+            if !isEditing {
+                draftValue = "\(newValue)"
+            }
+        }
+        .onChange(of: isEditing) { _, focused in
+            draftValue = focused ? "" : "\(value)"
+        }
+    }
+
+    private var standardBody: some View {
+        HStack(spacing: 18) {
+            stepButton(systemName: "minus", label: "Decrease", action: decrement)
+
+            VStack(spacing: 2) {
+                valueField(fontSize: 64, minWidth: 96, maxWidth: 128)
+
+                unitLabel
+            }
+
+            stepButton(systemName: "plus", label: "Increase", action: increment)
+        }
+    }
+
+    private var compactBody: some View {
+        VStack(spacing: 6) {
+            HStack(spacing: 2) {
+                stepButton(systemName: "minus", label: "Decrease", action: decrement)
+
+                valueField(fontSize: 52, minWidth: 46, maxWidth: 52)
+
+                stepButton(systemName: "plus", label: "Increase", action: increment)
+            }
+
+            unitLabel
+        }
+    }
+
+    private var unitLabel: some View {
+        Text(suffix)
+            .font(.system(size: 12))
+            .foregroundStyle(Color.pepTextSecondary)
+    }
+
+    private func stepButton(
+        systemName: String,
+        label: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 17, weight: .semibold))
+                .frame(width: 44, height: 44)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+    }
+
+    private func valueField(
+        fontSize: CGFloat,
+        minWidth: CGFloat,
+        maxWidth: CGFloat
+    ) -> some View {
+        TextField("", text: numericText)
+            .keyboardType(.numberPad)
+            .focused($isEditing)
+            .font(.system(size: fontSize, weight: .medium))
+            .foregroundStyle(Color.pepTextPrimary)
+            .multilineTextAlignment(.center)
+            .lineLimit(1)
+            .minimumScaleFactor(0.65)
+            .frame(minWidth: minWidth, maxWidth: maxWidth)
+            .textFieldStyle(.plain)
+            .accessibilityLabel("\(suffix) value")
+            .accessibilityValue("\(value) \(suffix)")
+            .toolbar {
+                if isEditing {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Done") {
+                            isEditing = false
+                        }
+                    }
+                }
+            }
+    }
+
+    private var numericText: Binding<String> {
+        Binding(
+            get: {
+                isEditing ? draftValue : "\(value)"
+            },
+            set: { newValue in
+                let filtered = String(newValue.filter(\.isNumber).prefix(3))
+                draftValue = filtered
+
+                if let value = Int(filtered) {
+                    setValue(value)
+                }
+            }
+        )
     }
 }
 

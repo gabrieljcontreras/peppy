@@ -3,6 +3,7 @@ import SwiftUI
 struct RegisterView: View {
     static let backButtonAccessibilityLabel = "Back"
     static let backButtonTapTarget: CGFloat = 44
+    static let bottomSafeAreaPadding: CGFloat = 28
 
     @Environment(\.dependencies) var deps
 
@@ -101,12 +102,13 @@ struct RegisterView: View {
                     }
                     .font(.system(size: 14, weight: .medium))
                     .padding(.top, 27)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, Self.bottomSafeAreaPadding)
                 }
                 .padding(.horizontal, 30)
                 .frame(minHeight: proxy.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
+            .safeAreaPadding(.bottom, Self.bottomSafeAreaPadding)
         }
         .background(Color.pepBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
