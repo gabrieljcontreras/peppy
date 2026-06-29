@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct PepSelectionChip: View {
+    static let minimumTapTarget: CGFloat = 44
+
     let title: String
     let isSelected: Bool
     let action: () -> Void
@@ -20,7 +22,7 @@ struct PepSelectionChip: View {
             }
             .foregroundStyle(isSelected ? Color.pepPrimaryDark : Color.pepTextPrimary)
             .padding(.horizontal, 14)
-            .frame(minHeight: 40)
+            .frame(minHeight: Self.minimumTapTarget)
             .background(isSelected ? Color.pepPrimaryMuted : Color.pepSurface)
             .clipShape(Capsule())
             .overlay {

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct LoginView: View {
     static let backButtonAccessibilityLabel = "Back"
+    static let backButtonTapTarget: CGFloat = 44
 
     @Environment(\.dependencies) var deps
 
@@ -53,6 +54,7 @@ struct LoginView: View {
                             Button("Forgot password?") {}
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(.pepPrimary)
+                                .frame(minHeight: Self.backButtonTapTarget)
                         }
                     }
                     .padding(.top, 39)
@@ -92,7 +94,8 @@ struct LoginView: View {
                             deps.flow.showRegistration()
                         }
                         .buttonStyle(.plain)
-                            .foregroundColor(.pepPrimary)
+                        .foregroundColor(.pepPrimary)
+                        .frame(minHeight: Self.backButtonTapTarget)
                     }
                     .font(.system(size: 14, weight: .medium))
                     .padding(.top, 34)
@@ -128,6 +131,8 @@ struct LoginView: View {
                 .clipShape(Circle())
                 .pepCardShadow()
         }
+        .frame(width: Self.backButtonTapTarget, height: Self.backButtonTapTarget)
+        .contentShape(Rectangle())
         .accessibilityLabel(Self.backButtonAccessibilityLabel)
     }
 

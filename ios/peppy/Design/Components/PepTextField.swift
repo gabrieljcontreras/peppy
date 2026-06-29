@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct PepTextField: View {
+    static let secureToggleTapTarget: CGFloat = 44
+
     let placeholder: String
     @Binding var text: String
     var isSecure: Bool = false
@@ -27,7 +29,12 @@ struct PepTextField: View {
                     Image(systemName: showsSecureText ? "eye.slash" : "eye")
                         .font(.system(size: 14))
                         .foregroundColor(.pepTextTertiary)
+                        .frame(
+                            width: Self.secureToggleTapTarget,
+                            height: Self.secureToggleTapTarget
+                        )
                 }
+                .accessibilityLabel(showsSecureText ? "Hide password" : "Show password")
             }
         }
         .font(.system(size: 14))

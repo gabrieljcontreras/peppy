@@ -28,6 +28,15 @@ final class OnboardingComponentTests: XCTestCase {
         XCTAssertTrue(didTap)
     }
 
+    func testInteractiveComponentsMeetMinimumTapTargetSize() {
+        let minimumTapTarget: CGFloat = 44
+
+        XCTAssertGreaterThanOrEqual(PepSelectionChip.minimumTapTarget, minimumTapTarget)
+        XCTAssertGreaterThanOrEqual(PepTextField.secureToggleTapTarget, minimumTapTarget)
+        XCTAssertGreaterThanOrEqual(LoginView.backButtonTapTarget, minimumTapTarget)
+        XCTAssertGreaterThanOrEqual(RegisterView.backButtonTapTarget, minimumTapTarget)
+    }
+
     func testScaffoldDefaultsMatchQuestionnaireNavigation() {
         let scaffold = OnboardingScaffold(
             step: 2,

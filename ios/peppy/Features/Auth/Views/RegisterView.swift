@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RegisterView: View {
     static let backButtonAccessibilityLabel = "Back"
+    static let backButtonTapTarget: CGFloat = 44
 
     @Environment(\.dependencies) var deps
 
@@ -95,7 +96,8 @@ struct RegisterView: View {
                             deps.flow.showSignIn()
                         }
                         .buttonStyle(.plain)
-                            .foregroundColor(.pepPrimary)
+                        .foregroundColor(.pepPrimary)
+                        .frame(minHeight: Self.backButtonTapTarget)
                     }
                     .font(.system(size: 14, weight: .medium))
                     .padding(.top, 27)
@@ -122,6 +124,8 @@ struct RegisterView: View {
                 .clipShape(Circle())
                 .pepCardShadow()
         }
+        .frame(width: Self.backButtonTapTarget, height: Self.backButtonTapTarget)
+        .contentShape(Rectangle())
         .accessibilityLabel(Self.backButtonAccessibilityLabel)
     }
 
