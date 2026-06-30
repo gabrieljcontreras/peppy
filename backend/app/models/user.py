@@ -24,3 +24,4 @@ class User(Base, UUIDMixin, TimestampMixin):
     jobs = relationship("Job", back_populates="user", cascade="all, delete-orphan")
     device_tokens = relationship("DeviceToken", back_populates="user", cascade="all, delete-orphan")
     notification_preference = relationship("NotificationPreference", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    onboarding_profile = relationship("OnboardingProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
