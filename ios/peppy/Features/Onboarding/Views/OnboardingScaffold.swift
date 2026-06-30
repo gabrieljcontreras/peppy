@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct OnboardingScaffold<Content: View>: View {
+    static var bottomSafeAreaPadding: CGFloat { 28 }
+
     let step: Int?
     let title: Text
     let subtitle: String
@@ -116,7 +118,7 @@ struct OnboardingScaffold<Content: View>: View {
         }
         .padding(.horizontal, 24)
         .padding(.top, 8)
-        .padding(.bottom, 12)
+        .padding(.bottom, Self.bottomSafeAreaPadding)
         .background(Color.pepBackground.ignoresSafeArea())
     }
 }

@@ -9,6 +9,11 @@ struct ReadySummaryRow: Equatable, Identifiable {
 }
 
 struct ReadySummaryView: View {
+    static let bottomSafeAreaPadding: CGFloat = 28
+    static let headingLeadText = "You're"
+    static let headingAccentText = "Ready."
+    static let headingAccentIsItalic = true
+
     let draft: OnboardingDraft
     let continueAction: () -> Void
     let signInAction: () -> Void
@@ -20,10 +25,7 @@ struct ReadySummaryView: View {
 
                 PeppyLogo(size: 40)
 
-                Text("You're ready.")
-                    .font(.system(size: 31, weight: .bold, design: .serif))
-                    .foregroundStyle(Color.pepTextPrimary)
-                    .multilineTextAlignment(.center)
+                heading
 
                 Text("Your baseline and preferences are ready to personalize peppy.")
                     .font(.system(size: 13))
@@ -49,10 +51,29 @@ struct ReadySummaryView: View {
                     .buttonStyle(.plain)
             }
             .frame(maxWidth: .infinity)
-            .padding(24)
+            .padding(.horizontal, 24)
+            .padding(.top, 24)
+            .padding(.bottom, Self.bottomSafeAreaPadding)
         }
         .scrollBounceBehavior(.basedOnSize)
+        .safeAreaPadding(.bottom, Self.bottomSafeAreaPadding)
         .background(Color.pepBackground.ignoresSafeArea())
+    }
+
+    private var heading: some View {
+        VStack(spacing: -4) {
+            Text(Self.headingLeadText)
+                .font(.system(size: 34, weight: .bold))
+                .foregroundStyle(Color.pepTextPrimary)
+
+            Text(Self.headingAccentText)
+                .font(.system(size: 40, weight: .semibold, design: .serif))
+                .italic(Self.headingAccentIsItalic)
+                .foregroundStyle(Color.pepPrimary)
+        }
+        .multilineTextAlignment(.center)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(Self.headingLeadText) \(Self.headingAccentText)")
     }
 
     static func rows(for draft: OnboardingDraft) -> [ReadySummaryRow] {

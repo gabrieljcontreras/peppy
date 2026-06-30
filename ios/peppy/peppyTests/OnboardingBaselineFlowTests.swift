@@ -38,6 +38,12 @@ final class OnboardingBaselineFlowTests: XCTestCase {
         XCTAssertEqual(age, 120)
     }
 
+    func testAgeStepAcceptsDirectNumericEntryAndClamps() {
+        XCTAssertEqual(AgeStepView.clampedAge(44), 44)
+        XCTAssertEqual(AgeStepView.clampedAge(9), 13)
+        XCTAssertEqual(AgeStepView.clampedAge(140), 120)
+    }
+
     func testHeightStepConvertsPersistedCentimetersToImperialDisplay() {
         let parts = HeightStepView.imperialParts(
             from: OnboardingDraft.centimeters(feet: 6, inches: 2)
@@ -52,6 +58,19 @@ final class OnboardingBaselineFlowTests: XCTestCase {
         )
     }
 
+    func testHeightStepAcceptsDirectNumericEntryAndFitsPhoneWidth() {
+        let contentWidth: CGFloat = 393 - 48
+
+        XCTAssertLessThanOrEqual(HeightStepView.imperialCardsMinimumWidth, contentWidth)
+        XCTAssertEqual(HeightStepView.clampedFeet(7), 7)
+        XCTAssertEqual(HeightStepView.clampedFeet(12), 8)
+        XCTAssertEqual(HeightStepView.clampedInches(9), 9)
+        XCTAssertEqual(HeightStepView.clampedInches(14), 11)
+        XCTAssertEqual(HeightStepView.clampedCentimeters(188), 188)
+        XCTAssertEqual(HeightStepView.clampedCentimeters(80), 100)
+        XCTAssertEqual(HeightStepView.clampedCentimeters(280), 250)
+    }
+
     func testWeightStepDisplaysAndNormalizesSelectedUnit() {
         let kilograms = OnboardingDraft.kilograms(pounds: 165)
 
@@ -63,6 +82,15 @@ final class OnboardingBaselineFlowTests: XCTestCase {
             accuracy: 0.001
         )
         XCTAssertEqual(WeightStepView.kilograms(from: 76, unit: .kilograms), 76)
+    }
+
+    func testWeightStepAcceptsDirectNumericEntryAndClamps() {
+        XCTAssertEqual(WeightStepView.clampedDisplayedValue(190, unit: .pounds), 190)
+        XCTAssertEqual(WeightStepView.clampedDisplayedValue(40, unit: .pounds), 60)
+        XCTAssertEqual(WeightStepView.clampedDisplayedValue(900, unit: .pounds), 700)
+        XCTAssertEqual(WeightStepView.clampedDisplayedValue(86, unit: .kilograms), 86)
+        XCTAssertEqual(WeightStepView.clampedDisplayedValue(20, unit: .kilograms), 27)
+        XCTAssertEqual(WeightStepView.clampedDisplayedValue(400, unit: .kilograms), 318)
     }
 
     func testFlowScreenMetadataMatchesBaselineSteps() {
