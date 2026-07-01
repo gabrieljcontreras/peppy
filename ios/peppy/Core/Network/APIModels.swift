@@ -17,11 +17,29 @@ struct AuthResponse: Decodable {
 struct User: Codable, Identifiable {
     let id: UUID
     let email: String
-    let createdAt: Date
+    let displayName: String?
+    let isVerified: Bool?
+    let createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id, email
+        case displayName = "display_name"
+        case isVerified = "is_verified"
         case createdAt = "created_at"
+    }
+
+    init(
+        id: UUID,
+        email: String,
+        createdAt: Date? = nil,
+        displayName: String? = nil,
+        isVerified: Bool? = nil
+    ) {
+        self.id = id
+        self.email = email
+        self.displayName = displayName
+        self.isVerified = isVerified
+        self.createdAt = createdAt
     }
 }
 

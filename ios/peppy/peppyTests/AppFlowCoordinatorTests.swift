@@ -45,6 +45,22 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertTrue(fixture.store.hasKnownAccount)
     }
 
+    func testUserDecodesAuthMeResponseWithoutCreatedAt() throws {
+        let json = """
+        {
+          "id": "11111111-1111-1111-1111-111111111111",
+          "email": "alex@example.com",
+          "display_name": null,
+          "is_verified": false
+        }
+        """.data(using: .utf8)!
+
+        let user = try JSONDecoder().decode(User.self, from: json)
+
+        XCTAssertEqual(user.id.uuidString.lowercased(), "11111111-1111-1111-1111-111111111111")
+        XCTAssertEqual(user.email, "alex@example.com")
+    }
+
     func testUnauthorizedSessionClearsCredentialsAndUsesSignedOutRoute() async throws {
         let fixture = Fixture()
         try fixture.keychain.save("access", for: KeychainKeys.accessToken)
