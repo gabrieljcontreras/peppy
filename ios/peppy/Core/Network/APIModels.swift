@@ -25,6 +25,196 @@ struct User: Codable, Identifiable {
     }
 }
 
+// MARK: - Onboarding Profile
+
+struct OnboardingProfilePayload: Codable, Equatable {
+    let schemaVersion: Int
+    let age: Int?
+    let heightCm: Double?
+    let preferredHeightUnit: String?
+    let weightKg: Double?
+    let preferredWeightUnit: String?
+    let peptides: [String]
+    let customPeptides: [String]
+    let otherMedications: String?
+    let workoutDaysPerWeek: Int?
+    let goals: [String]
+    let customGoal: String?
+    let healthkit: HealthKitProfilePayload?
+    let notifications: NotificationProfilePayload?
+
+    enum CodingKeys: String, CodingKey {
+        case schemaVersion = "schema_version"
+        case age
+        case heightCm = "height_cm"
+        case preferredHeightUnit = "preferred_height_unit"
+        case weightKg = "weight_kg"
+        case preferredWeightUnit = "preferred_weight_unit"
+        case peptides
+        case customPeptides = "custom_peptides"
+        case otherMedications = "other_medications"
+        case workoutDaysPerWeek = "workout_days_per_week"
+        case goals
+        case customGoal = "custom_goal"
+        case healthkit
+        case notifications
+    }
+}
+
+struct HealthKitProfilePayload: Codable, Equatable {
+    let requested: Bool
+    let lastSyncAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case requested
+        case lastSyncAt = "last_sync_at"
+    }
+}
+
+struct NotificationProfilePayload: Codable, Equatable {
+    let authorized: Bool
+}
+
+struct OnboardingProfileAttachRequest: Encodable {
+    let schemaVersion: Int
+    let draftId: String
+    let draftCreatedAt: Date
+    let draftUpdatedAt: Date
+    let isComplete: Bool
+    let currentStep: String
+    let profile: OnboardingProfilePayload
+
+    enum CodingKeys: String, CodingKey {
+        case schemaVersion = "schema_version"
+        case draftId = "draft_id"
+        case draftCreatedAt = "draft_created_at"
+        case draftUpdatedAt = "draft_updated_at"
+        case isComplete = "is_complete"
+        case currentStep = "current_step"
+        case profile
+    }
+}
+
+extension OnboardingProfileAttachRequest {
+    init(draft: OnboardingDraft) {
+        self.schemaVersion = draft.schemaVersion
+        self.draftId = draft.draftID.uuidString.lowercased()
+        self.draftCreatedAt = draft.createdAt
+        self.draftUpdatedAt = draft.updatedAt
+        self.isComplete = draft.isComplete
+        self.currentStep = draft.currentStep.serverValue
+        self.profile = OnboardingProfilePayload(draft: draft)
+    }
+}
+
+extension OnboardingProfilePayload {
+    init(draft: OnboardingDraft) {
+        self.schemaVersion = draft.schemaVersion
+        self.age = draft.age
+        self.heightCm = draft.heightCentimeters
+        self.preferredHeightUnit = draft.heightCentimeters == nil ? nil : draft.preferredHeightUnit.serverValue
+        self.weightKg = draft.weightKilograms
+        self.preferredWeightUnit = draft.weightKilograms == nil ? nil : draft.preferredWeightUnit.serverValue
+        self.peptides = draft.selectedPeptides
+        self.customPeptides = draft.customPeptides
+        self.otherMedications = draft.otherMedications
+        self.workoutDaysPerWeek = draft.workoutDaysPerWeek
+        self.goals = draft.goals.map(\.serverValue).sorted()
+        self.customGoal = draft.customGoal
+        self.healthkit = draft.healthChoice == .notAsked
+            ? nil
+            : HealthKitProfilePayload(requested: draft.healthChoice == .requested, lastSyncAt: nil)
+        self.notifications = draft.notificationChoice == .notAsked
+            ? nil
+            : NotificationProfilePayload(authorized: draft.notificationOutcome == .authorized)
+    }
+}
+
+// MARK: - Dashboard
+
+struct DashboardSummary: Codable, Equatable {
+    let generatedAt: Date
+    let profileStatus: String
+    let `protocol`: DashboardProtocolSummary
+    let todayCheckin: DashboardTodayCheckin
+    let responseSnapshot: DashboardResponseSnapshot
+    let insight: DashboardInsightSummary
+    let connectedContext: DashboardConnectedContext
+
+    enum CodingKeys: String, CodingKey {
+        case generatedAt = "generated_at"
+        case profileStatus = "profile_status"
+        case `protocol`
+        case todayCheckin = "today_checkin"
+        case responseSnapshot = "response_snapshot"
+        case insight
+        case connectedContext = "connected_context"
+    }
+}
+
+struct DashboardProtocolSummary: Codable, Equatable {
+    let id: UUID?
+    let status: String
+    let title: String
+    let compounds: [String]
+}
+
+struct DashboardTodayCheckin: Codable, Equatable {
+    let logged: Bool
+    let checkinId: UUID?
+
+    enum CodingKeys: String, CodingKey {
+        case logged
+        case checkinId = "checkin_id"
+    }
+}
+
+struct DashboardWeightPoint: Codable, Equatable {
+    let date: Date
+    let weightKg: Double
+
+    enum CodingKeys: String, CodingKey {
+        case date
+        case weightKg = "weight_kg"
+    }
+}
+
+struct DashboardResponseSnapshot: Codable, Equatable {
+    let weightTrend: [DashboardWeightPoint]
+    let latestEnergy: Int?
+    let latestMood: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case weightTrend = "weight_trend"
+        case latestEnergy = "latest_energy"
+        case latestMood = "latest_mood"
+    }
+}
+
+struct DashboardInsightSummary: Codable, Equatable {
+    let id: UUID?
+    let title: String?
+    let severity: String?
+    let emptyMessage: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, severity
+        case emptyMessage = "empty_message"
+    }
+}
+
+struct DashboardConnectedContext: Codable, Equatable {
+    let healthkitRequested: Bool?
+    let hasLabs: Bool
+    let hasWearables: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case healthkitRequested = "healthkit_requested"
+        case hasLabs = "has_labs"
+        case hasWearables = "has_wearables"
+    }
+}
+
 // MARK: - Protocol
 
 struct Protocol: Codable, Identifiable, Hashable {
@@ -34,6 +224,8 @@ struct Protocol: Codable, Identifiable, Hashable {
     let endDate: Date?
     let notes: String?
     let isActive: Bool
+    let setupStatus: String?
+    let isStarter: Bool?
     let compounds: [Compound]
 
     enum CodingKeys: String, CodingKey {
@@ -41,6 +233,8 @@ struct Protocol: Codable, Identifiable, Hashable {
         case startDate = "start_date"
         case endDate = "end_date"
         case isActive = "is_active"
+        case setupStatus = "setup_status"
+        case isStarter = "is_starter"
     }
 }
 

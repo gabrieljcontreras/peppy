@@ -15,6 +15,12 @@ enum Endpoint {
     case logout
     case me
 
+    // MARK: - Profile
+    case attachOnboardingProfile(OnboardingProfileAttachRequest)
+
+    // MARK: - Dashboard
+    case getDashboardSummary
+
     // MARK: - Protocols
     case getProtocols
     case getProtocol(id: UUID)
@@ -63,6 +69,14 @@ enum Endpoint {
         case .logout: return "/auth/logout"
         case .me: return "/auth/me"
 
+        // Profile
+        case .attachOnboardingProfile:
+            return "/profile/onboarding/attach"
+
+        // Dashboard
+        case .getDashboardSummary:
+            return "/dashboard/summary"
+
         // Protocols
         case .getProtocols, .createProtocol: return "/protocols"
         case .getProtocol(let id), .updateProtocol(let id, _), .deleteProtocol(let id):
@@ -101,6 +115,7 @@ enum Endpoint {
     var method: HTTPMethod {
         switch self {
         case .register, .login, .refreshToken, .logout,
+             .attachOnboardingProfile,
              .createProtocol, .activateProtocol, .deactivateProtocol,
              .createCheckin,
              .createLab,
@@ -125,6 +140,8 @@ enum Endpoint {
             return ["email": email, "password": password]
         case .refreshToken(let token):
             return ["refresh_token": token]
+        case .attachOnboardingProfile(let request):
+            return request
         case .createProtocol(let request):
             return request
         case .updateProtocol(_, let request):
