@@ -198,7 +198,7 @@ struct RegisterView: View {
             try deps.keychain.save(auth.accessToken, for: KeychainKeys.accessToken)
             try deps.keychain.save(auth.refreshToken, for: KeychainKeys.refreshToken)
             let user: User = try await deps.api.execute(.me)
-            Self.completeRegistration(user: user, deps: deps)
+            await Self.completeRegistration(user: user, deps: deps)
         } catch let error as APIError {
             deps.appState.showError(error)
         } catch {
@@ -207,8 +207,8 @@ struct RegisterView: View {
     }
 
     @MainActor
-    static func completeRegistration(user: User, deps: Dependencies) {
-        deps.flow.didAuthenticate(user: user)
+    static func completeRegistration(user: User, deps: Dependencies) async {
+        await deps.flow.didAuthenticate(user: user)
         deps.appState.showSuccess("Welcome to Peppy!")
     }
 }
