@@ -26,6 +26,13 @@ class AdministrationRoute(str, Enum):
     OTHER = "other"
 
 
+class ProtocolSetupStatus(str, Enum):
+    """Setup lifecycle for protocols derived from onboarding."""
+    PENDING_SETUP = "pending_setup"
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+
+
 class CompoundBase(BaseModel):
     """Base compound fields shared across create/update/response."""
     name: str = Field(
@@ -79,8 +86,27 @@ class CompoundUpdate(BaseModel):
 class CompoundResponse(CompoundBase):
     """Schema for compound in API responses."""
     id: UUID
+    dose_mg: float = Field(
+        ge=0,
+        description="Dose amount in the specified unit. Pending setup compounds may be 0.",
+        examples=[0, 2.5, 5.0],
+    )
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PendingCompoundResponse(BaseModel):
+    """Schema for compounds that still need starter protocol setup."""
+    id: UUID
+    name: str
+    dose_mg: float
+    dose_unit: str
+    frequency: str
+    administration_route: str
+    notes: Optional[str]
 
     class Config:
         from_attributes = True
@@ -144,6 +170,8 @@ class ProtocolResponse(BaseModel):
     start_date: date
     end_date: Optional[date]
     is_active: bool
+    setup_status: str = "active"
+    is_starter: bool = False
     notes: Optional[str]
     compounds: list[CompoundResponse]
     created_at: datetime

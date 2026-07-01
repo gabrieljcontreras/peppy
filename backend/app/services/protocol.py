@@ -126,6 +126,8 @@ class ProtocolService:
             start_date=start_date,
             end_date=end_date,
             is_active=True,
+            setup_status="active",
+            is_starter=False,
             notes=notes,
         )
 
@@ -173,6 +175,7 @@ class ProtocolService:
                 # Reactivating - deactivate others first
                 await self._deactivate_active_protocols(protocol.user_id)
             protocol.is_active = is_active
+            protocol.setup_status = "active" if is_active else "inactive"
 
         # Validate dates
         if protocol.end_date and protocol.end_date < protocol.start_date:
@@ -181,6 +184,76 @@ class ProtocolService:
         await self.db.commit()
         await self.db.refresh(protocol)
         return protocol
+
+    async def get_pending_starter(self, user_id: UUID) -> Optional[Protocol]:
+        """Get the user's pending starter protocol, if one exists."""
+        result = await self.db.execute(
+            select(Protocol)
+            .options(selectinload(Protocol.compounds))
+            .where(
+                and_(
+                    Protocol.user_id == user_id,
+                    Protocol.is_starter == True,
+                    Protocol.setup_status == "pending_setup",
+                )
+            )
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+
+    async def create_pending_starter(
+        self,
+        user_id: UUID,
+        peptide_names: list[str],
+        goals: list[str],
+    ) -> Protocol:
+        """Create or return a pending starter protocol from onboarding selections."""
+        existing = await self.get_pending_starter(user_id)
+        if existing:
+            return existing
+
+        protocol = Protocol(
+            user_id=user_id,
+            name="Starter protocol",
+            start_date=date.today(),
+            is_active=False,
+            is_starter=True,
+            setup_status="pending_setup",
+            notes="Created from onboarding selections.",
+        )
+        for name in peptide_names:
+            protocol.compounds.append(
+                Compound(
+                    name=name,
+                    dose_mg=0,
+                    dose_unit="mg",
+                    frequency="",
+                    administration_route="",
+                    notes=None,
+                )
+            )
+
+        self.db.add(protocol)
+        await self.db.commit()
+        return await self.get_by_id(protocol.id, user_id)
+
+    async def activate_pending_protocol(self, protocol: Protocol) -> Protocol:
+        """Activate a pending starter protocol after required setup fields are complete."""
+        for compound in protocol.compounds:
+            if (
+                compound.dose_mg <= 0
+                or not compound.frequency
+                or not compound.administration_route
+                or not protocol.start_date
+            ):
+                raise ValueError("Dose, frequency, route, and start date are required")
+
+        await self._deactivate_active_protocols(protocol.user_id)
+        protocol.is_active = True
+        protocol.setup_status = "active"
+        await self.db.commit()
+        await self.db.refresh(protocol)
+        return await self.get_by_id(protocol.id, protocol.user_id)
 
     async def update_compounds(
         self,
@@ -304,6 +377,7 @@ class ProtocolService:
         Sets is_active to False and end_date to today if not set.
         """
         protocol.is_active = False
+        protocol.setup_status = "inactive"
         if not protocol.end_date:
             protocol.end_date = date.today()
         await self.db.commit()
@@ -331,6 +405,7 @@ class ProtocolService:
         active_protocols = result.scalars().all()
         for protocol in active_protocols:
             protocol.is_active = False
+            protocol.setup_status = "inactive"
             if not protocol.end_date:
                 protocol.end_date = date.today()
         await self.db.flush()

@@ -4,6 +4,7 @@ import pytest
 
 from app.api.schemas.profile import OnboardingProfilePayload
 from app.services.profile import OnboardingProfileService
+from app.services.protocol import ProtocolService
 from app.services.user import UserService
 
 
@@ -127,6 +128,39 @@ class TestOnboardingProfileService:
         assert second.source_draft_id == "draft-123"
         assert second.source_is_complete is True
         assert second.source_current_step == "summary"
+
+    async def test_attach_profile_creates_one_pending_starter_protocol(self, service, db_session, user):
+        draft_created_at = datetime(2026, 6, 1, 14, 30, tzinfo=timezone.utc)
+        draft_updated_at = datetime(2026, 6, 2, 15, 45, tzinfo=timezone.utc)
+        payload = OnboardingProfilePayload(
+            peptides=["Retatrutide"],
+            goals=["track_protocols"],
+        )
+
+        await service.attach_profile(
+            user_id=user.id,
+            draft_id="starter-draft-1",
+            draft_created_at=draft_created_at,
+            draft_updated_at=draft_updated_at,
+            is_complete=True,
+            current_step="summary",
+            profile_payload=payload,
+        )
+        await service.attach_profile(
+            user_id=user.id,
+            draft_id="starter-draft-1",
+            draft_created_at=draft_created_at,
+            draft_updated_at=draft_updated_at,
+            is_complete=True,
+            current_step="summary",
+            profile_payload=payload,
+        )
+
+        protocols = await ProtocolService(db_session).list_for_user(user.id)
+        starters = [protocol for protocol in protocols if protocol.is_starter]
+        assert len(starters) == 1
+        assert starters[0].setup_status == "pending_setup"
+        assert starters[0].compounds[0].name == "Retatrutide"
 
     async def test_attach_profile_with_different_draft_fills_only_empty_fields(
         self,

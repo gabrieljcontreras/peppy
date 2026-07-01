@@ -93,10 +93,52 @@ def upgrade() -> None:
             unique=True,
         )
 
+    if "protocols" in tables:
+        protocol_columns = {column["name"] for column in inspector.get_columns("protocols")}
+        if "setup_status" not in protocol_columns:
+            op.add_column(
+                "protocols",
+                sa.Column(
+                    "setup_status",
+                    sa.String(length=30),
+                    nullable=False,
+                    server_default="active",
+                ),
+            )
+        if "is_starter" not in protocol_columns:
+            op.add_column(
+                "protocols",
+                sa.Column(
+                    "is_starter",
+                    sa.Boolean(),
+                    nullable=False,
+                    server_default=sa.text("false"),
+                ),
+            )
+
+        protocol_indexes = {index["name"] for index in inspector.get_indexes("protocols")}
+        if op.f("ix_protocols_setup_status") not in protocol_indexes:
+            op.create_index(
+                op.f("ix_protocols_setup_status"),
+                "protocols",
+                ["setup_status"],
+                unique=False,
+            )
+
 
 def downgrade() -> None:
     conn = op.get_bind()
     inspector = sa.inspect(conn)
+
+    if "protocols" in inspector.get_table_names():
+        protocol_columns = {column["name"] for column in inspector.get_columns("protocols")}
+        protocol_indexes = {index["name"] for index in inspector.get_indexes("protocols")}
+        if op.f("ix_protocols_setup_status") in protocol_indexes:
+            op.drop_index(op.f("ix_protocols_setup_status"), table_name="protocols")
+        if "is_starter" in protocol_columns:
+            op.drop_column("protocols", "is_starter")
+        if "setup_status" in protocol_columns:
+            op.drop_column("protocols", "setup_status")
 
     if "onboarding_profiles" in inspector.get_table_names():
         op.drop_index(op.f("ix_onboarding_profiles_user_id"), table_name="onboarding_profiles")

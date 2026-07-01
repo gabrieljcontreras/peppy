@@ -11,6 +11,8 @@ class Protocol(Base, UUIDMixin, TimestampMixin):
     start_date = Column(Date, nullable=False, index=True)
     end_date = Column(Date, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
+    setup_status = Column(String(30), default="active", nullable=False, index=True)
+    is_starter = Column(Boolean, default=False, nullable=False)
     notes = Column(Text, nullable=True)
 
     # Relationships
