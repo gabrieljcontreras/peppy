@@ -36,6 +36,10 @@
 		49C364B02FEE000100C1F5DE /* OnboardingDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */; };
 		49C365002FF000100C1F5DE /* ProfileAttachTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365012FF000100C1F5DE /* ProfileAttachTests.swift */; };
 		49C365022FF000200C1F5DE /* DashboardViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365032FF000200C1F5DE /* DashboardViewModelTests.swift */; };
+		49C365042FF000300C1F5DE /* DashboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365052FF000300C1F5DE /* DashboardModels.swift */; };
+		49C365062FF000300C1F5DE /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365072FF000300C1F5DE /* DashboardViewModel.swift */; };
+		49C3650B2FF000400C1F5DE /* DashboardCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3650C2FF000400C1F5DE /* DashboardCards.swift */; };
+		49C3650D2FF000400C1F5DE /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3650E2FF000400C1F5DE /* DashboardView.swift */; };
 		49C364BD2FEE100100C1F5DE /* OnboardingDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */; };
 		49C364C12FEE200100C1F5DE /* OnboardingStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */; };
 		49C364C32FEE200100C1F5DE /* OnboardingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364C42FEE200100C1F5DE /* OnboardingStore.swift */; };
@@ -109,6 +113,10 @@
 		49C364B22FEE000100C1F5DE /* peppyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = peppyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		49C365012FF000100C1F5DE /* ProfileAttachTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileAttachTests.swift; sourceTree = "<group>"; };
 		49C365032FF000200C1F5DE /* DashboardViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModelTests.swift; sourceTree = "<group>"; };
+		49C365052FF000300C1F5DE /* DashboardModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardModels.swift; sourceTree = "<group>"; };
+		49C365072FF000300C1F5DE /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		49C3650C2FF000400C1F5DE /* DashboardCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardCards.swift; sourceTree = "<group>"; };
+		49C3650E2FF000400C1F5DE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraft.swift; sourceTree = "<group>"; };
 		49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStoreTests.swift; sourceTree = "<group>"; };
 		49C364C42FEE200100C1F5DE /* OnboardingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStore.swift; sourceTree = "<group>"; };
@@ -278,6 +286,7 @@
 			isa = PBXGroup;
 			children = (
 				49C364922FD4DE4B00C1F5DE /* Auth */,
+				49C365082FF000300C1F5DE /* Dashboard */,
 				49C364BF2FEE100100C1F5DE /* Onboarding */,
 			);
 			path = Features;
@@ -308,6 +317,41 @@
 				49C364E12FEE600100C1F5DE /* Views */,
 			);
 			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		49C365082FF000300C1F5DE /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				49C365092FF000300C1F5DE /* Models */,
+				49C3650A2FF000300C1F5DE /* ViewModels */,
+				49C3650F2FF000400C1F5DE /* Views */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		49C365092FF000300C1F5DE /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				49C365052FF000300C1F5DE /* DashboardModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		49C3650A2FF000300C1F5DE /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				49C365072FF000300C1F5DE /* DashboardViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		49C3650F2FF000400C1F5DE /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				49C3650C2FF000400C1F5DE /* DashboardCards.swift */,
+				49C3650E2FF000400C1F5DE /* DashboardView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		49C364C02FEE100100C1F5DE /* Models */ = {
@@ -482,6 +526,10 @@
 				49C3649A2FD4DE7E00C1F5DE /* APIError.swift in Sources */,
 				49C3649B2FD4DE7E00C1F5DE /* APIModels.swift in Sources */,
 				49C3649C2FD4DE7E00C1F5DE /* Endpoint.swift in Sources */,
+				49C365042FF000300C1F5DE /* DashboardModels.swift in Sources */,
+				49C365062FF000300C1F5DE /* DashboardViewModel.swift in Sources */,
+				49C3650B2FF000400C1F5DE /* DashboardCards.swift in Sources */,
+				49C3650D2FF000400C1F5DE /* DashboardView.swift in Sources */,
 				49C3649D2FD4DE7E00C1F5DE /* MockAPIClient.swift in Sources */,
 				49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */,
 				49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */,

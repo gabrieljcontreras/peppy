@@ -25,4 +25,15 @@ final class DashboardViewModelTests: XCTestCase {
 
         XCTAssertTrue(model.state.showsProfileSyncRecovery)
     }
+
+    func testPendingStarterSummaryPrefersFinishSetupAction() async {
+        let api = MockAPIClient()
+        api.setMockResponse(DashboardSummary.mockPendingStarter, for: "/dashboard/summary")
+        let model = DashboardViewModel(api: api, hasProfileAttachFailure: false)
+
+        await model.load()
+
+        XCTAssertEqual(model.state.summary?.protocol.status, "pending_setup")
+        XCTAssertEqual(model.state.summary?.protocol.title, "Starter protocol")
+    }
 }
