@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.profile import OnboardingProfile
+from app.services.protocol import ProtocolService
 
 
 class OnboardingProfileService:
@@ -75,6 +76,7 @@ class OnboardingProfileService:
     ) -> OnboardingProfile:
         profile = await self.get_for_user(user_id)
         if profile and profile.source_draft_id == draft_id:
+            await self._create_pending_starter_if_needed(user_id, profile)
             return profile
 
         updates = self._payload_to_updates(profile_payload, exclude_unset=True)
@@ -93,6 +95,7 @@ class OnboardingProfileService:
 
         await self.db.commit()
         await self.db.refresh(profile)
+        await self._create_pending_starter_if_needed(user_id, profile)
         return profile
 
     def to_payload(self, profile: OnboardingProfile) -> dict[str, Any]:
@@ -190,3 +193,18 @@ class OnboardingProfileService:
                 setattr(profile, key, [])
             else:
                 setattr(profile, key, None)
+
+    async def _create_pending_starter_if_needed(
+        self,
+        user_id: UUID,
+        profile: OnboardingProfile,
+    ) -> None:
+        peptide_names = list(profile.peptides or []) + list(profile.custom_peptides or [])
+        if not peptide_names:
+            return
+
+        await ProtocolService(self.db).create_pending_starter(
+            user_id=user_id,
+            peptide_names=peptide_names,
+            goals=profile.goals or [],
+        )
