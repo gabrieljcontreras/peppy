@@ -70,10 +70,20 @@ class TestRegisterEndpoint:
         )
         assert response.status_code == 201
         data = response.json()
-        assert data["email"] == "test@example.com"
-        assert data["display_name"] == "Test User"
-        assert "id" in data
-        assert "is_verified" in data
+        assert "access_token" in data
+        assert "refresh_token" in data
+        assert data["token_type"] == "bearer"
+
+        me_response = await client.get(
+            "/api/v1/auth/me",
+            headers={"Authorization": f"Bearer {data['access_token']}"},
+        )
+        assert me_response.status_code == 200
+        user_data = me_response.json()
+        assert user_data["email"] == "test@example.com"
+        assert user_data["display_name"] == "Test User"
+        assert "id" in user_data
+        assert "is_verified" in user_data
 
     @pytest.mark.asyncio
     async def test_register_duplicate_email(self, client):
@@ -111,7 +121,13 @@ class TestRegisterEndpoint:
             json={"email": "TEST@EXAMPLE.COM", "password": "password123"},
         )
         assert response.status_code == 201
-        assert response.json()["email"] == "test@example.com"
+        data = response.json()
+        me_response = await client.get(
+            "/api/v1/auth/me",
+            headers={"Authorization": f"Bearer {data['access_token']}"},
+        )
+        assert me_response.status_code == 200
+        assert me_response.json()["email"] == "test@example.com"
 
 
 class TestLoginEndpoint:
@@ -240,7 +256,7 @@ class TestMeEndpoint:
     @pytest.mark.asyncio
     async def test_get_me_no_token(self, client):
         response = await client.get("/api/v1/auth/me")
-        assert response.status_code == 401
+        assert response.status_code == 403
 
     @pytest.mark.asyncio
     async def test_get_me_invalid_token(self, client):

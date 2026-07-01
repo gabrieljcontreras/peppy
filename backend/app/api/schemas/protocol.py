@@ -163,6 +163,15 @@ class ProtocolCompoundsUpdate(BaseModel):
     )
 
 
+class StarterProtocolActivation(BaseModel):
+    """Schema for completing and activating a pending starter protocol."""
+    dose_mg: float = Field(gt=0)
+    dose_unit: str = Field(default="mg", max_length=20)
+    frequency: str = Field(min_length=1)
+    administration_route: str = Field(min_length=1)
+    start_date: date | datetime
+
+
 class ProtocolResponse(BaseModel):
     """Schema for protocol in API responses."""
     id: UUID
