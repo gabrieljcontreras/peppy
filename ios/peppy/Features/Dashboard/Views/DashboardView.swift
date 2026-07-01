@@ -3,6 +3,7 @@ import SwiftUI
 struct DashboardView: View {
     @Environment(\.dependencies) private var deps
     @State private var model: DashboardViewModel?
+    @State private var starterSetupRoute: StarterSetupRoute?
 
     var body: some View {
         NavigationStack {
@@ -16,7 +17,15 @@ struct DashboardView: View {
                         }
 
                         if let summary = state.summary {
-                            DashboardProtocolCard(summary: summary.protocol) {}
+                            DashboardProtocolCard(summary: summary.protocol) {
+                                if summary.protocol.status == "pending_setup",
+                                   let protocolID = summary.protocol.id {
+                                    starterSetupRoute = StarterSetupRoute(
+                                        protocolID: protocolID,
+                                        compounds: summary.protocol.compounds
+                                    )
+                                }
+                            }
                             DashboardTodayCard(today: summary.todayCheckin) {}
                             responseSnapshot(summary.responseSnapshot)
                             insightCard(summary.insight)
@@ -37,6 +46,15 @@ struct DashboardView: View {
             }
             .background(Color.pepBackground.ignoresSafeArea())
             .navigationBarHidden(true)
+            .sheet(item: $starterSetupRoute) { route in
+                StarterProtocolSetupView(
+                    protocolID: route.protocolID,
+                    compounds: route.compounds,
+                    api: deps.api
+                ) {
+                    Task { await model?.load() }
+                }
+            }
             .task {
                 if model == nil {
                     model = DashboardViewModel(
@@ -127,6 +145,13 @@ struct DashboardView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
+}
+
+private struct StarterSetupRoute: Identifiable {
+    let protocolID: UUID
+    let compounds: [String]
+
+    var id: UUID { protocolID }
 }
 
 #Preview {

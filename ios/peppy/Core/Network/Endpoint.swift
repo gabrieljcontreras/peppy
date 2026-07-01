@@ -28,6 +28,7 @@ enum Endpoint {
     case updateProtocol(id: UUID, UpdateProtocolRequest)
     case deleteProtocol(id: UUID)
     case activateProtocol(id: UUID)
+    case activateStarterProtocol(id: UUID, StarterProtocolActivationRequest)
     case deactivateProtocol(id: UUID)
 
     // MARK: - Check-ins
@@ -81,7 +82,8 @@ enum Endpoint {
         case .getProtocols, .createProtocol: return "/protocols"
         case .getProtocol(let id), .updateProtocol(let id, _), .deleteProtocol(let id):
             return "/protocols/\(id)"
-        case .activateProtocol(let id): return "/protocols/\(id)/activate"
+        case .activateProtocol(let id), .activateStarterProtocol(let id, _):
+            return "/protocols/\(id)/activate"
         case .deactivateProtocol(let id): return "/protocols/\(id)/deactivate"
 
         // Check-ins
@@ -116,7 +118,7 @@ enum Endpoint {
         switch self {
         case .register, .login, .refreshToken, .logout,
              .attachOnboardingProfile,
-             .createProtocol, .activateProtocol, .deactivateProtocol,
+             .createProtocol, .activateProtocol, .activateStarterProtocol, .deactivateProtocol,
              .createCheckin,
              .createLab,
              .markInsightRead, .insightAction, .generateInsights,
@@ -145,6 +147,8 @@ enum Endpoint {
         case .createProtocol(let request):
             return request
         case .updateProtocol(_, let request):
+            return request
+        case .activateStarterProtocol(_, let request):
             return request
         case .createCheckin(let request):
             return request

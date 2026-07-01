@@ -195,6 +195,22 @@ struct UpdateProtocolRequest: Encodable {
     }
 }
 
+struct StarterProtocolActivationRequest: Encodable {
+    let doseMg: Double
+    let doseUnit: String
+    let frequency: String
+    let administrationRoute: String
+    let startDate: Date
+
+    enum CodingKeys: String, CodingKey {
+        case doseMg = "dose_mg"
+        case doseUnit = "dose_unit"
+        case frequency
+        case administrationRoute = "administration_route"
+        case startDate = "start_date"
+    }
+}
+
 // MARK: - Check-in
 
 struct Checkin: Codable, Identifiable {
