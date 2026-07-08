@@ -1,6 +1,7 @@
+from datetime import datetime
 from typing import Annotated, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -11,6 +12,7 @@ from app.api.schemas.protocol import (
     ProtocolUpdate,
     ProtocolResponse,
     ProtocolCompoundsUpdate,
+    StarterProtocolActivation,
     CompoundCreate,
     CompoundUpdate,
     CompoundResponse,
@@ -262,6 +264,47 @@ async def update_compound(
     return updated
 
 
+@router.post("/{protocol_id}/activate", response_model=ProtocolResponse)
+async def activate_protocol(
+    protocol_id: UUID,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    activation_data: StarterProtocolActivation | None = Body(default=None),
+):
+    """
+    Activate a protocol.
+
+    Pending starter protocols may include setup payload fields for the initial
+    dose, frequency, route, and start date before activation.
+    """
+    service = ProtocolService(db)
+    protocol = await service.get_by_id(protocol_id, current_user.id)
+
+    if not protocol:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Protocol not found",
+        )
+
+    try:
+        if protocol.setup_status == "pending_setup":
+            if activation_data is not None:
+                protocol.start_date = _start_date_value(activation_data.start_date)
+                for compound in protocol.compounds:
+                    compound.dose_mg = activation_data.dose_mg
+                    compound.dose_unit = activation_data.dose_unit
+                    compound.frequency = activation_data.frequency
+                    compound.administration_route = activation_data.administration_route
+            return await service.activate_pending_protocol(protocol)
+
+        return await service.update(protocol, is_active=True)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
 @router.delete("/compounds/{compound_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_compound(
     compound_id: UUID,
@@ -347,3 +390,9 @@ async def delete_protocol(
         )
 
     await service.delete(protocol)
+
+
+def _start_date_value(value):
+    if isinstance(value, datetime):
+        return value.date()
+    return value

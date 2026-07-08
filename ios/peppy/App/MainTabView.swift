@@ -61,10 +61,7 @@ struct MainTabView: View {
 
 struct HomeTab: View {
     var body: some View {
-        NavigationStack {
-            PlaceholderView(title: "Dashboard", icon: "house.fill")
-                .navigationTitle("Home")
-        }
+        DashboardView()
     }
 }
 

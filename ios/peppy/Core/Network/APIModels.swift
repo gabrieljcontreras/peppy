@@ -17,11 +17,134 @@ struct AuthResponse: Decodable {
 struct User: Codable, Identifiable {
     let id: UUID
     let email: String
-    let createdAt: Date
+    let displayName: String?
+    let isVerified: Bool?
+    let createdAt: Date?
 
     enum CodingKeys: String, CodingKey {
         case id, email
+        case displayName = "display_name"
+        case isVerified = "is_verified"
         case createdAt = "created_at"
+    }
+
+    init(
+        id: UUID,
+        email: String,
+        createdAt: Date? = nil,
+        displayName: String? = nil,
+        isVerified: Bool? = nil
+    ) {
+        self.id = id
+        self.email = email
+        self.displayName = displayName
+        self.isVerified = isVerified
+        self.createdAt = createdAt
+    }
+}
+
+// MARK: - Onboarding Profile
+
+struct OnboardingProfilePayload: Codable, Equatable {
+    let schemaVersion: Int
+    let age: Int?
+    let heightCm: Double?
+    let preferredHeightUnit: String?
+    let weightKg: Double?
+    let preferredWeightUnit: String?
+    let peptides: [String]
+    let customPeptides: [String]
+    let otherMedications: String?
+    let workoutDaysPerWeek: Int?
+    let goals: [String]
+    let customGoal: String?
+    let healthkit: HealthKitProfilePayload?
+    let notifications: NotificationProfilePayload?
+
+    enum CodingKeys: String, CodingKey {
+        case schemaVersion = "schema_version"
+        case age
+        case heightCm = "height_cm"
+        case preferredHeightUnit = "preferred_height_unit"
+        case weightKg = "weight_kg"
+        case preferredWeightUnit = "preferred_weight_unit"
+        case peptides
+        case customPeptides = "custom_peptides"
+        case otherMedications = "other_medications"
+        case workoutDaysPerWeek = "workout_days_per_week"
+        case goals
+        case customGoal = "custom_goal"
+        case healthkit
+        case notifications
+    }
+}
+
+struct HealthKitProfilePayload: Codable, Equatable {
+    let requested: Bool
+    let lastSyncAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case requested
+        case lastSyncAt = "last_sync_at"
+    }
+}
+
+struct NotificationProfilePayload: Codable, Equatable {
+    let authorized: Bool
+}
+
+struct OnboardingProfileAttachRequest: Encodable {
+    let schemaVersion: Int
+    let draftId: String
+    let draftCreatedAt: Date
+    let draftUpdatedAt: Date
+    let isComplete: Bool
+    let currentStep: String
+    let profile: OnboardingProfilePayload
+
+    enum CodingKeys: String, CodingKey {
+        case schemaVersion = "schema_version"
+        case draftId = "draft_id"
+        case draftCreatedAt = "draft_created_at"
+        case draftUpdatedAt = "draft_updated_at"
+        case isComplete = "is_complete"
+        case currentStep = "current_step"
+        case profile
+    }
+}
+
+extension OnboardingProfileAttachRequest {
+    init(draft: OnboardingDraft) {
+        self.schemaVersion = draft.schemaVersion
+        self.draftId = draft.draftID.uuidString.lowercased()
+        self.draftCreatedAt = draft.createdAt
+        self.draftUpdatedAt = draft.updatedAt
+        self.isComplete = draft.isComplete
+        self.currentStep = draft.currentStep.serverValue
+        self.profile = OnboardingProfilePayload(draft: draft)
+    }
+}
+
+extension OnboardingProfilePayload {
+    init(draft: OnboardingDraft) {
+        self.schemaVersion = draft.schemaVersion
+        self.age = draft.age
+        self.heightCm = draft.heightCentimeters
+        self.preferredHeightUnit = draft.heightCentimeters == nil ? nil : draft.preferredHeightUnit.serverValue
+        self.weightKg = draft.weightKilograms
+        self.preferredWeightUnit = draft.weightKilograms == nil ? nil : draft.preferredWeightUnit.serverValue
+        self.peptides = draft.selectedPeptides
+        self.customPeptides = draft.customPeptides
+        self.otherMedications = draft.otherMedications
+        self.workoutDaysPerWeek = draft.workoutDaysPerWeek
+        self.goals = draft.goals.map(\.serverValue).sorted()
+        self.customGoal = draft.customGoal
+        self.healthkit = draft.healthChoice == .notAsked
+            ? nil
+            : HealthKitProfilePayload(requested: draft.healthChoice == .requested, lastSyncAt: nil)
+        self.notifications = draft.notificationChoice == .notAsked
+            ? nil
+            : NotificationProfilePayload(authorized: draft.notificationOutcome == .authorized)
     }
 }
 
@@ -34,6 +157,8 @@ struct Protocol: Codable, Identifiable, Hashable {
     let endDate: Date?
     let notes: String?
     let isActive: Bool
+    let setupStatus: String?
+    let isStarter: Bool?
     let compounds: [Compound]
 
     enum CodingKeys: String, CodingKey {
@@ -41,6 +166,8 @@ struct Protocol: Codable, Identifiable, Hashable {
         case startDate = "start_date"
         case endDate = "end_date"
         case isActive = "is_active"
+        case setupStatus = "setup_status"
+        case isStarter = "is_starter"
     }
 }
 
@@ -83,6 +210,22 @@ struct UpdateProtocolRequest: Encodable {
         case name, notes
         case startDate = "start_date"
         case endDate = "end_date"
+    }
+}
+
+struct StarterProtocolActivationRequest: Encodable {
+    let doseMg: Double
+    let doseUnit: String
+    let frequency: String
+    let administrationRoute: String
+    let startDate: Date
+
+    enum CodingKeys: String, CodingKey {
+        case doseMg = "dose_mg"
+        case doseUnit = "dose_unit"
+        case frequency
+        case administrationRoute = "administration_route"
+        case startDate = "start_date"
     }
 }
 

@@ -45,6 +45,22 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertTrue(fixture.store.hasKnownAccount)
     }
 
+    func testUserDecodesAuthMeResponseWithoutCreatedAt() throws {
+        let json = """
+        {
+          "id": "11111111-1111-1111-1111-111111111111",
+          "email": "alex@example.com",
+          "display_name": null,
+          "is_verified": false
+        }
+        """.data(using: .utf8)!
+
+        let user = try JSONDecoder().decode(User.self, from: json)
+
+        XCTAssertEqual(user.id.uuidString.lowercased(), "11111111-1111-1111-1111-111111111111")
+        XCTAssertEqual(user.email, "alex@example.com")
+    }
+
     func testUnauthorizedSessionClearsCredentialsAndUsesSignedOutRoute() async throws {
         let fixture = Fixture()
         try fixture.keychain.save("access", for: KeychainKeys.accessToken)
@@ -93,14 +109,14 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertEqual(fixture.coordinator.route, .authentication(.register))
     }
 
-    func testDidAuthenticateAssociatesDraftAndRoutesToDashboard() {
+    func testDidAuthenticateAssociatesDraftAndRoutesToDashboard() async {
         let fixture = Fixture()
         let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
         var draft = OnboardingDraft()
         draft.selectedPeptides = ["Retatrutide"]
         fixture.store.saveAnonymousDraft(draft)
 
-        fixture.coordinator.didAuthenticate(user: user)
+        await fixture.coordinator.didAuthenticate(user: user)
 
         XCTAssertEqual(fixture.coordinator.route, .dashboard)
         XCTAssertTrue(fixture.appState.isAuthenticated)
@@ -108,6 +124,22 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertNil(fixture.store.loadAnonymousDraft())
         XCTAssertEqual(fixture.store.loadDraft(for: user.id)?.selectedPeptides, ["Retatrutide"])
         XCTAssertTrue(fixture.store.hasKnownAccount)
+    }
+
+    func testDidAuthenticateAttemptsProfileAttachAndStillRoutesDashboardOnFailure() async {
+        let fixture = Fixture()
+        let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
+        var draft = OnboardingDraft()
+        draft.isComplete = true
+        draft.selectedPeptides = ["Retatrutide"]
+        fixture.store.saveAnonymousDraft(draft)
+        fixture.api.setMockError(.serverError, for: "/profile/onboarding/attach")
+
+        await fixture.coordinator.didAuthenticate(user: user)
+
+        XCTAssertEqual(fixture.coordinator.route, .dashboard)
+        XCTAssertTrue(fixture.coordinator.hasProfileAttachFailure)
+        XCTAssertNotNil(fixture.store.loadAnonymousDraft())
     }
 
     func testLogoutClearsCredentialsAndRoutesToSignIn() throws {
@@ -125,11 +157,11 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertNil(fixture.keychain.get(KeychainKeys.refreshToken))
     }
 
-    func testLogoutRoutesToSignInWithoutClearingKnownAccount() {
+    func testLogoutRoutesToSignInWithoutClearingKnownAccount() async {
         let fixture = Fixture()
         let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
 
-        fixture.coordinator.didAuthenticate(user: user)
+        await fixture.coordinator.didAuthenticate(user: user)
         fixture.coordinator.logout()
 
         XCTAssertEqual(fixture.coordinator.route, .authentication(.signIn))
@@ -204,32 +236,44 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertTrue(RootView.shouldResolveLaunch(for: deps))
     }
 
-    func testLoginCompletionUsesCoordinatorAuthenticationHandoff() {
+    func testLoginCompletionUsesCoordinatorAuthenticationHandoff() async {
         let deps = Dependencies.mock()
         let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
         var draft = OnboardingDraft()
         draft.isComplete = true
         deps.onboardingStore.saveAnonymousDraft(draft)
+        let api = deps.api as! MockAPIClient
+        api.setMockResponse(
+            OnboardingProfilePayload(draft: draft),
+            for: "/profile/onboarding/attach"
+        )
 
-        LoginView.completeLogin(user: user, deps: deps)
+        await LoginView.completeLogin(user: user, deps: deps)
 
         XCTAssertEqual(deps.flow.route, .dashboard)
         XCTAssertTrue(deps.appState.isAuthenticated)
+        XCTAssertFalse(deps.flow.hasProfileAttachFailure)
         XCTAssertNil(deps.onboardingStore.loadAnonymousDraft())
         XCTAssertNotNil(deps.onboardingStore.loadDraft(for: user.id))
     }
 
-    func testRegistrationCompletionUsesCoordinatorAuthenticationHandoffAndToast() {
+    func testRegistrationCompletionUsesCoordinatorAuthenticationHandoffAndToast() async {
         let deps = Dependencies.mock()
         let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
         var draft = OnboardingDraft()
         draft.isComplete = true
         deps.onboardingStore.saveAnonymousDraft(draft)
+        let api = deps.api as! MockAPIClient
+        api.setMockResponse(
+            OnboardingProfilePayload(draft: draft),
+            for: "/profile/onboarding/attach"
+        )
 
-        RegisterView.completeRegistration(user: user, deps: deps)
+        await RegisterView.completeRegistration(user: user, deps: deps)
 
         XCTAssertEqual(deps.flow.route, .dashboard)
         XCTAssertTrue(deps.appState.isAuthenticated)
+        XCTAssertFalse(deps.flow.hasProfileAttachFailure)
         XCTAssertNil(deps.onboardingStore.loadAnonymousDraft())
         XCTAssertNotNil(deps.onboardingStore.loadDraft(for: user.id))
         XCTAssertEqual(deps.appState.toast?.message, "Welcome to Peppy!")

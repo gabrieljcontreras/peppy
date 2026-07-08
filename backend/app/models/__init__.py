@@ -7,6 +7,7 @@ from app.models.insight import Insight
 from app.models.wearable import WearableData, WearableConnection
 from app.models.job import Job, JobStatus
 from app.models.notification import DeviceToken, DevicePlatform, NotificationPreference
+from app.models.profile import OnboardingProfile
 from app.models.waitlist import WaitlistEntry
 
 __all__ = [
@@ -26,5 +27,6 @@ __all__ = [
     "DeviceToken",
     "DevicePlatform",
     "NotificationPreference",
+    "OnboardingProfile",
     "WaitlistEntry",
 ]

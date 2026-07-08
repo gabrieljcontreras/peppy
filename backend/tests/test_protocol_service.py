@@ -86,6 +86,29 @@ class TestProtocolService:
         assert protocol.notes == "12-week titration plan"
         assert protocol.compounds[0].notes == "Inject in abdomen"
 
+    async def test_create_pending_starter_protocol_from_peptides(self, service, user):
+        protocol = await service.create_pending_starter(
+            user_id=user.id,
+            peptide_names=["Retatrutide", "BPC-157"],
+            goals=["track_protocols"],
+        )
+
+        assert protocol.setup_status == "pending_setup"
+        assert protocol.is_active is False
+        assert protocol.name == "Starter protocol"
+        assert [compound.name for compound in protocol.compounds] == ["Retatrutide", "BPC-157"]
+        assert all(compound.dose_mg == 0 for compound in protocol.compounds)
+
+    async def test_activate_pending_protocol_requires_complete_compounds(self, service, user):
+        protocol = await service.create_pending_starter(
+            user_id=user.id,
+            peptide_names=["Retatrutide"],
+            goals=[],
+        )
+
+        with pytest.raises(ValueError, match="Dose, frequency, route, and start date are required"):
+            await service.activate_pending_protocol(protocol)
+
     async def test_create_protocol_empty_compounds_raises(self, service, user):
         with pytest.raises(ValueError, match="at least one compound"):
             await service.create(

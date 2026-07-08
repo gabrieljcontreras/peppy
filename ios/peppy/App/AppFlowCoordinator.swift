@@ -20,6 +20,7 @@ enum AppRoute: Equatable {
 final class AppFlowCoordinator {
     var route: AppRoute = .launching
     var launchError: APIError?
+    var hasProfileAttachFailure = false
     private var authenticationBackStack: [AppRoute] = []
 
     private let api: APIClientProtocol
@@ -114,8 +115,21 @@ final class AppFlowCoordinator {
         route = .authentication(.register)
     }
 
-    func didAuthenticate(user: User) {
-        onboardingStore.associateAnonymousDraft(with: user.id)
+    func didAuthenticate(user: User) async {
+        hasProfileAttachFailure = false
+        if let draft = onboardingStore.loadAnonymousDraft(), draft.isComplete {
+            do {
+                let _: OnboardingProfilePayload = try await api.execute(
+                    .attachOnboardingProfile(OnboardingProfileAttachRequest(draft: draft))
+                )
+                onboardingStore.associateAnonymousDraft(with: user.id)
+            } catch {
+                hasProfileAttachFailure = true
+                onboardingStore.hasKnownAccount = true
+            }
+        } else {
+            onboardingStore.associateAnonymousDraft(with: user.id)
+        }
         appState.login(user: user)
         authenticationBackStack = []
         route = .dashboard

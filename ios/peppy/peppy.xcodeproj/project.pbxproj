@@ -34,6 +34,15 @@
 		49C364AD2FDCFBCD00C1F5DE /* PeppyLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364AC2FDCFBCD00C1F5DE /* PeppyLogo.swift */; };
 		49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */; };
 		49C364B02FEE000100C1F5DE /* OnboardingDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */; };
+		49C365002FF000100C1F5DE /* ProfileAttachTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365012FF000100C1F5DE /* ProfileAttachTests.swift */; };
+		49C365022FF000200C1F5DE /* DashboardViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365032FF000200C1F5DE /* DashboardViewModelTests.swift */; };
+		49C365042FF000300C1F5DE /* DashboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365052FF000300C1F5DE /* DashboardModels.swift */; };
+		49C365062FF000300C1F5DE /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365072FF000300C1F5DE /* DashboardViewModel.swift */; };
+		49C3650B2FF000400C1F5DE /* DashboardCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3650C2FF000400C1F5DE /* DashboardCards.swift */; };
+		49C3650D2FF000400C1F5DE /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3650E2FF000400C1F5DE /* DashboardView.swift */; };
+		49C365102FF000500C1F5DE /* StarterProtocolViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365112FF000500C1F5DE /* StarterProtocolViewModelTests.swift */; };
+		49C365122FF000600C1F5DE /* StarterProtocolViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365132FF000600C1F5DE /* StarterProtocolViewModel.swift */; };
+		49C365142FF000600C1F5DE /* StarterProtocolSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365152FF000600C1F5DE /* StarterProtocolSetupView.swift */; };
 		49C364BD2FEE100100C1F5DE /* OnboardingDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */; };
 		49C364C12FEE200100C1F5DE /* OnboardingStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */; };
 		49C364C32FEE200100C1F5DE /* OnboardingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364C42FEE200100C1F5DE /* OnboardingStore.swift */; };
@@ -105,6 +114,15 @@
 		49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Assets 2.xcassets"; sourceTree = "<group>"; };
 		49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraftTests.swift; sourceTree = "<group>"; };
 		49C364B22FEE000100C1F5DE /* peppyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = peppyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		49C365012FF000100C1F5DE /* ProfileAttachTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileAttachTests.swift; sourceTree = "<group>"; };
+		49C365032FF000200C1F5DE /* DashboardViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModelTests.swift; sourceTree = "<group>"; };
+		49C365052FF000300C1F5DE /* DashboardModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardModels.swift; sourceTree = "<group>"; };
+		49C365072FF000300C1F5DE /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
+		49C3650C2FF000400C1F5DE /* DashboardCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardCards.swift; sourceTree = "<group>"; };
+		49C3650E2FF000400C1F5DE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		49C365112FF000500C1F5DE /* StarterProtocolViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarterProtocolViewModelTests.swift; sourceTree = "<group>"; };
+		49C365132FF000600C1F5DE /* StarterProtocolViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarterProtocolViewModel.swift; sourceTree = "<group>"; };
+		49C365152FF000600C1F5DE /* StarterProtocolSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarterProtocolSetupView.swift; sourceTree = "<group>"; };
 		49C364BE2FEE100100C1F5DE /* OnboardingDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingDraft.swift; sourceTree = "<group>"; };
 		49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStoreTests.swift; sourceTree = "<group>"; };
 		49C364C42FEE200100C1F5DE /* OnboardingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStore.swift; sourceTree = "<group>"; };
@@ -274,7 +292,9 @@
 			isa = PBXGroup;
 			children = (
 				49C364922FD4DE4B00C1F5DE /* Auth */,
+				49C365082FF000300C1F5DE /* Dashboard */,
 				49C364BF2FEE100100C1F5DE /* Onboarding */,
+				49C365162FF000600C1F5DE /* Protocols */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -285,11 +305,14 @@
 				49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */,
 				49C364E32FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift */,
 				49C364DA2FEE600100C1F5DE /* OnboardingComponentTests.swift */,
+				49C365032FF000200C1F5DE /* DashboardViewModelTests.swift */,
 				49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */,
 				49C364EB2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift */,
 				49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */,
 				49C364D52FEE500100C1F5DE /* OnboardingViewModelTests.swift */,
 				49C364C62FEE300100C1F5DE /* PermissionServiceTests.swift */,
+				49C365012FF000100C1F5DE /* ProfileAttachTests.swift */,
+				49C365112FF000500C1F5DE /* StarterProtocolViewModelTests.swift */,
 			);
 			path = peppyTests;
 			sourceTree = "<group>";
@@ -302,6 +325,66 @@
 				49C364E12FEE600100C1F5DE /* Views */,
 			);
 			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		49C365082FF000300C1F5DE /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				49C365092FF000300C1F5DE /* Models */,
+				49C3650A2FF000300C1F5DE /* ViewModels */,
+				49C3650F2FF000400C1F5DE /* Views */,
+			);
+			path = Dashboard;
+			sourceTree = "<group>";
+		};
+		49C365092FF000300C1F5DE /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				49C365052FF000300C1F5DE /* DashboardModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		49C3650A2FF000300C1F5DE /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				49C365072FF000300C1F5DE /* DashboardViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		49C3650F2FF000400C1F5DE /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				49C3650C2FF000400C1F5DE /* DashboardCards.swift */,
+				49C3650E2FF000400C1F5DE /* DashboardView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		49C365162FF000600C1F5DE /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				49C365172FF000600C1F5DE /* ViewModels */,
+				49C365182FF000600C1F5DE /* Views */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		49C365172FF000600C1F5DE /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				49C365132FF000600C1F5DE /* StarterProtocolViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		49C365182FF000600C1F5DE /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				49C365152FF000600C1F5DE /* StarterProtocolSetupView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		49C364C02FEE100100C1F5DE /* Models */ = {
@@ -476,6 +559,12 @@
 				49C3649A2FD4DE7E00C1F5DE /* APIError.swift in Sources */,
 				49C3649B2FD4DE7E00C1F5DE /* APIModels.swift in Sources */,
 				49C3649C2FD4DE7E00C1F5DE /* Endpoint.swift in Sources */,
+				49C365042FF000300C1F5DE /* DashboardModels.swift in Sources */,
+				49C365062FF000300C1F5DE /* DashboardViewModel.swift in Sources */,
+				49C3650B2FF000400C1F5DE /* DashboardCards.swift in Sources */,
+				49C3650D2FF000400C1F5DE /* DashboardView.swift in Sources */,
+				49C365122FF000600C1F5DE /* StarterProtocolViewModel.swift in Sources */,
+				49C365142FF000600C1F5DE /* StarterProtocolSetupView.swift in Sources */,
 				49C3649D2FD4DE7E00C1F5DE /* MockAPIClient.swift in Sources */,
 				49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */,
 				49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */,
@@ -522,11 +611,14 @@
 				49C364D02FEE400100C1F5DE /* AppFlowCoordinatorTests.swift in Sources */,
 				49C364E22FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift in Sources */,
 				49C364D92FEE600100C1F5DE /* OnboardingComponentTests.swift in Sources */,
+				49C365022FF000200C1F5DE /* DashboardViewModelTests.swift in Sources */,
 				49C364B02FEE000100C1F5DE /* OnboardingDraftTests.swift in Sources */,
 				49C364EA2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift in Sources */,
 				49C364C12FEE200100C1F5DE /* OnboardingStoreTests.swift in Sources */,
 				49C364D42FEE500100C1F5DE /* OnboardingViewModelTests.swift in Sources */,
 				49C364C52FEE300100C1F5DE /* PermissionServiceTests.swift in Sources */,
+				49C365002FF000100C1F5DE /* ProfileAttachTests.swift in Sources */,
+				49C365102FF000500C1F5DE /* StarterProtocolViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

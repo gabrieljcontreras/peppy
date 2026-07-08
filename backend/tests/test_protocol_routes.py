@@ -1,5 +1,5 @@
 import pytest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 
 class TestProtocolRoutes:
@@ -55,7 +55,7 @@ class TestProtocolRoutes:
             "/api/v1/protocols/",
             json=sample_protocol,
         )
-        assert response.status_code == 401
+        assert response.status_code == 403
 
     async def test_create_protocol_no_compounds(self, client, auth_headers):
         response = await client.post(
@@ -206,6 +206,57 @@ class TestProtocolRoutes:
             headers=auth_headers,
         )
         assert response.status_code == 404
+
+    async def test_activate_pending_starter_protocol_applies_setup_payload(
+        self,
+        client,
+        auth_headers,
+    ):
+        await client.post(
+            "/api/v1/profile/onboarding/attach",
+            json={
+                "draft_id": "starter-activation-route",
+                "is_complete": True,
+                "current_step": "summary",
+                "profile": {
+                    "age": 38,
+                    "peptides": ["Retatrutide"],
+                },
+            },
+            headers=auth_headers,
+        )
+        protocols_response = await client.get(
+            "/api/v1/protocols/",
+            headers=auth_headers,
+        )
+        starter = next(
+            protocol
+            for protocol in protocols_response.json()
+            if protocol["setup_status"] == "pending_setup"
+        )
+
+        start_date = datetime(2026, 7, 1, 12, 0, tzinfo=timezone.utc)
+        response = await client.post(
+            f"/api/v1/protocols/{starter['id']}/activate",
+            json={
+                "dose_mg": 2.0,
+                "dose_unit": "mg",
+                "frequency": "weekly",
+                "administration_route": "subcutaneous",
+                "start_date": start_date.isoformat(),
+            },
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["is_active"] is True
+        assert data["setup_status"] == "active"
+        assert data["start_date"] == "2026-07-01"
+        assert data["compounds"][0]["dose_mg"] == 2.0
+        assert data["compounds"][0]["dose_unit"] == "mg"
+        assert data["compounds"][0]["frequency"] == "weekly"
+        assert data["compounds"][0]["administration_route"] == "subcutaneous"
 
     async def test_replace_compounds(self, client, auth_headers, sample_protocol):
         create_response = await client.post(

@@ -68,6 +68,7 @@ enum OnboardingStep: Int, Codable, CaseIterable {
 struct OnboardingDraft: Codable, Equatable {
     static let currentSchemaVersion = 1
 
+    var draftID = UUID()
     var schemaVersion = currentSchemaVersion
     var currentStep: OnboardingStep = .intro
     var isComplete = false
@@ -95,5 +96,42 @@ struct OnboardingDraft: Codable, Equatable {
 
     static func kilograms(pounds: Double) -> Double {
         pounds * 0.45359237
+    }
+}
+
+extension HeightUnit {
+    var serverValue: String {
+        switch self {
+        case .feetAndInches: "ft_in"
+        case .centimeters: "cm"
+        }
+    }
+}
+
+extension WeightUnit {
+    var serverValue: String {
+        switch self {
+        case .pounds: "lb"
+        case .kilograms: "kg"
+        }
+    }
+}
+
+extension OnboardingGoal {
+    var serverValue: String {
+        switch self {
+        case .trackProtocols: "track_protocols"
+        case .understandBody: "understand_body"
+        case .buildHabits: "build_habits"
+        case .seeWhatWorks: "see_what_works"
+        case .optimizeRecovery: "optimize_recovery"
+        case .feelInControl: "feel_in_control"
+        }
+    }
+}
+
+extension OnboardingStep {
+    var serverValue: String {
+        String(describing: self)
     }
 }

@@ -153,7 +153,7 @@ struct LoginView: View {
             try deps.keychain.save(auth.accessToken, for: KeychainKeys.accessToken)
             try deps.keychain.save(auth.refreshToken, for: KeychainKeys.refreshToken)
             let user: User = try await deps.api.execute(.me)
-            Self.completeLogin(user: user, deps: deps)
+            await Self.completeLogin(user: user, deps: deps)
         } catch let error as APIError {
             deps.appState.showError(error)
         } catch {
@@ -162,8 +162,8 @@ struct LoginView: View {
     }
 
     @MainActor
-    static func completeLogin(user: User, deps: Dependencies) {
-        deps.flow.didAuthenticate(user: user)
+    static func completeLogin(user: User, deps: Dependencies) async {
+        await deps.flow.didAuthenticate(user: user)
     }
 }
 
