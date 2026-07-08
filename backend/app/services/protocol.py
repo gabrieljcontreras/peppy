@@ -348,7 +348,8 @@ class ProtocolService:
         """Remove a compound from a protocol."""
         if protocol and compound in protocol.compounds:
             protocol.compounds.remove(compound)
-        await self.db.delete(compound)
+        else:
+            await self.db.delete(compound)
         await self.db.commit()
 
     async def get_compound(

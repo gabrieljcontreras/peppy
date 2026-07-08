@@ -17,6 +17,7 @@ class User(Base, UUIDMixin, TimestampMixin):
 
     # Relationships
     protocols = relationship("Protocol", back_populates="user", cascade="all, delete-orphan")
+    dose_logs = relationship("DoseLog", back_populates="user", cascade="all, delete")
     checkins = relationship("Checkin", back_populates="user", cascade="all, delete-orphan")
     lab_results = relationship("LabResult", back_populates="user", cascade="all, delete-orphan")
     insights = relationship("Insight", back_populates="user", cascade="all, delete-orphan")
