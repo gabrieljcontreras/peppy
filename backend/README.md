@@ -12,6 +12,8 @@ FastAPI backend for the Peppy personalized peptide protocol engine.
 
 ### Installation
 
+**Windows (PowerShell):**
+
 ```powershell
 cd backend
 
@@ -26,12 +28,52 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
+**macOS / Linux (zsh/bash):**
+
+```bash
+cd backend
+
+# Create virtual environment with Python 3.11
+python3.11 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy environment file
+cp .env.example .env
+```
+
+> **Note:** `.env` is not tracked in git, so it does not transfer between machines.
+> If you switch machines and there is no `.env.example` to copy, create `.env` manually
+> with at least the following for local dev (SQLite — no Postgres/Redis required):
+>
+> ```dotenv
+> DEBUG=true
+> DATABASE_URL=sqlite+aiosqlite:///./peppy.db
+> SECRET_KEY=<any-random-string>
+> ENCRYPTION_KEY=<fernet-key>   # python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+> CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+> ```
+>
+> Then create the SQLite tables with `alembic upgrade head`.
+
 ### Running the Server (Development)
 
 Development mode uses SQLite — no database setup needed.
 
+**Windows (PowerShell):**
+
 ```powershell
 $env:DEBUG="true"
+python -m uvicorn app.main:app --reload --port 8001
+```
+
+**macOS / Linux (zsh/bash):**
+
+```bash
+# DEBUG is read from .env; export it inline only if not set there
+export DEBUG=true
 python -m uvicorn app.main:app --reload --port 8001
 ```
 
