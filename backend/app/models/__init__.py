@@ -1,5 +1,6 @@
 from app.models.base import Base, GUID
 from app.models.user import User
+from app.models.dose_log import DoseLog
 from app.models.protocol import Protocol, Compound
 from app.models.checkin import Checkin
 from app.models.lab import LabResult, LabMarker
@@ -14,6 +15,7 @@ __all__ = [
     "Base",
     "GUID",
     "User",
+    "DoseLog",
     "Protocol",
     "Compound",
     "Checkin",

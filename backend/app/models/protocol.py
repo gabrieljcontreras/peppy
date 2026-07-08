@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, Date, Boolean, ForeignKey, Text
+from sqlalchemy import Boolean, Column, Date, Float, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
 from app.models.base import Base, UUIDMixin, TimestampMixin, GUID
 
@@ -18,6 +18,7 @@ class Protocol(Base, UUIDMixin, TimestampMixin):
     # Relationships
     user = relationship("User", back_populates="protocols")
     compounds = relationship("Compound", back_populates="protocol", cascade="all, delete-orphan")
+    dose_logs = relationship("DoseLog", back_populates="protocol", cascade="all, delete")
 
 
 class Compound(Base, UUIDMixin, TimestampMixin):
@@ -33,3 +34,4 @@ class Compound(Base, UUIDMixin, TimestampMixin):
 
     # Relationships
     protocol = relationship("Protocol", back_populates="compounds")
+    dose_logs = relationship("DoseLog", back_populates="compound", cascade="all, delete")

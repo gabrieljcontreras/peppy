@@ -2,7 +2,21 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.api.routes import auth, protocols, checkins, labs, insights, health, wearables, notifications, waitlist, feedback, profile, dashboard
+from app.api.routes import (
+    auth,
+    checkins,
+    dashboard,
+    dose_logs,
+    feedback,
+    health,
+    insights,
+    labs,
+    notifications,
+    profile,
+    protocols,
+    waitlist,
+    wearables,
+)
 
 settings = get_settings()
 
@@ -30,6 +44,8 @@ app.add_middleware(
 app.include_router(health.router, tags=["health"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(protocols.router, prefix="/api/v1/protocols", tags=["protocols"])
+app.include_router(dose_logs.protocol_router, prefix="/api/v1/protocols", tags=["dose-logs"])
+app.include_router(dose_logs.router, prefix="/api/v1/dose-logs", tags=["dose-logs"])
 app.include_router(checkins.router, prefix="/api/v1/checkins", tags=["checkins"])
 app.include_router(labs.router, prefix="/api/v1/labs", tags=["labs"])
 app.include_router(insights.router, prefix="/api/v1/insights", tags=["insights"])
