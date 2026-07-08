@@ -4,6 +4,7 @@ struct DashboardView: View {
     @Environment(\.dependencies) private var deps
     @State private var model: DashboardViewModel?
     @State private var starterSetupRoute: StarterSetupRoute?
+    @State private var showsCheckin = false
 
     var body: some View {
         NavigationStack {
@@ -26,7 +27,9 @@ struct DashboardView: View {
                                     )
                                 }
                             }
-                            DashboardTodayCard(today: summary.todayCheckin) {}
+                            DashboardTodayCard(today: summary.todayCheckin) {
+                                showsCheckin = true
+                            }
                             responseSnapshot(summary.responseSnapshot)
                             insightCard(summary.insight)
                             connectedContextCard(summary.connectedContext)
@@ -52,6 +55,11 @@ struct DashboardView: View {
                     compounds: route.compounds,
                     api: deps.api
                 ) {
+                    Task { await model?.load() }
+                }
+            }
+            .sheet(isPresented: $showsCheckin) {
+                CheckinView {
                     Task { await model?.load() }
                 }
             }

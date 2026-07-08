@@ -67,10 +67,7 @@ struct HomeTab: View {
 
 struct CheckinTab: View {
     var body: some View {
-        NavigationStack {
-            PlaceholderView(title: "Quick Check-in", icon: "plus.circle.fill")
-                .navigationTitle("Check-in")
-        }
+        CheckinView()
     }
 }
 

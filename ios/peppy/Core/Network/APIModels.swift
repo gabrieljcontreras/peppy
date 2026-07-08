@@ -233,31 +233,197 @@ struct StarterProtocolActivationRequest: Encodable {
 
 struct Checkin: Codable, Identifiable {
     let id: UUID
+    let userId: UUID?
     let date: Date
-    let weight: Double?
+    let weightKg: Double?
+    let energyLevel: Int?
+    let sleepQuality: Int?
+    let appetiteLevel: Int?
     let mood: Int?
-    let sleepHours: Double?
-    let symptoms: [String]
+    let nausea: Int?
+    let injectionSiteReaction: Int?
+    let fatigue: Int?
+    let headache: Int?
+    let giIssues: Int?
     let notes: String?
+    let createdAt: Date?
+    let updatedAt: Date?
 
     enum CodingKeys: String, CodingKey {
-        case id, date, weight, mood, symptoms, notes
-        case sleepHours = "sleep_hours"
+        case id, date, mood, nausea, fatigue, headache, notes
+        case userId = "user_id"
+        case weightKg = "weight_kg"
+        case energyLevel = "energy_level"
+        case sleepQuality = "sleep_quality"
+        case appetiteLevel = "appetite_level"
+        case injectionSiteReaction = "injection_site_reaction"
+        case giIssues = "gi_issues"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
     }
+
+    init(
+        id: UUID,
+        userId: UUID?,
+        date: Date,
+        weightKg: Double?,
+        energyLevel: Int?,
+        sleepQuality: Int?,
+        appetiteLevel: Int?,
+        mood: Int?,
+        nausea: Int?,
+        injectionSiteReaction: Int?,
+        fatigue: Int?,
+        headache: Int?,
+        giIssues: Int?,
+        notes: String?,
+        createdAt: Date?,
+        updatedAt: Date?
+    ) {
+        self.id = id
+        self.userId = userId
+        self.date = date
+        self.weightKg = weightKg
+        self.energyLevel = energyLevel
+        self.sleepQuality = sleepQuality
+        self.appetiteLevel = appetiteLevel
+        self.mood = mood
+        self.nausea = nausea
+        self.injectionSiteReaction = injectionSiteReaction
+        self.fatigue = fatigue
+        self.headache = headache
+        self.giIssues = giIssues
+        self.notes = notes
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        userId = try container.decodeIfPresent(UUID.self, forKey: .userId)
+        date = try Self.dateOnlyFormatter.date(
+            from: container.decode(String.self, forKey: .date)
+        ) ?? container.decode(Date.self, forKey: .date)
+        weightKg = try container.decodeIfPresent(Double.self, forKey: .weightKg)
+        energyLevel = try container.decodeIfPresent(Int.self, forKey: .energyLevel)
+        sleepQuality = try container.decodeIfPresent(Int.self, forKey: .sleepQuality)
+        appetiteLevel = try container.decodeIfPresent(Int.self, forKey: .appetiteLevel)
+        mood = try container.decodeIfPresent(Int.self, forKey: .mood)
+        nausea = try container.decodeIfPresent(Int.self, forKey: .nausea)
+        injectionSiteReaction = try container.decodeIfPresent(Int.self, forKey: .injectionSiteReaction)
+        fatigue = try container.decodeIfPresent(Int.self, forKey: .fatigue)
+        headache = try container.decodeIfPresent(Int.self, forKey: .headache)
+        giIssues = try container.decodeIfPresent(Int.self, forKey: .giIssues)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+        createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt)
+        updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt)
+    }
+
+    private static let dateOnlyFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
 }
 
-struct CreateCheckinRequest: Encodable {
+struct CreateCheckinRequest: Codable, Equatable {
     let date: Date
-    let weight: Double?
+    let weightKg: Double?
+    let energyLevel: Int?
+    let sleepQuality: Int?
+    let appetiteLevel: Int?
     let mood: Int?
-    let sleepHours: Double?
-    let symptoms: [String]
+    let nausea: Int?
+    let injectionSiteReaction: Int?
+    let fatigue: Int?
+    let headache: Int?
+    let giIssues: Int?
     let notes: String?
 
     enum CodingKeys: String, CodingKey {
-        case date, weight, mood, symptoms, notes
-        case sleepHours = "sleep_hours"
+        case date, mood, nausea, fatigue, headache, notes
+        case weightKg = "weight_kg"
+        case energyLevel = "energy_level"
+        case sleepQuality = "sleep_quality"
+        case appetiteLevel = "appetite_level"
+        case injectionSiteReaction = "injection_site_reaction"
+        case giIssues = "gi_issues"
     }
+
+    init(
+        date: Date,
+        weightKg: Double?,
+        energyLevel: Int?,
+        sleepQuality: Int?,
+        appetiteLevel: Int?,
+        mood: Int?,
+        nausea: Int?,
+        injectionSiteReaction: Int?,
+        fatigue: Int?,
+        headache: Int?,
+        giIssues: Int?,
+        notes: String?
+    ) {
+        self.date = date
+        self.weightKg = weightKg
+        self.energyLevel = energyLevel
+        self.sleepQuality = sleepQuality
+        self.appetiteLevel = appetiteLevel
+        self.mood = mood
+        self.nausea = nausea
+        self.injectionSiteReaction = injectionSiteReaction
+        self.fatigue = fatigue
+        self.headache = headache
+        self.giIssues = giIssues
+        self.notes = notes
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        date = try Self.dateOnlyFormatter.date(
+            from: container.decode(String.self, forKey: .date)
+        ) ?? container.decode(Date.self, forKey: .date)
+        weightKg = try container.decodeIfPresent(Double.self, forKey: .weightKg)
+        energyLevel = try container.decodeIfPresent(Int.self, forKey: .energyLevel)
+        sleepQuality = try container.decodeIfPresent(Int.self, forKey: .sleepQuality)
+        appetiteLevel = try container.decodeIfPresent(Int.self, forKey: .appetiteLevel)
+        mood = try container.decodeIfPresent(Int.self, forKey: .mood)
+        nausea = try container.decodeIfPresent(Int.self, forKey: .nausea)
+        injectionSiteReaction = try container.decodeIfPresent(Int.self, forKey: .injectionSiteReaction)
+        fatigue = try container.decodeIfPresent(Int.self, forKey: .fatigue)
+        headache = try container.decodeIfPresent(Int.self, forKey: .headache)
+        giIssues = try container.decodeIfPresent(Int.self, forKey: .giIssues)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(Self.dateOnlyFormatter.string(from: date), forKey: .date)
+        try container.encodeIfPresent(weightKg, forKey: .weightKg)
+        try container.encodeIfPresent(energyLevel, forKey: .energyLevel)
+        try container.encodeIfPresent(sleepQuality, forKey: .sleepQuality)
+        try container.encodeIfPresent(appetiteLevel, forKey: .appetiteLevel)
+        try container.encodeIfPresent(mood, forKey: .mood)
+        try container.encodeIfPresent(nausea, forKey: .nausea)
+        try container.encodeIfPresent(injectionSiteReaction, forKey: .injectionSiteReaction)
+        try container.encodeIfPresent(fatigue, forKey: .fatigue)
+        try container.encodeIfPresent(headache, forKey: .headache)
+        try container.encodeIfPresent(giIssues, forKey: .giIssues)
+        try container.encodeIfPresent(notes, forKey: .notes)
+    }
+
+    private static let dateOnlyFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
 }
 
 // MARK: - Lab
