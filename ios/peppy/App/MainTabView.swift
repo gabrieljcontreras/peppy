@@ -72,11 +72,10 @@ struct CheckinTab: View {
 }
 
 struct ProtocolsTab: View {
+    @Environment(\.dependencies) private var deps
+
     var body: some View {
-        NavigationStack {
-            PlaceholderView(title: "Your Protocols", icon: "pills.fill")
-                .navigationTitle("Protocols")
-        }
+        ProtocolsRootView(store: deps.protocolStore, api: deps.api)
     }
 }
 
