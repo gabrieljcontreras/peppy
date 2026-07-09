@@ -109,7 +109,7 @@ ios/peppy/peppy.xcodeproj/project.pbxproj
 - Produces `DoseLogCreate`, `DoseLogResponse`, `DoseLogService.create`, `DoseLogService.list_for_protocol`.
 - Produces `POST /api/v1/dose-logs` and `GET /api/v1/protocols/{protocol_id}/dose-logs`.
 
-- [ ] **Step 1: Write failing service tests**
+- [x] **Step 1: Write failing service tests**
 
 Create tests proving that a user can log a positive dose against their own protocol compound, list logs newest-first, and cannot log against another user's compound.
 
@@ -131,7 +131,7 @@ async def test_create_dose_log(db_session, user, protocol):
     assert result.unit == "mg"
 ```
 
-- [ ] **Step 2: Run the focused service tests**
+- [x] **Step 2: Run the focused service tests**
 
 ```bash
 cd backend
@@ -140,7 +140,7 @@ cd backend
 
 Expected: collection fails because `DoseLogService` does not exist.
 
-- [ ] **Step 3: Add model, relationships, schema, and service**
+- [x] **Step 3: Add model, relationships, schema, and service**
 
 Use this persistence shape:
 
@@ -160,11 +160,11 @@ class DoseLog(Base, UUIDMixin, TimestampMixin):
 
 `DoseLogService.create` must load the protocol and compound through ownership-scoped queries, verify the compound belongs to the supplied protocol, reject `dose <= 0`, add the row, commit, refresh, and return it. `list_for_protocol` must verify ownership and order by `administered_at DESC`.
 
-- [ ] **Step 4: Add the Alembic migration**
+- [x] **Step 4: Add the Alembic migration**
 
 Create `c5d6e7f8a9b0_protocol_dose_logs.py` with `down_revision = "b4c5d6e7f8a9"`, the table above, foreign keys with `ondelete="CASCADE"`, and indexes for `user_id`, `protocol_id`, `compound_id`, and `administered_at`.
 
-- [ ] **Step 5: Write failing route tests**
+- [x] **Step 5: Write failing route tests**
 
 Verify:
 
@@ -188,7 +188,7 @@ assert response.json()["dose"] == 2.5
 
 Also test list, invalid dose `422`, mismatched compound `400`, foreign protocol `404`, and unauthorized `401`.
 
-- [ ] **Step 6: Add and register the routes**
+- [x] **Step 6: Add and register the routes**
 
 Implement:
 
@@ -233,7 +233,7 @@ async def list_protocol_dose_logs(
 
 Register the create router at `/api/v1/dose-logs`; add the protocol history route to the protocols router or register an ownership-equivalent nested router.
 
-- [ ] **Step 7: Run backend verification**
+- [x] **Step 7: Run backend verification**
 
 ```bash
 cd backend
@@ -259,7 +259,7 @@ Expected: all selected tests pass.
 - Produces complete `Compound`, `CreateCompoundRequest`, `UpdateCompoundRequest`, `DoseLog`, and `CreateDoseLogRequest`.
 - Produces all endpoint cases consumed by the store.
 
-- [ ] **Step 1: Write failing encoding and endpoint tests**
+- [x] **Step 1: Write failing encoding and endpoint tests**
 
 Assert that compound payloads encode `dose_mg`, `dose_unit`, `administration_route`, and `notes`; dose payloads encode IDs and `administered_at`; endpoint paths and methods match the FastAPI routes.
 
@@ -272,7 +272,7 @@ func testAddCompoundEndpoint() {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 ```bash
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
@@ -283,7 +283,7 @@ xcodebuild test -project ios/peppy/peppy.xcodeproj \
 
 Expected: compilation fails because the new endpoint cases and request types do not exist.
 
-- [ ] **Step 3: Expand API models**
+- [x] **Step 3: Expand API models**
 
 The decoded compound contract must include:
 
@@ -314,7 +314,7 @@ struct DoseLog: Codable, Identifiable, Hashable {
 }
 ```
 
-- [ ] **Step 4: Add endpoint cases**
+- [x] **Step 4: Add endpoint cases**
 
 Add:
 
@@ -328,11 +328,11 @@ case createDoseLog(CreateDoseLogRequest)
 
 Wire exact paths, HTTP methods, and bodies. Keep `executeVoid` for `204` delete responses.
 
-- [ ] **Step 5: Improve mock request assertions**
+- [x] **Step 5: Improve mock request assertions**
 
 Make `Endpoint` expose testable request identity without relying only on duplicate paths. Add `method` and endpoint-case assertions to tests; retain `requestLog` so mutation order can be verified.
 
-- [ ] **Step 6: Run focused tests**
+- [x] **Step 6: Run focused tests**
 
 Run the Task 2 command. Expected: all selected tests pass.
 
