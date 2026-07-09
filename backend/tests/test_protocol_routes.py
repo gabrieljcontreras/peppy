@@ -198,6 +198,30 @@ class TestProtocolRoutes:
         assert response.json()["name"] == "Updated Name"
         assert response.json()["notes"] == "Some notes"
 
+    async def test_update_protocol_clears_optional_fields(self, client, auth_headers):
+        create_response = await client.post(
+            "/api/v1/protocols/",
+            json={
+                "name": "Protocol With Notes",
+                "start_date": str(date.today()),
+                "end_date": str(date.today() + timedelta(days=30)),
+                "notes": "Existing notes",
+                "compounds": [{"name": "Retatrutide", "dose_mg": 2.0, "frequency": "weekly"}],
+            },
+            headers=auth_headers,
+        )
+        protocol_id = create_response.json()["id"]
+
+        response = await client.patch(
+            f"/api/v1/protocols/{protocol_id}",
+            json={"end_date": None, "notes": None},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        assert response.json()["end_date"] is None
+        assert response.json()["notes"] is None
+
     async def test_update_protocol_not_found(self, client, auth_headers):
         fake_id = "00000000-0000-0000-0000-000000000000"
         response = await client.patch(
@@ -318,6 +342,34 @@ class TestProtocolRoutes:
         assert response.json()["dose_mg"] == 4.0
         assert response.json()["notes"] == "Increased dose"
         assert response.json()["name"] == "Retatrutide"  # unchanged
+
+    async def test_update_compound_clears_notes(self, client, auth_headers):
+        create_response = await client.post(
+            "/api/v1/protocols/",
+            json={
+                "name": "Protocol With Compound Notes",
+                "start_date": str(date.today()),
+                "compounds": [
+                    {
+                        "name": "Retatrutide",
+                        "dose_mg": 2.0,
+                        "frequency": "weekly",
+                        "notes": "Existing notes",
+                    }
+                ],
+            },
+            headers=auth_headers,
+        )
+        compound_id = create_response.json()["compounds"][0]["id"]
+
+        response = await client.patch(
+            f"/api/v1/protocols/compounds/{compound_id}",
+            json={"notes": None},
+            headers=auth_headers,
+        )
+
+        assert response.status_code == 200
+        assert response.json()["notes"] is None
 
     async def test_update_compound_not_found(self, client, auth_headers):
         fake_id = "00000000-0000-0000-0000-000000000000"

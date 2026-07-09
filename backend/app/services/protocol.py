@@ -157,6 +157,8 @@ class ProtocolService:
         end_date: Optional[date] = None,
         notes: Optional[str] = None,
         is_active: Optional[bool] = None,
+        clear_end_date: bool = False,
+        clear_notes: bool = False,
     ) -> Protocol:
         """
         Update protocol metadata (not compounds).
@@ -166,9 +168,9 @@ class ProtocolService:
             protocol.name = name
         if start_date is not None:
             protocol.start_date = start_date
-        if end_date is not None:
+        if end_date is not None or clear_end_date:
             protocol.end_date = end_date
-        if notes is not None:
+        if notes is not None or clear_notes:
             protocol.notes = notes
         if is_active is not None:
             if is_active and not protocol.is_active:
@@ -325,6 +327,7 @@ class ProtocolService:
         frequency: Optional[str] = None,
         administration_route: Optional[str] = None,
         notes: Optional[str] = None,
+        clear_notes: bool = False,
     ) -> Compound:
         """Update a single compound's properties."""
         if name is not None:
@@ -337,7 +340,7 @@ class ProtocolService:
             compound.frequency = frequency
         if administration_route is not None:
             compound.administration_route = administration_route
-        if notes is not None:
+        if notes is not None or clear_notes:
             compound.notes = notes
 
         await self.db.commit()

@@ -75,6 +75,13 @@ final class ProtocolStoreTests: XCTestCase {
         XCTAssertEqual(Set(object.keys), ["dose_mg"])
     }
 
+    func testUpdateCompoundRequestCanExplicitlyClearNotes() throws {
+        let object = try encodedObject(UpdateCompoundRequest(notes: nil, clearNotes: true))
+
+        XCTAssertTrue(object["notes"] is NSNull)
+        XCTAssertEqual(Set(object.keys), ["notes"])
+    }
+
     func testCreateDoseLogRequestEncodesIdentifiersAndTimestamp() throws {
         let request = CreateDoseLogRequest(
             protocolID: ProtocolModel.fixture.id,
@@ -129,6 +136,23 @@ final class ProtocolStoreTests: XCTestCase {
 
         XCTAssertEqual(object["start_date"] as? String, "2026-07-09")
         XCTAssertEqual(Set(object.keys), ["start_date"])
+    }
+
+    func testUpdateProtocolRequestCanExplicitlyClearOptionalFields() throws {
+        let request = UpdateProtocolRequest(
+            name: nil,
+            startDate: nil,
+            endDate: nil,
+            notes: nil,
+            clearEndDate: true,
+            clearNotes: true
+        )
+
+        let object = try encodedObject(request)
+
+        XCTAssertTrue(object["end_date"] is NSNull)
+        XCTAssertTrue(object["notes"] is NSNull)
+        XCTAssertEqual(Set(object.keys), ["end_date", "notes"])
     }
 
     // MARK: - Response decoding

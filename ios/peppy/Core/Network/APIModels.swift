@@ -296,6 +296,7 @@ struct UpdateCompoundRequest: Encodable {
     let frequency: String?
     let administrationRoute: String?
     let notes: String?
+    private let clearNotes: Bool
 
     enum CodingKeys: String, CodingKey {
         case name, frequency, notes
@@ -310,7 +311,8 @@ struct UpdateCompoundRequest: Encodable {
         doseUnit: String? = nil,
         frequency: String? = nil,
         administrationRoute: String? = nil,
-        notes: String? = nil
+        notes: String? = nil,
+        clearNotes: Bool = false
     ) {
         self.name = name
         self.doseMg = doseMg
@@ -318,6 +320,21 @@ struct UpdateCompoundRequest: Encodable {
         self.frequency = frequency
         self.administrationRoute = administrationRoute
         self.notes = notes
+        self.clearNotes = clearNotes
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(name, forKey: .name)
+        try container.encodeIfPresent(doseMg, forKey: .doseMg)
+        try container.encodeIfPresent(doseUnit, forKey: .doseUnit)
+        try container.encodeIfPresent(frequency, forKey: .frequency)
+        try container.encodeIfPresent(administrationRoute, forKey: .administrationRoute)
+        if clearNotes && notes == nil {
+            try container.encodeNil(forKey: .notes)
+        } else {
+            try container.encodeIfPresent(notes, forKey: .notes)
+        }
     }
 }
 
@@ -326,6 +343,8 @@ struct UpdateProtocolRequest: Encodable {
     let startDate: Date?
     let endDate: Date?
     let notes: String?
+    private let clearEndDate: Bool
+    private let clearNotes: Bool
 
     enum CodingKeys: String, CodingKey {
         case name, notes
@@ -333,12 +352,36 @@ struct UpdateProtocolRequest: Encodable {
         case endDate = "end_date"
     }
 
+    init(
+        name: String? = nil,
+        startDate: Date? = nil,
+        endDate: Date? = nil,
+        notes: String? = nil,
+        clearEndDate: Bool = false,
+        clearNotes: Bool = false
+    ) {
+        self.name = name
+        self.startDate = startDate
+        self.endDate = endDate
+        self.notes = notes
+        self.clearEndDate = clearEndDate
+        self.clearNotes = clearNotes
+    }
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(name, forKey: .name)
         try container.encodeIfPresent(startDate.map(APIDateOnly.string(from:)), forKey: .startDate)
-        try container.encodeIfPresent(endDate.map(APIDateOnly.string(from:)), forKey: .endDate)
-        try container.encodeIfPresent(notes, forKey: .notes)
+        if let endDate {
+            try container.encode(APIDateOnly.string(from: endDate), forKey: .endDate)
+        } else if clearEndDate {
+            try container.encodeNil(forKey: .endDate)
+        }
+        if clearNotes && notes == nil {
+            try container.encodeNil(forKey: .notes)
+        } else {
+            try container.encodeIfPresent(notes, forKey: .notes)
+        }
     }
 }
 
