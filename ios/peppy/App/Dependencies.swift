@@ -10,6 +10,7 @@ final class Dependencies {
     let notifications: NotificationPermissionServiceProtocol
     let flow: AppFlowCoordinator
     let onboardingViewModel: OnboardingViewModel
+    let protocolStore: ProtocolStore
 
     init(
         api: APIClientProtocol,
@@ -19,7 +20,8 @@ final class Dependencies {
         healthKit: HealthKitServiceProtocol,
         notifications: NotificationPermissionServiceProtocol,
         flow: AppFlowCoordinator,
-        onboardingViewModel: OnboardingViewModel
+        onboardingViewModel: OnboardingViewModel,
+        protocolStore: ProtocolStore
     ) {
         self.api = api
         self.keychain = keychain
@@ -29,6 +31,7 @@ final class Dependencies {
         self.notifications = notifications
         self.flow = flow
         self.onboardingViewModel = onboardingViewModel
+        self.protocolStore = protocolStore
     }
 
     static func live() -> Dependencies {
@@ -49,6 +52,7 @@ final class Dependencies {
             healthKit: healthKit,
             notifications: notifications
         )
+        let protocolStore = ProtocolStore(api: api)
 
         return Dependencies(
             api: api,
@@ -58,7 +62,8 @@ final class Dependencies {
             healthKit: healthKit,
             notifications: notifications,
             flow: flow,
-            onboardingViewModel: onboardingViewModel
+            onboardingViewModel: onboardingViewModel,
+            protocolStore: protocolStore
         )
     }
 
@@ -80,6 +85,7 @@ final class Dependencies {
             healthKit: healthKit,
             notifications: notifications
         )
+        let protocolStore = ProtocolStore(api: api)
 
         return Dependencies(
             api: api,
@@ -89,7 +95,8 @@ final class Dependencies {
             healthKit: healthKit,
             notifications: notifications,
             flow: flow,
-            onboardingViewModel: onboardingViewModel
+            onboardingViewModel: onboardingViewModel,
+            protocolStore: protocolStore
         )
     }
 }

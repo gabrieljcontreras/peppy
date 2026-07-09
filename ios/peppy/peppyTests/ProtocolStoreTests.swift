@@ -2,6 +2,7 @@ import Foundation
 import XCTest
 @testable import peppy
 
+@MainActor
 final class ProtocolStoreTests: XCTestCase {
 
     // MARK: - Endpoint contracts
@@ -306,18 +307,418 @@ final class ProtocolStoreTests: XCTestCase {
         ISO8601DateFormatter().date(from: value)!
     }
 
-    private func makeProtocol(setupStatus: String?, isActive: Bool) -> ProtocolModel {
+    private func makeProtocol(
+        id: UUID = UUID(),
+        name: String = "Retatrutide Titration",
+        setupStatus: String? = "active",
+        isActive: Bool = true,
+        compounds: [Compound] = [.fixture]
+    ) -> ProtocolModel {
         ProtocolModel(
-            id: UUID(),
-            name: "Retatrutide Titration",
+            id: id,
+            name: name,
             startDate: Date(timeIntervalSince1970: 1_780_000_000),
             endDate: nil,
             notes: nil,
             isActive: isActive,
             setupStatus: setupStatus,
             isStarter: false,
-            compounds: [.fixture]
+            compounds: compounds
         )
+    }
+
+    private func makeDoseLog(
+        protocolID: UUID,
+        compoundID: UUID = Compound.fixture.id,
+        administeredAt: Date = Date(timeIntervalSince1970: 1_783_953_000)
+    ) -> DoseLog {
+        DoseLog(
+            id: UUID(),
+            protocolID: protocolID,
+            compoundID: compoundID,
+            dose: 2.5,
+            unit: "mg",
+            administeredAt: administeredAt,
+            route: "subcutaneous",
+            notes: nil
+        )
+    }
+
+    // MARK: - Store: list loading
+
+    func testLoadProtocolsPopulatesList() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let store = ProtocolStore(api: api)
+
+        await store.loadProtocols()
+
+        XCTAssertEqual(store.protocols, [ProtocolModel.fixture])
+        XCTAssertFalse(store.isLoading)
+        XCTAssertNil(store.errorMessage)
+    }
+
+    func testLoadProtocolsSkipsNetworkWhenAlreadyLoadedUnlessForced() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let store = ProtocolStore(api: api)
+
+        await store.loadProtocols()
+        await store.loadProtocols()
+        XCTAssertEqual(api.requestLog.count, 1)
+
+        await store.loadProtocols(force: true)
+        XCTAssertEqual(api.requestLog.count, 2)
+    }
+
+    func testInitialLoadFailureSetsError() async {
+        let api = MockAPIClient()
+        api.setMockError(.serverError, for: Endpoint.getProtocols)
+        let store = ProtocolStore(api: api)
+
+        await store.loadProtocols()
+
+        XCTAssertTrue(store.protocols.isEmpty)
+        XCTAssertNotNil(store.errorMessage)
+    }
+
+    func testRefreshFailureKeepsLoadedContent() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        api.setMockError(.serverError, for: Endpoint.getProtocols)
+        await store.loadProtocols(force: true)
+
+        XCTAssertEqual(store.protocols, [ProtocolModel.fixture])
+        XCTAssertNotNil(store.errorMessage)
+    }
+
+    // MARK: - Store: selection
+
+    func testSelectLoadsDetailAndReconcilesList() async {
+        let api = MockAPIClient()
+        let stale = makeProtocol(id: ProtocolModel.fixture.id, name: "Old Name")
+        api.setMockResponse([stale], for: Endpoint.getProtocols)
+        api.setMockResponse(ProtocolModel.fixture, for: Endpoint.getProtocol(id: ProtocolModel.fixture.id))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        await store.select(ProtocolModel.fixture.id)
+
+        XCTAssertEqual(store.selectedProtocol, ProtocolModel.fixture)
+        XCTAssertEqual(store.protocols, [ProtocolModel.fixture])
+    }
+
+    func testSelectKeepsLocalCopyWhenDetailRefreshFails() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        await store.select(ProtocolModel.fixture.id)
+
+        XCTAssertEqual(store.selectedProtocol, ProtocolModel.fixture)
+    }
+
+    func testStaleDetailResponseDoesNotOverwriteNewerSelection() async {
+        let api = MockAPIClient()
+        let a = makeProtocol(name: "A")
+        let b = makeProtocol(name: "B")
+        api.setMockResponse([a, b], for: Endpoint.getProtocols)
+        api.setMockResponse(a, for: Endpoint.getProtocol(id: a.id))
+        api.setMockResponse(b, for: Endpoint.getProtocol(id: b.id))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let gate = RequestGate()
+        let started = expectation(description: "stale request in flight")
+        let stalePath = "/protocols/\(a.id)"
+        api.onRequest = { endpoint in
+            if endpoint.path == stalePath {
+                started.fulfill()
+                await gate.wait()
+            }
+        }
+
+        let firstSelection = Task { await store.select(a.id) }
+        await fulfillment(of: [started], timeout: 2)
+
+        await store.select(b.id)
+        XCTAssertEqual(store.selectedProtocol?.id, b.id)
+
+        await gate.open()
+        await firstSelection.value
+
+        XCTAssertEqual(store.selectedProtocol?.id, b.id)
+    }
+
+    // MARK: - Store: mutations
+
+    func testCreateAppendsProtocolAndDeactivatesPrevious() async {
+        let api = MockAPIClient()
+        let existing = makeProtocol(name: "Existing", isActive: true)
+        api.setMockResponse([existing], for: Endpoint.getProtocols)
+        let created = makeProtocol(name: "New", isActive: true)
+        api.setMockResponse(created, for: Endpoint.createProtocol(.fixture))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let result = await store.create(.fixture)
+
+        XCTAssertEqual(result, created)
+        XCTAssertEqual(store.protocols.first, created)
+        let previous = store.protocols.first { $0.id == existing.id }
+        XCTAssertEqual(previous?.isActive, false)
+        XCTAssertEqual(previous?.setupStatus, "inactive")
+    }
+
+    func testUpdateReplacesProtocolMetadata() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let request = UpdateProtocolRequest(name: "Renamed", startDate: nil, endDate: nil, notes: nil)
+        let updated = makeProtocol(id: ProtocolModel.fixture.id, name: "Renamed")
+        api.setMockResponse(updated, for: Endpoint.updateProtocol(id: ProtocolModel.fixture.id, request))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+        await store.select(ProtocolModel.fixture.id)
+
+        let result = await store.update(id: ProtocolModel.fixture.id, request: request)
+
+        XCTAssertEqual(result, updated)
+        XCTAssertEqual(store.protocols, [updated])
+        XCTAssertEqual(store.selectedProtocol, updated)
+    }
+
+    func testAddCompoundAppendsToProtocol() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let added = Compound(
+            id: UUID(),
+            name: "BPC-157",
+            doseMg: 0.25,
+            doseUnit: "mg",
+            frequency: "daily",
+            administrationRoute: "subcutaneous",
+            notes: nil
+        )
+        api.setMockResponse(added, for: Endpoint.addCompound(protocolID: ProtocolModel.fixture.id, .fixture))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let result = await store.addCompound(protocolID: ProtocolModel.fixture.id, request: .fixture)
+
+        XCTAssertEqual(result, added)
+        XCTAssertEqual(store.protocols.first?.compounds, [Compound.fixture, added])
+    }
+
+    func testUpdateCompoundReplacesCompoundInOwningProtocol() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let request = UpdateCompoundRequest(doseMg: 5.0)
+        let updated = Compound(
+            id: Compound.fixture.id,
+            name: Compound.fixture.name,
+            doseMg: 5.0,
+            doseUnit: "mg",
+            frequency: "weekly",
+            administrationRoute: "subcutaneous",
+            notes: nil
+        )
+        api.setMockResponse(updated, for: Endpoint.updateCompound(id: Compound.fixture.id, request))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let result = await store.updateCompound(id: Compound.fixture.id, request: request)
+
+        XCTAssertEqual(result, updated)
+        XCTAssertEqual(store.protocols.first?.compounds, [updated])
+    }
+
+    func testRemoveCompoundRemovesFromProtocol() async {
+        let api = MockAPIClient()
+        let second = Compound(
+            id: UUID(),
+            name: "BPC-157",
+            doseMg: 0.25,
+            doseUnit: "mg",
+            frequency: "daily",
+            administrationRoute: "subcutaneous",
+            notes: nil
+        )
+        let protocolValue = makeProtocol(compounds: [.fixture, second])
+        api.setMockResponse([protocolValue], for: Endpoint.getProtocols)
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let removed = await store.removeCompound(id: second.id, protocolID: protocolValue.id)
+
+        XCTAssertTrue(removed)
+        XCTAssertEqual(store.protocols.first?.compounds, [Compound.fixture])
+    }
+
+    func testActivateAppliesServerStateAndDeactivatesOthers() async {
+        let api = MockAPIClient()
+        let inactive = makeProtocol(name: "A", setupStatus: "inactive", isActive: false)
+        let active = makeProtocol(name: "B", setupStatus: "active", isActive: true)
+        api.setMockResponse([inactive, active], for: Endpoint.getProtocols)
+        let activated = makeProtocol(id: inactive.id, name: "A", setupStatus: "active", isActive: true)
+        api.setMockResponse(activated, for: Endpoint.activateProtocol(id: inactive.id))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let didActivate = await store.activate(id: inactive.id)
+
+        XCTAssertTrue(didActivate)
+        XCTAssertEqual(store.protocols.first { $0.id == inactive.id }, activated)
+        XCTAssertEqual(store.protocols.first { $0.id == active.id }?.isActive, false)
+    }
+
+    func testDeactivateAppliesServerState() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let deactivated = makeProtocol(
+            id: ProtocolModel.fixture.id,
+            setupStatus: "inactive",
+            isActive: false
+        )
+        api.setMockResponse(deactivated, for: Endpoint.deactivateProtocol(id: ProtocolModel.fixture.id))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let didDeactivate = await store.deactivate(id: ProtocolModel.fixture.id)
+
+        XCTAssertTrue(didDeactivate)
+        XCTAssertEqual(store.protocols, [deactivated])
+    }
+
+    func testDeleteRemovesProtocolAndClearsSelection() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: "/protocols")
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+        await store.select(ProtocolModel.fixture.id)
+
+        let deleted = await store.deleteSelected()
+
+        XCTAssertTrue(deleted)
+        XCTAssertTrue(store.protocols.isEmpty)
+        XCTAssertNil(store.selectedProtocol)
+    }
+
+    func testDeleteFailureKeepsStateAndSetsError() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        api.setMockError(.serverError, for: Endpoint.deleteProtocol(id: ProtocolModel.fixture.id))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+        await store.select(ProtocolModel.fixture.id)
+
+        let deleted = await store.deleteSelected()
+
+        XCTAssertFalse(deleted)
+        XCTAssertEqual(store.protocols, [ProtocolModel.fixture])
+        XCTAssertEqual(store.selectedProtocol, ProtocolModel.fixture)
+        XCTAssertNotNil(store.errorMessage)
+    }
+
+    func testOverlappingMutationForSameProtocolIsRejected() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let request = UpdateProtocolRequest(name: "Renamed", startDate: nil, endDate: nil, notes: nil)
+        let updated = makeProtocol(id: ProtocolModel.fixture.id, name: "Renamed")
+        api.setMockResponse(updated, for: Endpoint.updateProtocol(id: ProtocolModel.fixture.id, request))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let gate = RequestGate()
+        let started = expectation(description: "first mutation in flight")
+        api.onRequest = { endpoint in
+            if endpoint.method == .patch {
+                started.fulfill()
+                await gate.wait()
+            }
+        }
+
+        let firstMutation = Task { await store.update(id: ProtocolModel.fixture.id, request: request) }
+        await fulfillment(of: [started], timeout: 2)
+
+        XCTAssertEqual(store.mutatingProtocolID, ProtocolModel.fixture.id)
+        let second = await store.update(id: ProtocolModel.fixture.id, request: request)
+        XCTAssertNil(second)
+
+        await gate.open()
+        let first = await firstMutation.value
+
+        XCTAssertEqual(first, updated)
+        XCTAssertNil(store.mutatingProtocolID)
+        XCTAssertEqual(api.requestLog.filter { $0.method == .patch }.count, 1)
+    }
+
+    // MARK: - Store: dose logs
+
+    func testLoadDoseLogsStoresHistory() async {
+        let api = MockAPIClient()
+        let log = makeDoseLog(protocolID: ProtocolModel.fixture.id)
+        api.setMockResponse([log], for: Endpoint.getDoseLogs(protocolID: ProtocolModel.fixture.id))
+        let store = ProtocolStore(api: api)
+
+        await store.loadDoseLogs(protocolID: ProtocolModel.fixture.id)
+
+        XCTAssertEqual(store.doseLogs, [log])
+    }
+
+    func testLogDosePrependsToLoadedHistory() async {
+        let api = MockAPIClient()
+        let older = makeDoseLog(protocolID: ProtocolModel.fixture.id)
+        api.setMockResponse([older], for: Endpoint.getDoseLogs(protocolID: ProtocolModel.fixture.id))
+        let logged = makeDoseLog(protocolID: ProtocolModel.fixture.id)
+        api.setMockResponse(logged, for: Endpoint.createDoseLog(.fixture))
+        let store = ProtocolStore(api: api)
+        await store.loadDoseLogs(protocolID: ProtocolModel.fixture.id)
+
+        let result = await store.logDose(.fixture)
+
+        XCTAssertEqual(result, logged)
+        XCTAssertEqual(store.doseLogs, [logged, older])
+    }
+
+    func testLogDoseFailureReturnsNilAndSetsError() async {
+        let api = MockAPIClient()
+        api.setMockError(.serverError, for: Endpoint.createDoseLog(.fixture))
+        let store = ProtocolStore(api: api)
+
+        let result = await store.logDose(.fixture)
+
+        XCTAssertNil(result)
+        XCTAssertNotNil(store.errorMessage)
+    }
+
+    // MARK: - Dependencies
+
+    func testDependenciesProvideProtocolStore() {
+        let dependencies = Dependencies.mock()
+
+        XCTAssertTrue(dependencies.protocolStore.protocols.isEmpty)
+        XCTAssertTrue(dependencies.protocolStore === dependencies.protocolStore)
+    }
+}
+
+/// Suspends gated requests until opened, so tests can order overlapping responses.
+private actor RequestGate {
+    private var continuations: [CheckedContinuation<Void, Never>] = []
+    private var isOpen = false
+
+    func wait() async {
+        if isOpen { return }
+        await withCheckedContinuation { continuations.append($0) }
+    }
+
+    func open() {
+        isOpen = true
+        continuations.forEach { $0.resume() }
+        continuations.removeAll()
     }
 }
 

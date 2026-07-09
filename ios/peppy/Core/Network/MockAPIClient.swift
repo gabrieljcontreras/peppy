@@ -4,9 +4,11 @@ final class MockAPIClient: APIClientProtocol {
     var mockResponses: [String: Any] = [:]
     var mockErrors: [String: APIError] = [:]
     var requestLog: [Endpoint] = []
+    var onRequest: ((Endpoint) async -> Void)?
 
     func execute<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
         requestLog.append(endpoint)
+        await onRequest?(endpoint)
 
         if let error = mockError(for: endpoint) {
             throw error
@@ -21,6 +23,7 @@ final class MockAPIClient: APIClientProtocol {
 
     func executeVoid(_ endpoint: Endpoint) async throws {
         requestLog.append(endpoint)
+        await onRequest?(endpoint)
 
         if let error = mockError(for: endpoint) {
             throw error
@@ -47,6 +50,7 @@ final class MockAPIClient: APIClientProtocol {
         mockResponses.removeAll()
         mockErrors.removeAll()
         requestLog.removeAll()
+        onRequest = nil
     }
 
     // Method-qualified keys win; bare paths remain supported for existing tests.
