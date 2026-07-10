@@ -22,7 +22,7 @@ from app.api.schemas.protocol import (
 router = APIRouter()
 
 
-@router.get("/", response_model=list[ProtocolResponse])
+@router.get("", response_model=list[ProtocolResponse])
 async def list_protocols(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -46,7 +46,7 @@ async def list_protocols(
     return protocols
 
 
-@router.post("/", response_model=ProtocolResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ProtocolResponse, status_code=status.HTTP_201_CREATED)
 async def create_protocol(
     protocol_data: ProtocolCreate,
     current_user: CurrentUser,

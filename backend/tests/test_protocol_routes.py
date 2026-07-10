@@ -35,7 +35,7 @@ class TestProtocolRoutes:
 
     async def test_create_protocol(self, client, auth_headers, sample_protocol):
         response = await client.post(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             json=sample_protocol,
             headers=auth_headers,
         )
@@ -52,14 +52,14 @@ class TestProtocolRoutes:
 
     async def test_create_protocol_unauthorized(self, client, sample_protocol):
         response = await client.post(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             json=sample_protocol,
         )
         assert response.status_code == 403
 
     async def test_create_protocol_no_compounds(self, client, auth_headers):
         response = await client.post(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             json={
                 "name": "Empty Protocol",
                 "start_date": str(date.today()),
@@ -71,7 +71,7 @@ class TestProtocolRoutes:
 
     async def test_create_protocol_invalid_dates(self, client, auth_headers):
         response = await client.post(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             json={
                 "name": "Invalid Dates",
                 "start_date": str(date.today()),
@@ -84,7 +84,7 @@ class TestProtocolRoutes:
 
     async def test_create_protocol_with_full_details(self, client, auth_headers):
         response = await client.post(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             json={
                 "name": "Full Protocol",
                 "start_date": str(date.today()),
@@ -112,7 +112,7 @@ class TestProtocolRoutes:
 
     async def test_list_protocols_empty(self, client, auth_headers):
         response = await client.get(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             headers=auth_headers,
         )
         assert response.status_code == 200
@@ -120,41 +120,41 @@ class TestProtocolRoutes:
 
     async def test_list_protocols(self, client, auth_headers, sample_protocol):
         # Create two protocols
-        await client.post("/api/v1/protocols/", json=sample_protocol, headers=auth_headers)
+        await client.post("/api/v1/protocols", json=sample_protocol, headers=auth_headers)
         sample_protocol["name"] = "Second Protocol"
-        await client.post("/api/v1/protocols/", json=sample_protocol, headers=auth_headers)
+        await client.post("/api/v1/protocols", json=sample_protocol, headers=auth_headers)
 
-        response = await client.get("/api/v1/protocols/", headers=auth_headers)
+        response = await client.get("/api/v1/protocols", headers=auth_headers)
         assert response.status_code == 200
         protocols = response.json()
         assert len(protocols) == 2
 
     async def test_list_protocols_exclude_inactive(self, client, auth_headers, sample_protocol):
         # Create first (will become inactive)
-        first = await client.post("/api/v1/protocols/", json=sample_protocol, headers=auth_headers)
+        first = await client.post("/api/v1/protocols", json=sample_protocol, headers=auth_headers)
         first_id = first.json()["id"]
 
         # Create second (active)
         sample_protocol["name"] = "Active Protocol"
-        await client.post("/api/v1/protocols/", json=sample_protocol, headers=auth_headers)
+        await client.post("/api/v1/protocols", json=sample_protocol, headers=auth_headers)
 
         # List all
         all_response = await client.get(
-            "/api/v1/protocols/?include_inactive=true",
+            "/api/v1/protocols?include_inactive=true",
             headers=auth_headers,
         )
         assert len(all_response.json()) == 2
 
         # List active only
         active_response = await client.get(
-            "/api/v1/protocols/?include_inactive=false",
+            "/api/v1/protocols?include_inactive=false",
             headers=auth_headers,
         )
         assert len(active_response.json()) == 1
         assert active_response.json()[0]["name"] == "Active Protocol"
 
     async def test_get_active_protocol(self, client, auth_headers, sample_protocol):
-        await client.post("/api/v1/protocols/", json=sample_protocol, headers=auth_headers)
+        await client.post("/api/v1/protocols", json=sample_protocol, headers=auth_headers)
 
         response = await client.get("/api/v1/protocols/active", headers=auth_headers)
         assert response.status_code == 200
@@ -168,7 +168,7 @@ class TestProtocolRoutes:
 
     async def test_get_protocol_by_id(self, client, auth_headers, sample_protocol):
         create_response = await client.post(
-            "/api/v1/protocols/", json=sample_protocol, headers=auth_headers
+            "/api/v1/protocols", json=sample_protocol, headers=auth_headers
         )
         protocol_id = create_response.json()["id"]
 
@@ -184,7 +184,7 @@ class TestProtocolRoutes:
 
     async def test_update_protocol(self, client, auth_headers, sample_protocol):
         create_response = await client.post(
-            "/api/v1/protocols/", json=sample_protocol, headers=auth_headers
+            "/api/v1/protocols", json=sample_protocol, headers=auth_headers
         )
         protocol_id = create_response.json()["id"]
 
@@ -200,7 +200,7 @@ class TestProtocolRoutes:
 
     async def test_update_protocol_clears_optional_fields(self, client, auth_headers):
         create_response = await client.post(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             json={
                 "name": "Protocol With Notes",
                 "start_date": str(date.today()),
@@ -250,7 +250,7 @@ class TestProtocolRoutes:
             headers=auth_headers,
         )
         protocols_response = await client.get(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             headers=auth_headers,
         )
         starter = next(
@@ -284,7 +284,7 @@ class TestProtocolRoutes:
 
     async def test_replace_compounds(self, client, auth_headers, sample_protocol):
         create_response = await client.post(
-            "/api/v1/protocols/", json=sample_protocol, headers=auth_headers
+            "/api/v1/protocols", json=sample_protocol, headers=auth_headers
         )
         protocol_id = create_response.json()["id"]
         original_compound_id = create_response.json()["compounds"][0]["id"]
@@ -308,7 +308,7 @@ class TestProtocolRoutes:
 
     async def test_add_compound(self, client, auth_headers, sample_protocol):
         create_response = await client.post(
-            "/api/v1/protocols/", json=sample_protocol, headers=auth_headers
+            "/api/v1/protocols", json=sample_protocol, headers=auth_headers
         )
         protocol_id = create_response.json()["id"]
 
@@ -328,7 +328,7 @@ class TestProtocolRoutes:
 
     async def test_update_compound(self, client, auth_headers, sample_protocol):
         create_response = await client.post(
-            "/api/v1/protocols/", json=sample_protocol, headers=auth_headers
+            "/api/v1/protocols", json=sample_protocol, headers=auth_headers
         )
         compound_id = create_response.json()["compounds"][0]["id"]
 
@@ -345,7 +345,7 @@ class TestProtocolRoutes:
 
     async def test_update_compound_clears_notes(self, client, auth_headers):
         create_response = await client.post(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             json={
                 "name": "Protocol With Compound Notes",
                 "start_date": str(date.today()),
@@ -383,7 +383,7 @@ class TestProtocolRoutes:
     async def test_remove_compound(self, client, auth_headers):
         # Create protocol with 2 compounds
         create_response = await client.post(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             json={
                 "name": "Multi Compound",
                 "start_date": str(date.today()),
@@ -412,7 +412,7 @@ class TestProtocolRoutes:
 
     async def test_remove_last_compound_fails(self, client, auth_headers, sample_protocol):
         create_response = await client.post(
-            "/api/v1/protocols/", json=sample_protocol, headers=auth_headers
+            "/api/v1/protocols", json=sample_protocol, headers=auth_headers
         )
         compound_id = create_response.json()["compounds"][0]["id"]
 
@@ -425,7 +425,7 @@ class TestProtocolRoutes:
 
     async def test_deactivate_protocol(self, client, auth_headers, sample_protocol):
         create_response = await client.post(
-            "/api/v1/protocols/", json=sample_protocol, headers=auth_headers
+            "/api/v1/protocols", json=sample_protocol, headers=auth_headers
         )
         protocol_id = create_response.json()["id"]
 
@@ -440,7 +440,7 @@ class TestProtocolRoutes:
 
     async def test_deactivate_already_inactive_fails(self, client, auth_headers, sample_protocol):
         create_response = await client.post(
-            "/api/v1/protocols/", json=sample_protocol, headers=auth_headers
+            "/api/v1/protocols", json=sample_protocol, headers=auth_headers
         )
         protocol_id = create_response.json()["id"]
 
@@ -457,7 +457,7 @@ class TestProtocolRoutes:
 
     async def test_delete_protocol(self, client, auth_headers, sample_protocol):
         create_response = await client.post(
-            "/api/v1/protocols/", json=sample_protocol, headers=auth_headers
+            "/api/v1/protocols", json=sample_protocol, headers=auth_headers
         )
         protocol_id = create_response.json()["id"]
 
@@ -482,7 +482,7 @@ class TestProtocolRoutes:
     async def test_protocol_isolation_between_users(self, client, auth_headers, sample_protocol):
         # Create protocol as first user
         create_response = await client.post(
-            "/api/v1/protocols/", json=sample_protocol, headers=auth_headers
+            "/api/v1/protocols", json=sample_protocol, headers=auth_headers
         )
         protocol_id = create_response.json()["id"]
 
@@ -502,14 +502,14 @@ class TestProtocolRoutes:
         assert response.status_code == 404
 
         # Second user's list should be empty
-        list_response = await client.get("/api/v1/protocols/", headers=other_headers)
+        list_response = await client.get("/api/v1/protocols", headers=other_headers)
         assert list_response.json() == []
 
     async def test_pagination(self, client, auth_headers):
         # Create 5 protocols
         for i in range(5):
             await client.post(
-                "/api/v1/protocols/",
+                "/api/v1/protocols",
                 json={
                     "name": f"Protocol {i}",
                     "start_date": str(date.today() - timedelta(days=i)),
@@ -519,13 +519,13 @@ class TestProtocolRoutes:
             )
 
         # Test limit
-        response = await client.get("/api/v1/protocols/?limit=2", headers=auth_headers)
+        response = await client.get("/api/v1/protocols?limit=2", headers=auth_headers)
         assert len(response.json()) == 2
 
         # Test offset
-        response = await client.get("/api/v1/protocols/?offset=3", headers=auth_headers)
+        response = await client.get("/api/v1/protocols?offset=3", headers=auth_headers)
         assert len(response.json()) == 2  # 5 total - 3 skipped = 2
 
         # Test limit + offset
-        response = await client.get("/api/v1/protocols/?limit=2&offset=2", headers=auth_headers)
+        response = await client.get("/api/v1/protocols?limit=2&offset=2", headers=auth_headers)
         assert len(response.json()) == 2

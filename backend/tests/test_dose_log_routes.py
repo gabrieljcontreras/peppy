@@ -19,7 +19,7 @@ class TestDoseLogRoutes:
 
     async def _create_protocol(self, client, headers, name="Dose Log Protocol"):
         response = await client.post(
-            "/api/v1/protocols/",
+            "/api/v1/protocols",
             headers=headers,
             json={
                 "name": name,
