@@ -27,10 +27,9 @@ struct ProtocolsRootView: View {
     private func destination(for route: ProtocolRoute) -> some View {
         switch route {
         case .detail(let id):
-            ProtocolRoutePlaceholderView(
-                title: title(for: id) ?? "Protocol",
-                systemImage: "list.bullet.rectangle"
-            )
+            ProtocolDetailView(protocolID: id, store: store) { route in
+                path.append(route)
+            }
         case .create:
             ProtocolRoutePlaceholderView(title: "New protocol", systemImage: "plus.circle")
         case .edit:
@@ -53,15 +52,6 @@ struct ProtocolsRootView: View {
         }
     }
 
-    private func title(for id: UUID) -> String? {
-        if let listedProtocol = store.protocols.first(where: { $0.id == id }) {
-            return listedProtocol.name
-        }
-        if let selectedProtocol = store.selectedProtocol, selectedProtocol.id == id {
-            return selectedProtocol.name
-        }
-        return nil
-    }
 }
 
 private struct ProtocolRoutePlaceholderView: View {
