@@ -30,6 +30,13 @@ enum Endpoint {
     case activateProtocol(id: UUID)
     case activateStarterProtocol(id: UUID, StarterProtocolActivationRequest)
     case deactivateProtocol(id: UUID)
+    case addCompound(protocolID: UUID, CreateCompoundRequest)
+    case updateCompound(id: UUID, UpdateCompoundRequest)
+    case removeCompound(id: UUID)
+
+    // MARK: - Dose Logs
+    case getDoseLogs(protocolID: UUID)
+    case createDoseLog(CreateDoseLogRequest)
 
     // MARK: - Check-ins
     case getCheckins(startDate: Date?, endDate: Date?)
@@ -85,6 +92,13 @@ enum Endpoint {
         case .activateProtocol(let id), .activateStarterProtocol(let id, _):
             return "/protocols/\(id)/activate"
         case .deactivateProtocol(let id): return "/protocols/\(id)/deactivate"
+        case .addCompound(let protocolID, _): return "/protocols/\(protocolID)/compounds"
+        case .updateCompound(let id, _), .removeCompound(let id):
+            return "/protocols/compounds/\(id)"
+
+        // Dose Logs
+        case .getDoseLogs(let protocolID): return "/protocols/\(protocolID)/dose-logs"
+        case .createDoseLog: return "/dose-logs"
 
         // Check-ins
         case .getCheckins, .createCheckin: return "/checkins"
@@ -119,15 +133,16 @@ enum Endpoint {
         case .register, .login, .refreshToken, .logout,
              .attachOnboardingProfile,
              .createProtocol, .activateProtocol, .activateStarterProtocol, .deactivateProtocol,
+             .addCompound, .createDoseLog,
              .createCheckin,
              .createLab,
              .markInsightRead, .insightAction, .generateInsights,
              .connectWearable, .syncWearable,
              .registerDevice:
             return .post
-        case .updateProtocol, .updateNotificationPreferences:
+        case .updateProtocol, .updateCompound, .updateNotificationPreferences:
             return .patch
-        case .deleteProtocol, .disconnectWearable, .deleteDevice:
+        case .deleteProtocol, .removeCompound, .disconnectWearable, .deleteDevice:
             return .delete
         default:
             return .get
@@ -149,6 +164,12 @@ enum Endpoint {
         case .updateProtocol(_, let request):
             return request
         case .activateStarterProtocol(_, let request):
+            return request
+        case .addCompound(_, let request):
+            return request
+        case .updateCompound(_, let request):
+            return request
+        case .createDoseLog(let request):
             return request
         case .createCheckin(let request):
             return request
@@ -203,5 +224,11 @@ enum Endpoint {
         default:
             return true
         }
+    }
+
+    /// Stable request identity for tests and mocks. Paths alone collide when
+    /// one path serves multiple verbs (e.g. GET vs POST `/protocols`).
+    var requestID: String {
+        "\(method.rawValue) \(path)"
     }
 }

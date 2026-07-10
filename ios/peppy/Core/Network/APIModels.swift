@@ -150,6 +150,27 @@ extension OnboardingProfilePayload {
 
 // MARK: - Protocol
 
+/// Backend `date` fields (e.g. `start_date`) travel as plain `yyyy-MM-dd` strings,
+/// unlike `datetime` fields which use full ISO 8601 timestamps.
+enum APIDateOnly {
+    static let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    static func string(from date: Date) -> String {
+        formatter.string(from: date)
+    }
+
+    static func date(from string: String) -> Date? {
+        formatter.date(from: string)
+    }
+}
+
 struct Protocol: Codable, Identifiable, Hashable {
     let id: UUID
     let name: String
@@ -169,14 +190,64 @@ struct Protocol: Codable, Identifiable, Hashable {
         case setupStatus = "setup_status"
         case isStarter = "is_starter"
     }
+
+    init(
+        id: UUID,
+        name: String,
+        startDate: Date,
+        endDate: Date?,
+        notes: String?,
+        isActive: Bool,
+        setupStatus: String?,
+        isStarter: Bool?,
+        compounds: [Compound]
+    ) {
+        self.id = id
+        self.name = name
+        self.startDate = startDate
+        self.endDate = endDate
+        self.notes = notes
+        self.isActive = isActive
+        self.setupStatus = setupStatus
+        self.isStarter = isStarter
+        self.compounds = compounds
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        startDate = try APIDateOnly.date(
+            from: container.decode(String.self, forKey: .startDate)
+        ) ?? container.decode(Date.self, forKey: .startDate)
+        if let rawEndDate = try container.decodeIfPresent(String.self, forKey: .endDate) {
+            endDate = APIDateOnly.date(from: rawEndDate) ?? (try? container.decode(Date.self, forKey: .endDate))
+        } else {
+            endDate = nil
+        }
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+        isActive = try container.decode(Bool.self, forKey: .isActive)
+        setupStatus = try container.decodeIfPresent(String.self, forKey: .setupStatus)
+        isStarter = try container.decodeIfPresent(Bool.self, forKey: .isStarter)
+        compounds = try container.decode([Compound].self, forKey: .compounds)
+    }
 }
 
 struct Compound: Codable, Identifiable, Hashable {
     let id: UUID
     let name: String
-    let dose: Double
-    let unit: String
+    let doseMg: Double
+    let doseUnit: String
     let frequency: String
+    let administrationRoute: String
+    let notes: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, frequency, notes
+        case doseMg = "dose_mg"
+        case doseUnit = "dose_unit"
+        case administrationRoute = "administration_route"
+    }
 }
 
 struct CreateProtocolRequest: Encodable {
@@ -191,13 +262,80 @@ struct CreateProtocolRequest: Encodable {
         case startDate = "start_date"
         case endDate = "end_date"
     }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(APIDateOnly.string(from: startDate), forKey: .startDate)
+        try container.encodeIfPresent(endDate.map(APIDateOnly.string(from:)), forKey: .endDate)
+        try container.encodeIfPresent(notes, forKey: .notes)
+        try container.encode(compounds, forKey: .compounds)
+    }
 }
 
 struct CreateCompoundRequest: Encodable {
     let name: String
-    let dose: Double
-    let unit: String
+    let doseMg: Double
+    let doseUnit: String
     let frequency: String
+    let administrationRoute: String
+    let notes: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name, frequency, notes
+        case doseMg = "dose_mg"
+        case doseUnit = "dose_unit"
+        case administrationRoute = "administration_route"
+    }
+}
+
+struct UpdateCompoundRequest: Encodable {
+    let name: String?
+    let doseMg: Double?
+    let doseUnit: String?
+    let frequency: String?
+    let administrationRoute: String?
+    let notes: String?
+    private let clearNotes: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case name, frequency, notes
+        case doseMg = "dose_mg"
+        case doseUnit = "dose_unit"
+        case administrationRoute = "administration_route"
+    }
+
+    init(
+        name: String? = nil,
+        doseMg: Double? = nil,
+        doseUnit: String? = nil,
+        frequency: String? = nil,
+        administrationRoute: String? = nil,
+        notes: String? = nil,
+        clearNotes: Bool = false
+    ) {
+        self.name = name
+        self.doseMg = doseMg
+        self.doseUnit = doseUnit
+        self.frequency = frequency
+        self.administrationRoute = administrationRoute
+        self.notes = notes
+        self.clearNotes = clearNotes
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(name, forKey: .name)
+        try container.encodeIfPresent(doseMg, forKey: .doseMg)
+        try container.encodeIfPresent(doseUnit, forKey: .doseUnit)
+        try container.encodeIfPresent(frequency, forKey: .frequency)
+        try container.encodeIfPresent(administrationRoute, forKey: .administrationRoute)
+        if clearNotes && notes == nil {
+            try container.encodeNil(forKey: .notes)
+        } else {
+            try container.encodeIfPresent(notes, forKey: .notes)
+        }
+    }
 }
 
 struct UpdateProtocolRequest: Encodable {
@@ -205,11 +343,133 @@ struct UpdateProtocolRequest: Encodable {
     let startDate: Date?
     let endDate: Date?
     let notes: String?
+    private let clearEndDate: Bool
+    private let clearNotes: Bool
 
     enum CodingKeys: String, CodingKey {
         case name, notes
         case startDate = "start_date"
         case endDate = "end_date"
+    }
+
+    init(
+        name: String? = nil,
+        startDate: Date? = nil,
+        endDate: Date? = nil,
+        notes: String? = nil,
+        clearEndDate: Bool = false,
+        clearNotes: Bool = false
+    ) {
+        self.name = name
+        self.startDate = startDate
+        self.endDate = endDate
+        self.notes = notes
+        self.clearEndDate = clearEndDate
+        self.clearNotes = clearNotes
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(name, forKey: .name)
+        try container.encodeIfPresent(startDate.map(APIDateOnly.string(from:)), forKey: .startDate)
+        if let endDate {
+            try container.encode(APIDateOnly.string(from: endDate), forKey: .endDate)
+        } else if clearEndDate {
+            try container.encodeNil(forKey: .endDate)
+        }
+        if clearNotes && notes == nil {
+            try container.encodeNil(forKey: .notes)
+        } else {
+            try container.encodeIfPresent(notes, forKey: .notes)
+        }
+    }
+}
+
+// MARK: - Dose Log
+
+struct DoseLog: Codable, Identifiable, Hashable {
+    let id: UUID
+    let protocolID: UUID
+    let compoundID: UUID
+    let dose: Double
+    let unit: String
+    let administeredAt: Date
+    let route: String
+    let notes: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, dose, unit, route, notes
+        case protocolID = "protocol_id"
+        case compoundID = "compound_id"
+        case administeredAt = "administered_at"
+    }
+
+    init(
+        id: UUID,
+        protocolID: UUID,
+        compoundID: UUID,
+        dose: Double,
+        unit: String,
+        administeredAt: Date,
+        route: String,
+        notes: String?
+    ) {
+        self.id = id
+        self.protocolID = protocolID
+        self.compoundID = compoundID
+        self.dose = dose
+        self.unit = unit
+        self.administeredAt = administeredAt
+        self.route = route
+        self.notes = notes
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        protocolID = try container.decode(UUID.self, forKey: .protocolID)
+        compoundID = try container.decode(UUID.self, forKey: .compoundID)
+        dose = try container.decode(Double.self, forKey: .dose)
+        unit = try container.decode(String.self, forKey: .unit)
+        // The backend emits microsecond fractions, which JSONDecoder's .iso8601 rejects.
+        if let raw = try? container.decode(String.self, forKey: .administeredAt),
+           let parsed = Self.timestampFormatter.date(from: raw)
+               ?? Self.fractionalTimestampFormatter.date(from: raw) {
+            administeredAt = parsed
+        } else {
+            administeredAt = try container.decode(Date.self, forKey: .administeredAt)
+        }
+        route = try container.decode(String.self, forKey: .route)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+    }
+
+    private static let timestampFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+
+    private static let fractionalTimestampFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+}
+
+struct CreateDoseLogRequest: Encodable {
+    let protocolID: UUID
+    let compoundID: UUID
+    let dose: Double
+    let unit: String
+    let administeredAt: Date
+    let route: String
+    let notes: String?
+
+    enum CodingKeys: String, CodingKey {
+        case dose, unit, route, notes
+        case protocolID = "protocol_id"
+        case compoundID = "compound_id"
+        case administeredAt = "administered_at"
     }
 }
 

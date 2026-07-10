@@ -3,12 +3,14 @@ import SwiftUI
 struct StarterProtocolSetupView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var model: StarterProtocolViewModel
+    private let embedsInNavigationStack: Bool
     private let onSaved: () -> Void
 
     init(
         protocolID: UUID,
         compounds: [String],
         api: APIClientProtocol,
+        embedsInNavigationStack: Bool = true,
         onSaved: @escaping () -> Void = {}
     ) {
         _model = State(initialValue: StarterProtocolViewModel(
@@ -16,83 +18,92 @@ struct StarterProtocolSetupView: View {
             compounds: compounds,
             api: api
         ))
+        self.embedsInNavigationStack = embedsInNavigationStack
         self.onSaved = onSaved
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.lg) {
-                    header
+        if embedsInNavigationStack {
+            NavigationStack {
+                content
+            }
+        } else {
+            content
+        }
+    }
 
-                    PepCard {
-                        VStack(alignment: .leading, spacing: Spacing.md) {
-                            if !model.compounds.isEmpty {
-                                compoundSummary
-                            }
+    private var content: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                header
 
-                            PepTextFieldWithLabel(
-                                label: "Dose",
-                                placeholder: "2",
-                                text: $model.doseText,
-                                keyboardType: .decimalPad
-                            )
-
-                            PepTextFieldWithLabel(
-                                label: "Frequency",
-                                placeholder: "weekly",
-                                text: $model.frequency
-                            )
-
-                            PepTextFieldWithLabel(
-                                label: "Route",
-                                placeholder: "subcutaneous",
-                                text: $model.route
-                            )
-
-                            DatePicker(
-                                "Start date",
-                                selection: startDateBinding,
-                                displayedComponents: .date
-                            )
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(Color.pepTextPrimary)
+                PepCard {
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        if !model.compounds.isEmpty {
+                            compoundSummary
                         }
-                    }
 
-                    if let error = model.saveErrorMessage ?? model.validationMessage, !model.canSave {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundStyle(Color.pepError)
-                            .fixedSize(horizontal: false, vertical: true)
-                    } else if let error = model.saveErrorMessage {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundStyle(Color.pepError)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+                        PepTextFieldWithLabel(
+                            label: "Dose",
+                            placeholder: "2",
+                            text: $model.doseText,
+                            keyboardType: .decimalPad
+                        )
 
-                    PepButton(
-                        title: "Save protocol",
-                        style: .primary,
-                        isLoading: model.isSaving,
-                        isDisabled: !model.canSave
-                    ) {
-                        Task {
-                            if await model.save() {
-                                onSaved()
-                                dismiss()
-                            }
+                        PepTextFieldWithLabel(
+                            label: "Frequency",
+                            placeholder: "weekly",
+                            text: $model.frequency
+                        )
+
+                        PepTextFieldWithLabel(
+                            label: "Route",
+                            placeholder: "subcutaneous",
+                            text: $model.route
+                        )
+
+                        DatePicker(
+                            "Start date",
+                            selection: startDateBinding,
+                            displayedComponents: .date
+                        )
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.pepTextPrimary)
+                    }
+                }
+
+                if let error = model.saveErrorMessage ?? model.validationMessage, !model.canSave {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(Color.pepError)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else if let error = model.saveErrorMessage {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(Color.pepError)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                PepButton(
+                    title: "Save protocol",
+                    style: .primary,
+                    isLoading: model.isSaving,
+                    isDisabled: !model.canSave
+                ) {
+                    Task {
+                        if await model.save() {
+                            onSaved()
+                            dismiss()
                         }
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, Spacing.lg)
             }
-            .background(Color.pepBackground.ignoresSafeArea())
-            .navigationTitle("Finish setup")
-            .navigationBarTitleDisplayMode(.inline)
+            .padding(.horizontal, 20)
+            .padding(.vertical, Spacing.lg)
         }
+        .background(Color.pepBackground.ignoresSafeArea())
+        .navigationTitle("Finish setup")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private var header: some View {

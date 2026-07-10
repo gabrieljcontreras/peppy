@@ -151,6 +151,8 @@ async def update_protocol(
             end_date=update_data.end_date,
             notes=update_data.notes,
             is_active=update_data.is_active,
+            clear_end_date="end_date" in update_data.model_fields_set and update_data.end_date is None,
+            clear_notes="notes" in update_data.model_fields_set and update_data.notes is None,
         )
         return updated
     except ValueError as e:
@@ -260,6 +262,7 @@ async def update_compound(
         frequency=update_data.frequency,
         administration_route=update_data.administration_route,
         notes=update_data.notes,
+        clear_notes="notes" in update_data.model_fields_set and update_data.notes is None,
     )
     return updated
 
