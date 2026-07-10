@@ -29,6 +29,7 @@ final class ProtocolEditorViewModel {
     var compounds: [CompoundDraft]
     var isSubmitting = false
     var errorMessage: String?
+    private(set) var savedProtocolID: UUID?
 
     init(mode: ProtocolEditorMode, store: ProtocolStore) {
         self.mode = mode
@@ -129,14 +130,19 @@ final class ProtocolEditorViewModel {
         switch mode {
         case .create:
             guard let request = createRequest(),
-                  await store.create(request) != nil else {
+                  let created = await store.create(request) else {
                 errorMessage = store.errorMessage
                 return false
             }
+            savedProtocolID = created.id
             return true
 
         case .edit(let protocolValue):
-            return await submitEdit(protocolValue: protocolValue)
+            let saved = await submitEdit(protocolValue: protocolValue)
+            if saved {
+                savedProtocolID = protocolValue.id
+            }
+            return saved
         }
     }
 

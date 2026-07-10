@@ -18,7 +18,7 @@ from app.api.schemas.checkin import (
 router = APIRouter()
 
 
-@router.get("/", response_model=list[CheckinResponse])
+@router.get("", response_model=list[CheckinResponse])
 async def list_checkins(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -44,7 +44,7 @@ async def list_checkins(
     return checkins
 
 
-@router.post("/", response_model=CheckinResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=CheckinResponse, status_code=status.HTTP_201_CREATED)
 async def create_checkin(
     checkin_data: CheckinCreate,
     current_user: CurrentUser,

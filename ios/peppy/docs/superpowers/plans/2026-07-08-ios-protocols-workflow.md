@@ -347,7 +347,7 @@ Run the Task 2 command. Expected: all selected tests pass.
 - Produces `ProtocolStore`.
 - Consumed by every protocol view model and Dashboard integration.
 
-- [ ] **Step 1: Write failing store tests**
+- [x] **Step 1: Write failing store tests**
 
 Cover list load, detail load, create replacement, metadata update, add/update/remove compound reconciliation, activate/deactivate, delete, dose creation, stale request protection, and preserving loaded content on refresh failure.
 
@@ -371,7 +371,7 @@ func testDeleteRemovesProtocolAndClearsSelection() async {
 
 Expected: compilation fails because `ProtocolStore` is missing.
 
-- [ ] **Step 3: Implement store state**
+- [x] **Step 3: Implement store state**
 
 Expose:
 
@@ -402,11 +402,11 @@ final class ProtocolStore {
 
 Use a monotonically increasing load token to prevent stale list/detail requests overwriting newer responses. Reject a second mutation when `mutatingProtocolID` matches.
 
-- [ ] **Step 4: Inject one shared store**
+- [x] **Step 4: Inject one shared store**
 
 Add `let protocolStore: ProtocolStore` to `Dependencies`, initialized from the same live or mock API client.
 
-- [ ] **Step 5: Run store and dependency tests**
+- [x] **Step 5: Run store and dependency tests**
 
 Expected: all selected tests pass.
 
@@ -434,11 +434,11 @@ func testProtocolRequiresOneValidCompound() {
 }
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Expected: compilation fails because the editor types are missing.
 
-- [ ] **Step 3: Implement compound draft**
+- [x] **Step 3: Implement compound draft**
 
 ```swift
 struct CompoundDraft: Identifiable, Equatable {
@@ -455,11 +455,11 @@ struct CompoundDraft: Identifiable, Equatable {
 
 `CompoundEditorViewModel` validates and returns a `CompoundDraft`; persisted edits call the matching store endpoint only from the owning detail flow.
 
-- [ ] **Step 4: Implement protocol editor**
+- [x] **Step 4: Implement protocol editor**
 
 Use `enum ProtocolEditorMode { case create; case edit(Protocol) }`. Create mode sends one `CreateProtocolRequest` containing all drafts. Edit mode updates metadata, then applies compound add/update/remove operations only after metadata succeeds; retain the draft and surface the first failed operation.
 
-- [ ] **Step 5: Run focused editor tests**
+- [x] **Step 5: Run focused editor tests**
 
 Expected: all selected tests pass.
 
@@ -474,11 +474,11 @@ Expected: all selected tests pass.
 - Produces typed Protocols navigation.
 - Consumes `ProtocolStore`.
 
-- [ ] **Step 1: Write failing list state tests**
+- [x] **Step 1: Write failing list state tests**
 
 Cover first load, loaded list, empty state, retry state, and refresh failure retaining loaded rows.
 
-- [ ] **Step 2: Implement typed routes**
+- [x] **Step 2: Implement typed routes**
 
 ```swift
 enum ProtocolRoute: Hashable {
@@ -492,19 +492,19 @@ enum ProtocolRoute: Hashable {
 }
 ```
 
-- [ ] **Step 3: Replace `ProtocolsTab` placeholder**
+- [x] **Step 3: Replace `ProtocolsTab` placeholder**
 
 `ProtocolsRootView` owns `NavigationStack(path:)`, renders `ProtocolListView`, and registers every route destination. It receives the shared store from `Dependencies`.
 
-- [ ] **Step 4: Build the Figma list**
+- [x] **Step 4: Build the Figma list**
 
 Implement the reference title, summary rows, status treatment, compound/schedule content, create action, background, scrolling, and bottom-tab relationship. Add loading, empty, error/retry, and pull-to-refresh states using the closest Figma composition.
 
-- [ ] **Step 5: Add Xcode project references**
+- [x] **Step 5: Add Xcode project references**
 
 Add every newly created Swift source and test file to the correct group and target build phase. Do not alter unrelated PBX identifiers or workspace user-state files.
 
-- [ ] **Step 6: Run list tests and build**
+- [x] **Step 6: Run list tests and build**
 
 Expected: focused tests pass and the app target builds.
 
@@ -517,23 +517,23 @@ Expected: focused tests pass and the app target builds.
 - Consumes `ProtocolStore` and typed routes.
 - Produces edit, compound, dose, activation, deactivation, and deletion intents.
 
-- [ ] **Step 1: Write failing detail tests**
+- [x] **Step 1: Write failing detail tests**
 
 Test initial selection, dose history loading, action availability by status, mutation locking, confirmation outcomes, failed destructive action retention, and successful delete navigation intent.
 
-- [ ] **Step 2: Implement detail view model**
+- [x] **Step 2: Implement detail view model**
 
 Expose a presentation state derived from the selected protocol and store. Do not duplicate protocol data in a second mutable copy.
 
-- [ ] **Step 3: Build the Figma detail screen**
+- [x] **Step 3: Build the Figma detail screen**
 
 Match the "Retatrutide Titration" frame: navigation, status, compound schedule, progress/information sections, dose activity, log-dose action, and management menu. Use confirmation dialogs for deactivate and delete; make delete destructive.
 
-- [ ] **Step 4: Wire lifecycle mutations**
+- [x] **Step 4: Wire lifecycle mutations**
 
 Activation and deactivation reconcile store state. Successful delete removes the detail route. Errors remain visible without dismissing the screen.
 
-- [ ] **Step 5: Run detail tests and build**
+- [x] **Step 5: Run detail tests and build**
 
 Expected: focused tests pass and detail compiles in the app target.
 
@@ -547,23 +547,23 @@ Expected: focused tests pass and detail compiles in the app target.
 - Consumes editor view models and store.
 - Produces saved protocol/compound state.
 
-- [ ] **Step 1: Build create/edit protocol composition**
+- [x] **Step 1: Build create/edit protocol composition**
 
 Match the create-protocol frame exactly. Use a scrollable form, Figma labels and controls, compound summary rows, add-compound action, and stable bottom save action with keyboard avoidance.
 
-- [ ] **Step 2: Build add/edit compound composition**
+- [x] **Step 2: Build add/edit compound composition**
 
 Match the add-compound frame exactly. Use keyboard-appropriate numeric input, Figma selection controls for unit/frequency/route, inline field validation, and a disabled/submitting save state.
 
-- [ ] **Step 3: Wire draft navigation**
+- [x] **Step 3: Wire draft navigation**
 
 Creating a compound returns a draft to the unsaved protocol editor. Adding a compound from detail persists through the store. Editing a persisted compound prepopulates all values and reconciles detail on success.
 
-- [ ] **Step 4: Add compound removal**
+- [x] **Step 4: Add compound removal**
 
 Require confirmation, disable removal for the final compound, and surface the backend invariant error without losing editor state.
 
-- [ ] **Step 5: Run editor tests and build**
+- [x] **Step 5: Run editor tests and build**
 
 Expected: Task 4 tests remain green and all editor views compile.
 
