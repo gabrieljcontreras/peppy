@@ -31,13 +31,47 @@ struct ProtocolsRootView: View {
                 path.append(route)
             }
         case .create:
-            ProtocolRoutePlaceholderView(title: "New protocol", systemImage: "plus.circle")
-        case .edit:
-            ProtocolRoutePlaceholderView(title: "Edit protocol", systemImage: "pencil")
-        case .addCompound:
-            ProtocolRoutePlaceholderView(title: "Add compound", systemImage: "plus.circle")
-        case .editCompound:
-            ProtocolRoutePlaceholderView(title: "Edit compound", systemImage: "pencil")
+            ProtocolEditorView(mode: .create, store: store) { savedID in
+                path.removeLast()
+                path.append(.detail(savedID))
+            }
+        case .edit(let id):
+            if let protocolValue = protocolValue(for: id) {
+                ProtocolEditorView(mode: .edit(protocolValue), store: store) { _ in
+                    path.removeLast()
+                }
+            } else {
+                ProtocolRoutePlaceholderView(title: "Edit protocol", systemImage: "pencil")
+            }
+        case .addCompound(let protocolID):
+            CompoundEditorView(
+                mode: .create,
+                screenTitle: "Add compound",
+                submitTitle: "Add compound"
+            ) { draft in
+                guard let request = draft.createRequest else {
+                    return "Complete every required compound field."
+                }
+                let added = await store.addCompound(protocolID: protocolID, request: request)
+                return added == nil ? (store.errorMessage ?? "Something went wrong. Please try again.") : nil
+            }
+        case .editCompound(let protocolID, let compoundID):
+            if let compound = compound(id: compoundID, protocolID: protocolID) {
+                CompoundEditorView(
+                    mode: .edit(CompoundDraft(compound: compound)),
+                    screenTitle: "Edit compound",
+                    subtitle: "Update this compound's details.",
+                    submitTitle: "Save compound"
+                ) { draft in
+                    guard let request = draft.updateRequest else {
+                        return "Complete every required compound field."
+                    }
+                    let updated = await store.updateCompound(id: compoundID, request: request)
+                    return updated == nil ? (store.errorMessage ?? "Something went wrong. Please try again.") : nil
+                }
+            } else {
+                ProtocolRoutePlaceholderView(title: "Edit compound", systemImage: "pencil")
+            }
         case .logDose:
             ProtocolRoutePlaceholderView(title: "Log dose", systemImage: "calendar.badge.plus")
         case .starterSetup(let protocolID, let compounds):
@@ -52,6 +86,16 @@ struct ProtocolsRootView: View {
         }
     }
 
+    private func protocolValue(for id: UUID) -> ProtocolModel? {
+        if let selected = store.selectedProtocol, selected.id == id {
+            return selected
+        }
+        return store.protocols.first { $0.id == id }
+    }
+
+    private func compound(id: UUID, protocolID: UUID) -> Compound? {
+        protocolValue(for: protocolID)?.compounds.first { $0.id == id }
+    }
 }
 
 private struct ProtocolRoutePlaceholderView: View {

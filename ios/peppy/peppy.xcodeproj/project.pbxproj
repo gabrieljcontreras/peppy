@@ -47,6 +47,8 @@
 		49C3655D2FF000F00C1F5DE /* ProtocolDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3655E2FF000F00C1F5DE /* ProtocolDetailViewModel.swift */; };
 		49C3655F2FF000F00C1F5DE /* ProtocolDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365602FF000F00C1F5DE /* ProtocolDetailView.swift */; };
 		49C365612FF000F00C1F5DE /* ProtocolComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365622FF000F00C1F5DE /* ProtocolComponents.swift */; };
+		49C365652FF001000C1F5DE /* ProtocolEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365662FF001000C1F5DE /* ProtocolEditorView.swift */; };
+		49C365672FF001000C1F5DE /* CompoundEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365682FF001000C1F5DE /* CompoundEditorView.swift */; };
 		49C3654F2FF000C00C1F5DE /* ProtocolEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365502FF000C00C1F5DE /* ProtocolEditorViewModel.swift */; };
 		49C365422FF000900C1F5DE /* ProtocolModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365432FF000900C1F5DE /* ProtocolModels.swift */; };
 		49C365462FF000A00C1F5DE /* ProtocolStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365472FF000A00C1F5DE /* ProtocolStore.swift */; };
@@ -147,6 +149,8 @@
 		49C3655E2FF000F00C1F5DE /* ProtocolDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolDetailViewModel.swift; sourceTree = "<group>"; };
 		49C365602FF000F00C1F5DE /* ProtocolDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolDetailView.swift; sourceTree = "<group>"; };
 		49C365622FF000F00C1F5DE /* ProtocolComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolComponents.swift; sourceTree = "<group>"; };
+		49C365662FF001000C1F5DE /* ProtocolEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolEditorView.swift; sourceTree = "<group>"; };
+		49C365682FF001000C1F5DE /* CompoundEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompoundEditorView.swift; sourceTree = "<group>"; };
 		49C365502FF000C00C1F5DE /* ProtocolEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolEditorViewModel.swift; sourceTree = "<group>"; };
 		49C365432FF000900C1F5DE /* ProtocolModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolModels.swift; sourceTree = "<group>"; };
 		49C365472FF000A00C1F5DE /* ProtocolStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolStore.swift; sourceTree = "<group>"; };
@@ -452,8 +456,10 @@
 		49C365182FF000600C1F5DE /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				49C365682FF001000C1F5DE /* CompoundEditorView.swift */,
 				49C365622FF000F00C1F5DE /* ProtocolComponents.swift */,
 				49C365602FF000F00C1F5DE /* ProtocolDetailView.swift */,
+				49C365662FF001000C1F5DE /* ProtocolEditorView.swift */,
 				49C3655A2FF000E00C1F5DE /* ProtocolListView.swift */,
 				49C3655C2FF000E00C1F5DE /* ProtocolRow.swift */,
 				49C365582FF000E00C1F5DE /* ProtocolsRootView.swift */,
@@ -668,6 +674,8 @@
 				49C3655D2FF000F00C1F5DE /* ProtocolDetailViewModel.swift in Sources */,
 				49C3655F2FF000F00C1F5DE /* ProtocolDetailView.swift in Sources */,
 				49C365612FF000F00C1F5DE /* ProtocolComponents.swift in Sources */,
+				49C365652FF001000C1F5DE /* ProtocolEditorView.swift in Sources */,
+				49C365672FF001000C1F5DE /* CompoundEditorView.swift in Sources */,
 				49C3654F2FF000C00C1F5DE /* ProtocolEditorViewModel.swift in Sources */,
 				49C365422FF000900C1F5DE /* ProtocolModels.swift in Sources */,
 				49C365462FF000A00C1F5DE /* ProtocolStore.swift in Sources */,

@@ -547,23 +547,23 @@ Expected: focused tests pass and detail compiles in the app target.
 - Consumes editor view models and store.
 - Produces saved protocol/compound state.
 
-- [ ] **Step 1: Build create/edit protocol composition**
+- [x] **Step 1: Build create/edit protocol composition**
 
 Match the create-protocol frame exactly. Use a scrollable form, Figma labels and controls, compound summary rows, add-compound action, and stable bottom save action with keyboard avoidance.
 
-- [ ] **Step 2: Build add/edit compound composition**
+- [x] **Step 2: Build add/edit compound composition**
 
 Match the add-compound frame exactly. Use keyboard-appropriate numeric input, Figma selection controls for unit/frequency/route, inline field validation, and a disabled/submitting save state.
 
-- [ ] **Step 3: Wire draft navigation**
+- [x] **Step 3: Wire draft navigation**
 
 Creating a compound returns a draft to the unsaved protocol editor. Adding a compound from detail persists through the store. Editing a persisted compound prepopulates all values and reconciles detail on success.
 
-- [ ] **Step 4: Add compound removal**
+- [x] **Step 4: Add compound removal**
 
 Require confirmation, disable removal for the final compound, and surface the backend invariant error without losing editor state.
 
-- [ ] **Step 5: Run editor tests and build**
+- [x] **Step 5: Run editor tests and build**
 
 Expected: Task 4 tests remain green and all editor views compile.
 
