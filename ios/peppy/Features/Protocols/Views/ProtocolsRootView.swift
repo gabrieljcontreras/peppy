@@ -2,13 +2,11 @@ import SwiftUI
 
 struct ProtocolsRootView: View {
     private let store: ProtocolStore
-    private let api: APIClientProtocol
     @State private var path: [ProtocolRoute] = []
     @State private var listModel: ProtocolListViewModel
 
-    init(store: ProtocolStore, api: APIClientProtocol) {
+    init(store: ProtocolStore) {
         self.store = store
-        self.api = api
         _listModel = State(initialValue: ProtocolListViewModel(store: store))
     }
 
@@ -92,11 +90,9 @@ struct ProtocolsRootView: View {
             StarterProtocolSetupView(
                 protocolID: protocolID,
                 compounds: compounds,
-                api: api,
+                store: store,
                 embedsInNavigationStack: false
-            ) {
-                Task { await store.loadProtocols(force: true) }
-            }
+            )
         }
     }
 
@@ -147,5 +143,5 @@ private struct ProtocolRoutePlaceholderView: View {
 
 #Preview {
     let dependencies = Dependencies.mock()
-    ProtocolsRootView(store: dependencies.protocolStore, api: dependencies.api)
+    ProtocolsRootView(store: dependencies.protocolStore)
 }

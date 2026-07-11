@@ -75,7 +75,7 @@ struct ProtocolsTab: View {
     @Environment(\.dependencies) private var deps
 
     var body: some View {
-        ProtocolsRootView(store: deps.protocolStore, api: deps.api)
+        ProtocolsRootView(store: deps.protocolStore)
     }
 }
 

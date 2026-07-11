@@ -53,7 +53,7 @@ struct DashboardView: View {
                 StarterProtocolSetupView(
                     protocolID: route.protocolID,
                     compounds: route.compounds,
-                    api: deps.api
+                    store: deps.protocolStore
                 ) {
                     Task { await model?.load() }
                 }
