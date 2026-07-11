@@ -25,6 +25,35 @@ final class ProtocolListViewModelTests: XCTestCase {
         )
     }
 
+    func testDoseLogCompoundResolutionDoesNotFallbackWhenExplicitCompoundIsMissing() {
+        let fallback = Compound.fixture
+        let explicit = Compound(
+            id: UUID(uuidString: "33333333-3333-3333-3333-333333333333")!,
+            name: "Semaglutide",
+            doseMg: 1,
+            doseUnit: "mg",
+            frequency: "weekly",
+            administrationRoute: "subcutaneous",
+            notes: nil
+        )
+        let protocolValue = ProtocolModel.fixture.replacing(compounds: [fallback, explicit])
+
+        XCTAssertEqual(
+            ProtocolsRootView.doseLogCompound(in: protocolValue, compoundID: explicit.id),
+            explicit
+        )
+        XCTAssertNil(
+            ProtocolsRootView.doseLogCompound(
+                in: protocolValue,
+                compoundID: UUID(uuidString: "44444444-4444-4444-4444-444444444444")!
+            )
+        )
+        XCTAssertEqual(
+            ProtocolsRootView.doseLogCompound(in: protocolValue, compoundID: nil),
+            fallback
+        )
+    }
+
     func testInitialLoadShowsLoadingThenLoadedRows() async {
         let api = MockAPIClient()
         api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)

@@ -11,6 +11,9 @@ final class ProtocolStore {
     private(set) var doseLogs: [DoseLog] = []
     private(set) var isLoading = false
     private(set) var mutatingProtocolID: UUID?
+    /// Bumped after every successful mutation reconciliation so observers (e.g. the
+    /// dashboard) can detect that protocol state changed without polling.
+    private(set) var revision = 0
     var errorMessage: String?
 
     private var hasLoadedProtocols = false
@@ -71,6 +74,7 @@ final class ProtocolStore {
             let created: ProtocolModel = try await api.execute(.createProtocol(request))
             reconcile(created, insertAtFront: true, deactivateOthersIfActive: created.isActive)
             hasLoadedProtocols = true
+            revision += 1
             return created
         } catch {
             errorMessage = message(for: error)
@@ -86,6 +90,7 @@ final class ProtocolStore {
         do {
             let updated: ProtocolModel = try await api.execute(.updateProtocol(id: id, request))
             reconcile(updated)
+            revision += 1
             return updated
         } catch {
             errorMessage = message(for: error)
@@ -103,6 +108,7 @@ final class ProtocolStore {
             updateProtocol(id: protocolID) { protocolValue in
                 protocolValue.replacingCompounds(protocolValue.compounds + [added])
             }
+            revision += 1
             return added
         } catch {
             errorMessage = message(for: error)
@@ -121,6 +127,7 @@ final class ProtocolStore {
         do {
             let updated: Compound = try await api.execute(.updateCompound(id: id, request))
             replaceCompound(updated)
+            revision += 1
             return updated
         } catch {
             errorMessage = message(for: error)
@@ -140,6 +147,7 @@ final class ProtocolStore {
                     protocolValue.compounds.filter { $0.id != id }
                 )
             }
+            revision += 1
             return true
         } catch {
             errorMessage = message(for: error)
@@ -155,11 +163,45 @@ final class ProtocolStore {
         do {
             let activated: ProtocolModel = try await api.execute(.activateProtocol(id: id))
             reconcile(activated, deactivateOthersIfActive: activated.isActive)
+            revision += 1
             return true
         } catch {
             errorMessage = message(for: error)
             return false
         }
+    }
+
+    /// Completes a pending starter protocol's setup and activates it. The endpoint
+    /// returns no body, so the store refetches the protocol to reconcile full state.
+    ///
+    /// These are two distinct failure domains: if the POST fails, activation never
+    /// happened and this is a real failure. If the POST succeeds, activation is a
+    /// success regardless of the follow-up GET — the protocol *is* active
+    /// server-side even when the refetch hits a transient error, so this method
+    /// reports success (independent of any local model lookup; the store may not
+    /// be loaded when arriving from the Dashboard), reconciles what it can
+    /// locally, and does not surface a user-facing error, so a retry doesn't
+    /// re-POST an already-active protocol.
+    func activateStarter(id: UUID, request: StarterProtocolActivationRequest) async -> Bool {
+        guard beginMutation(for: id) else { return false }
+        defer { endMutation(for: id) }
+
+        errorMessage = nil
+        do {
+            try await api.executeVoid(.activateStarterProtocol(id: id, request))
+        } catch {
+            errorMessage = message(for: error)
+            return false
+        }
+
+        do {
+            let activated: ProtocolModel = try await api.execute(.getProtocol(id: id))
+            reconcile(activated, deactivateOthersIfActive: activated.isActive)
+        } catch {
+            applyOptimisticActivation(id: id)
+        }
+        revision += 1
+        return true
     }
 
     func deactivate(id: UUID) async -> Bool {
@@ -170,6 +212,7 @@ final class ProtocolStore {
         do {
             let deactivated: ProtocolModel = try await api.execute(.deactivateProtocol(id: id))
             reconcile(deactivated)
+            revision += 1
             return true
         } catch {
             errorMessage = message(for: error)
@@ -189,6 +232,7 @@ final class ProtocolStore {
             try await api.executeVoid(.deleteProtocol(id: id))
             protocols.removeAll { $0.id == id }
             self.selectedProtocol = nil
+            revision += 1
             return true
         } catch {
             errorMessage = message(for: error)
@@ -217,6 +261,8 @@ final class ProtocolStore {
         do {
             let logged: DoseLog = try await api.execute(.createDoseLog(request))
             doseLogs.insert(logged, at: 0)
+            doseLogs.sort { $0.administeredAt > $1.administeredAt }
+            revision += 1
             return logged
         } catch {
             errorMessage = message(for: error)
@@ -266,6 +312,27 @@ final class ProtocolStore {
 
         if selectedProtocol?.id == protocolValue.id {
             selectedProtocol = protocolValue
+        }
+    }
+
+    /// Best-effort local reconciliation for when a mutation succeeded server-side but
+    /// its confirming refetch failed: marks `id` active and deactivates any other
+    /// locally-active protocol, mirroring what `reconcile(deactivateOthersIfActive:)`
+    /// would do with a fresh server value.
+    private func applyOptimisticActivation(id: UUID) {
+        protocols = protocols.map { existing in
+            if existing.id == id {
+                return existing.activated()
+            }
+            return existing.isActive ? existing.deactivated() : existing
+        }
+
+        if let selectedProtocol {
+            if selectedProtocol.id == id {
+                self.selectedProtocol = selectedProtocol.activated()
+            } else if selectedProtocol.isActive {
+                self.selectedProtocol = selectedProtocol.deactivated()
+            }
         }
     }
 
@@ -349,6 +416,20 @@ private extension ProtocolModel {
             notes: notes,
             isActive: false,
             setupStatus: "inactive",
+            isStarter: isStarter,
+            compounds: compounds
+        )
+    }
+
+    func activated() -> ProtocolModel {
+        ProtocolModel(
+            id: id,
+            name: name,
+            startDate: startDate,
+            endDate: endDate,
+            notes: notes,
+            isActive: true,
+            setupStatus: "active",
             isStarter: isStarter,
             compounds: compounds
         )

@@ -496,6 +496,7 @@ final class ProtocolStoreTests: XCTestCase {
         let previous = store.protocols.first { $0.id == existing.id }
         XCTAssertEqual(previous?.isActive, false)
         XCTAssertEqual(previous?.setupStatus, "inactive")
+        XCTAssertEqual(store.revision, 1)
     }
 
     func testUpdateReplacesProtocolMetadata() async {
@@ -513,6 +514,7 @@ final class ProtocolStoreTests: XCTestCase {
         XCTAssertEqual(result, updated)
         XCTAssertEqual(store.protocols, [updated])
         XCTAssertEqual(store.selectedProtocol, updated)
+        XCTAssertEqual(store.revision, 1)
     }
 
     func testAddCompoundAppendsToProtocol() async {
@@ -535,6 +537,7 @@ final class ProtocolStoreTests: XCTestCase {
 
         XCTAssertEqual(result, added)
         XCTAssertEqual(store.protocols.first?.compounds, [Compound.fixture, added])
+        XCTAssertEqual(store.revision, 1)
     }
 
     func testUpdateCompoundReplacesCompoundInOwningProtocol() async {
@@ -558,6 +561,7 @@ final class ProtocolStoreTests: XCTestCase {
 
         XCTAssertEqual(result, updated)
         XCTAssertEqual(store.protocols.first?.compounds, [updated])
+        XCTAssertEqual(store.revision, 1)
     }
 
     func testRemoveCompoundRemovesFromProtocol() async {
@@ -580,6 +584,7 @@ final class ProtocolStoreTests: XCTestCase {
 
         XCTAssertTrue(removed)
         XCTAssertEqual(store.protocols.first?.compounds, [Compound.fixture])
+        XCTAssertEqual(store.revision, 1)
     }
 
     func testActivateAppliesServerStateAndDeactivatesOthers() async {
@@ -597,6 +602,7 @@ final class ProtocolStoreTests: XCTestCase {
         XCTAssertTrue(didActivate)
         XCTAssertEqual(store.protocols.first { $0.id == inactive.id }, activated)
         XCTAssertEqual(store.protocols.first { $0.id == active.id }?.isActive, false)
+        XCTAssertEqual(store.revision, 1)
     }
 
     func testDeactivateAppliesServerState() async {
@@ -615,6 +621,7 @@ final class ProtocolStoreTests: XCTestCase {
 
         XCTAssertTrue(didDeactivate)
         XCTAssertEqual(store.protocols, [deactivated])
+        XCTAssertEqual(store.revision, 1)
     }
 
     func testDeleteRemovesProtocolAndClearsSelection() async {
@@ -629,6 +636,7 @@ final class ProtocolStoreTests: XCTestCase {
         XCTAssertTrue(deleted)
         XCTAssertTrue(store.protocols.isEmpty)
         XCTAssertNil(store.selectedProtocol)
+        XCTAssertEqual(store.revision, 1)
     }
 
     func testDeleteFailureKeepsStateAndSetsError() async {
@@ -645,6 +653,7 @@ final class ProtocolStoreTests: XCTestCase {
         XCTAssertEqual(store.protocols, [ProtocolModel.fixture])
         XCTAssertEqual(store.selectedProtocol, ProtocolModel.fixture)
         XCTAssertNotNil(store.errorMessage)
+        XCTAssertEqual(store.revision, 0)
     }
 
     func testOverlappingMutationForSameProtocolIsRejected() async {
@@ -678,6 +687,162 @@ final class ProtocolStoreTests: XCTestCase {
         XCTAssertEqual(first, updated)
         XCTAssertNil(store.mutatingProtocolID)
         XCTAssertEqual(api.requestLog.filter { $0.method == .patch }.count, 1)
+        XCTAssertEqual(store.revision, 1)
+    }
+
+    // MARK: - Store: starter activation
+
+    func testActivateStarterActivatesProtocolAndDeactivatesOthers() async {
+        let api = MockAPIClient()
+        let other = makeProtocol(name: "Other", setupStatus: "active", isActive: true)
+        let pending = makeProtocol(name: "Starter protocol", setupStatus: "pending_setup", isActive: false)
+        api.setMockResponse([other, pending], for: Endpoint.getProtocols)
+        let request = StarterProtocolActivationRequest(
+            doseMg: 2,
+            doseUnit: "mg",
+            frequency: "weekly",
+            administrationRoute: "subcutaneous",
+            startDate: Date(timeIntervalSince1970: 1_780_000_000)
+        )
+        let activated = makeProtocol(id: pending.id, name: "Starter protocol", setupStatus: "active", isActive: true)
+        api.setMockResponse(activated, for: Endpoint.getProtocol(id: pending.id))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let result = await store.activateStarter(id: pending.id, request: request)
+
+        XCTAssertTrue(result)
+        XCTAssertEqual(store.protocols.first { $0.id == pending.id }, activated)
+        XCTAssertEqual(store.protocols.first { $0.id == other.id }?.isActive, false)
+        XCTAssertEqual(store.selectedProtocol, nil)
+        XCTAssertEqual(store.revision, 1)
+        XCTAssertNil(store.errorMessage)
+        guard let activationRequest = api.requestLog.first(where: {
+            if case .activateStarterProtocol = $0 { return true }
+            return false
+        }), case .activateStarterProtocol(let id, _) = activationRequest else {
+            return XCTFail("Expected activate starter protocol endpoint")
+        }
+        XCTAssertEqual(id, pending.id)
+    }
+
+    func testActivateStarterReportsSuccessWhenPostSucceedsButRefetchFails() async {
+        let api = MockAPIClient()
+        let other = makeProtocol(name: "Other", setupStatus: "active", isActive: true)
+        let pending = makeProtocol(name: "Starter protocol", setupStatus: "pending_setup", isActive: false)
+        api.setMockResponse([other, pending], for: Endpoint.getProtocols)
+        let request = StarterProtocolActivationRequest(
+            doseMg: 2,
+            doseUnit: "mg",
+            frequency: "weekly",
+            administrationRoute: "subcutaneous",
+            startDate: Date(timeIntervalSince1970: 1_780_000_000)
+        )
+        // No mock error registered for .activateStarterProtocol, so the POST succeeds.
+        // The follow-up GET is made to fail, simulating a transient refetch error.
+        api.setMockError(.serverError, for: Endpoint.getProtocol(id: pending.id))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let result = await store.activateStarter(id: pending.id, request: request)
+
+        XCTAssertTrue(result, "POST succeeded server-side; activation must be reported as success")
+        XCTAssertEqual(store.protocols.first { $0.id == pending.id }?.isActive, true)
+        XCTAssertEqual(store.protocols.first { $0.id == pending.id }?.setupStatus, "active")
+        XCTAssertEqual(store.protocols.first { $0.id == other.id }?.isActive, false)
+        XCTAssertEqual(store.revision, 1)
+        XCTAssertNil(store.errorMessage)
+    }
+
+    func testActivateStarterFailureSetsErrorAndDoesNotBumpRevision() async {
+        let api = MockAPIClient()
+        let pending = makeProtocol(setupStatus: "pending_setup", isActive: false)
+        api.setMockResponse([pending], for: Endpoint.getProtocols)
+        let request = StarterProtocolActivationRequest(
+            doseMg: 2,
+            doseUnit: "mg",
+            frequency: "weekly",
+            administrationRoute: "subcutaneous",
+            startDate: Date(timeIntervalSince1970: 1_780_000_000)
+        )
+        api.setMockError(.serverError, for: Endpoint.activateStarterProtocol(id: pending.id, request))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let result = await store.activateStarter(id: pending.id, request: request)
+
+        XCTAssertFalse(result)
+        XCTAssertEqual(store.protocols, [pending])
+        XCTAssertEqual(store.revision, 0)
+        XCTAssertEqual(store.errorMessage, APIError.serverError.userMessage)
+    }
+
+    func testActivateStarterReportsSuccessOnUnloadedStoreWhenRefetchFails() async {
+        let api = MockAPIClient()
+        let id = UUID()
+        let request = StarterProtocolActivationRequest(
+            doseMg: 2,
+            doseUnit: "mg",
+            frequency: "weekly",
+            administrationRoute: "subcutaneous",
+            startDate: Date(timeIntervalSince1970: 1_780_000_000)
+        )
+        // Store never loaded: no protocols, no selection (the Dashboard entry path).
+        // POST succeeds; the confirming refetch fails.
+        api.setMockError(.serverError, for: Endpoint.getProtocol(id: id))
+        let store = ProtocolStore(api: api)
+
+        let result = await store.activateStarter(id: id, request: request)
+
+        XCTAssertTrue(result, "Success must not depend on finding a local model")
+        XCTAssertEqual(store.revision, 1)
+        XCTAssertNil(store.errorMessage)
+    }
+
+    func testActivateStarterRejectsOverlappingMutationForSameProtocol() async {
+        let api = MockAPIClient()
+        let pending = makeProtocol(setupStatus: "pending_setup", isActive: false)
+        api.setMockResponse([pending], for: Endpoint.getProtocols)
+        let request = StarterProtocolActivationRequest(
+            doseMg: 2,
+            doseUnit: "mg",
+            frequency: "weekly",
+            administrationRoute: "subcutaneous",
+            startDate: Date(timeIntervalSince1970: 1_780_000_000)
+        )
+        let activated = makeProtocol(id: pending.id, setupStatus: "active", isActive: true)
+        api.setMockResponse(activated, for: Endpoint.getProtocol(id: pending.id))
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        let gate = RequestGate()
+        let started = expectation(description: "starter activation in flight")
+        api.onRequest = { endpoint in
+            if case .activateStarterProtocol = endpoint {
+                started.fulfill()
+                await gate.wait()
+            }
+        }
+
+        let firstActivation = Task { await store.activateStarter(id: pending.id, request: request) }
+        await fulfillment(of: [started], timeout: 2)
+
+        XCTAssertEqual(store.mutatingProtocolID, pending.id)
+        let second = await store.activateStarter(id: pending.id, request: request)
+        XCTAssertFalse(second)
+
+        await gate.open()
+        let first = await firstActivation.value
+
+        XCTAssertTrue(first)
+        XCTAssertEqual(store.protocols, [activated])
+        XCTAssertNil(store.mutatingProtocolID)
+        XCTAssertEqual(store.revision, 1)
+        let activationRequests = api.requestLog.filter {
+            if case .activateStarterProtocol = $0 { return true }
+            return false
+        }
+        XCTAssertEqual(activationRequests.count, 1)
     }
 
     // MARK: - Store: dose logs
@@ -706,6 +871,28 @@ final class ProtocolStoreTests: XCTestCase {
 
         XCTAssertEqual(result, logged)
         XCTAssertEqual(store.doseLogs, [logged, older])
+        XCTAssertEqual(store.revision, 1)
+    }
+
+    func testLogDoseKeepsLoadedHistorySortedByAdministeredAtDescending() async {
+        let api = MockAPIClient()
+        let newer = makeDoseLog(
+            protocolID: ProtocolModel.fixture.id,
+            administeredAt: Date(timeIntervalSince1970: 1_783_953_000)
+        )
+        let older = makeDoseLog(
+            protocolID: ProtocolModel.fixture.id,
+            administeredAt: Date(timeIntervalSince1970: 1_783_000_000)
+        )
+        api.setMockResponse([newer], for: Endpoint.getDoseLogs(protocolID: ProtocolModel.fixture.id))
+        api.setMockResponse(older, for: Endpoint.createDoseLog(.fixture))
+        let store = ProtocolStore(api: api)
+        await store.loadDoseLogs(protocolID: ProtocolModel.fixture.id)
+
+        let result = await store.logDose(.fixture)
+
+        XCTAssertEqual(result, older)
+        XCTAssertEqual(store.doseLogs, [newer, older])
     }
 
     func testLogDoseFailureReturnsNilAndSetsError() async {
@@ -717,6 +904,7 @@ final class ProtocolStoreTests: XCTestCase {
 
         XCTAssertNil(result)
         XCTAssertNotNil(store.errorMessage)
+        XCTAssertEqual(store.revision, 0)
     }
 
     // MARK: - Dependencies

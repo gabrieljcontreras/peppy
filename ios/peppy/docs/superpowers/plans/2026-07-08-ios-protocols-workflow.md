@@ -576,7 +576,7 @@ Expected: Task 4 tests remain green and all editor views compile.
 - Consumes `ProtocolStore.logDose`.
 - Produces one persisted dose and refreshed detail history.
 
-- [ ] **Step 1: Write failing dose tests**
+- [x] **Step 1: Write failing dose tests**
 
 Test preselected context, positive dose, required date/time/unit/route, optional notes, request construction, duplicate submission blocking, success dismissal, and draft retention on failure.
 
@@ -594,19 +594,19 @@ func testSubmissionUsesSelectedContext() async {
 }
 ```
 
-- [ ] **Step 2: Implement the view model**
+- [x] **Step 2: Implement the view model**
 
 Build `CreateDoseLogRequest` from normalized form values and call the store once. Keep `isSubmitting` true for the whole request.
 
-- [ ] **Step 3: Build the Figma log-dose sheet**
+- [x] **Step 3: Build the Figma log-dose sheet**
 
 Match the extracted log-dose frame exactly, including protocol/compound context, date and time controls, dose/unit, route, optional notes, validation, and primary action.
 
-- [ ] **Step 4: Reconcile success**
+- [x] **Step 4: Reconcile success**
 
 On success, prepend or reload dose history, refresh selected detail, dismiss the sheet, and notify Dashboard refresh coordination.
 
-- [ ] **Step 5: Run focused tests and build**
+- [x] **Step 5: Run focused tests and build**
 
 Expected: dose tests pass and the sheet compiles.
 
@@ -619,19 +619,19 @@ Expected: dose tests pass and the sheet compiles.
 - Consumes `ProtocolStore` instead of directly creating parallel state.
 - Produces an activated protocol visible across Dashboard and Protocols.
 
-- [ ] **Step 1: Extend failing starter tests**
+- [x] **Step 1: Extend failing starter tests**
 
 Test activation request fields, mutation lock, store reconciliation, Dashboard refresh signal, draft retention, and server error rendering.
 
-- [ ] **Step 2: Refactor starter activation**
+- [x] **Step 2: Refactor starter activation**
 
 Keep the current activation payload and validation semantics, but route success through `ProtocolStore` so list/detail state updates immediately.
 
-- [ ] **Step 3: Rebuild the starter screen against Figma**
+- [x] **Step 3: Rebuild the starter screen against Figma**
 
 Match "Set up your first protocol" exactly. Share low-level field controls with the compound editor only where visual and behavioral requirements are identical.
 
-- [ ] **Step 4: Run starter and store tests**
+- [x] **Step 4: Run starter and store tests**
 
 Expected: all selected tests pass.
 
@@ -645,11 +645,11 @@ Expected: all selected tests pass.
 - Produces shared selected tab and pending protocol route.
 - Consumes the same `ProtocolsRootView` destinations as the Protocols tab.
 
-- [ ] **Step 1: Write failing routing tests**
+- [x] **Step 1: Write failing routing tests**
 
 Verify pending setup routes to starter setup, configured protocol routes to detail, route selection switches to `.protocols`, and successful protocol mutations trigger Dashboard reload.
 
-- [ ] **Step 2: Add navigation intent**
+- [x] **Step 2: Add navigation intent**
 
 Use an observable coordinator owned by `MainTabView`:
 
@@ -665,15 +665,15 @@ final class ProtocolNavigationCoordinator {
 
 Inject one coordinator through `Dependencies` or an environment value. `MainTabView` switches `selectedTab` before applying a Dashboard-originated route.
 
-- [ ] **Step 3: Update Dashboard card behavior**
+- [x] **Step 3: Update Dashboard card behavior**
 
 Pending setup emits `.starterSetup`; configured protocols with IDs emit `.detail`. Preserve the approved Dashboard visuals.
 
-- [ ] **Step 4: Add mutation refresh signaling**
+- [x] **Step 4: Add mutation refresh signaling**
 
 Use a store revision counter or explicit successful-mutation callback observed by Dashboard. Do not reload on failed mutations.
 
-- [ ] **Step 5: Run navigation, dashboard, and starter tests**
+- [x] **Step 5: Run navigation, dashboard, and starter tests**
 
 Expected: all selected tests pass.
 

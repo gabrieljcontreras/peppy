@@ -2,20 +2,19 @@ import SwiftUI
 
 struct ProtocolsRootView: View {
     private let store: ProtocolStore
-    private let api: APIClientProtocol
-    @State private var path: [ProtocolRoute] = []
+    @Bindable private var navigation: ProtocolNavigationCoordinator
     @State private var listModel: ProtocolListViewModel
 
-    init(store: ProtocolStore, api: APIClientProtocol) {
+    init(store: ProtocolStore, navigation: ProtocolNavigationCoordinator) {
         self.store = store
-        self.api = api
+        self.navigation = navigation
         _listModel = State(initialValue: ProtocolListViewModel(store: store))
     }
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack(path: $navigation.path) {
             ProtocolListView(model: listModel) { route in
-                path.append(route)
+                navigation.path.append(route)
             }
             .navigationDestination(for: ProtocolRoute.self) { route in
                 destination(for: route)
@@ -28,17 +27,17 @@ struct ProtocolsRootView: View {
         switch route {
         case .detail(let id):
             ProtocolDetailView(protocolID: id, store: store) { route in
-                path.append(route)
+                navigation.path.append(route)
             }
         case .create:
             ProtocolEditorView(mode: .create, store: store) { savedID in
-                path.removeLast()
-                path.append(.detail(savedID))
+                navigation.path.removeLast()
+                navigation.path.append(.detail(savedID))
             }
         case .edit(let id):
             if let protocolValue = protocolValue(for: id) {
                 ProtocolEditorView(mode: .edit(protocolValue), store: store) { _ in
-                    path.removeLast()
+                    navigation.path.removeLast()
                 }
             } else {
                 ProtocolRoutePlaceholderView(title: "Edit protocol", systemImage: "pencil")
@@ -72,17 +71,29 @@ struct ProtocolsRootView: View {
             } else {
                 ProtocolRoutePlaceholderView(title: "Edit compound", systemImage: "pencil")
             }
-        case .logDose:
-            ProtocolRoutePlaceholderView(title: "Log dose", systemImage: "calendar.badge.plus")
+        case .logDose(let protocolID, let compoundID):
+            if let protocolValue = protocolValue(for: protocolID),
+               let compound = Self.doseLogCompound(in: protocolValue, compoundID: compoundID) {
+                DoseLogView(
+                    protocol: protocolValue,
+                    compound: compound,
+                    store: store
+                ) {
+                    Task {
+                        await store.select(protocolID)
+                        await store.loadDoseLogs(protocolID: protocolID)
+                    }
+                }
+            } else {
+                ProtocolRoutePlaceholderView(title: "Log dose", systemImage: "calendar.badge.plus")
+            }
         case .starterSetup(let protocolID, let compounds):
             StarterProtocolSetupView(
                 protocolID: protocolID,
                 compounds: compounds,
-                api: api,
+                store: store,
                 embedsInNavigationStack: false
-            ) {
-                Task { await store.loadProtocols(force: true) }
-            }
+            )
         }
     }
 
@@ -95,6 +106,13 @@ struct ProtocolsRootView: View {
 
     private func compound(id: UUID, protocolID: UUID) -> Compound? {
         protocolValue(for: protocolID)?.compounds.first { $0.id == id }
+    }
+
+    static func doseLogCompound(in protocolValue: ProtocolModel, compoundID: UUID?) -> Compound? {
+        if let compoundID {
+            return protocolValue.compounds.first { $0.id == compoundID }
+        }
+        return protocolValue.compounds.first
     }
 }
 
@@ -126,5 +144,8 @@ private struct ProtocolRoutePlaceholderView: View {
 
 #Preview {
     let dependencies = Dependencies.mock()
-    ProtocolsRootView(store: dependencies.protocolStore, api: dependencies.api)
+    ProtocolsRootView(
+        store: dependencies.protocolStore,
+        navigation: dependencies.protocolNavigation
+    )
 }

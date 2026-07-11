@@ -6,7 +6,7 @@ import Observation
 final class StarterProtocolViewModel {
     let protocolID: UUID
     let compounds: [String]
-    private let api: APIClientProtocol
+    private let store: ProtocolStore
 
     var doseText = ""
     var frequency = ""
@@ -15,10 +15,11 @@ final class StarterProtocolViewModel {
     var isSaving = false
     var saveErrorMessage: String?
 
-    init(protocolID: UUID, compounds: [String], api: APIClientProtocol) {
+    init(protocolID: UUID, compounds: [String], store: ProtocolStore) {
         self.protocolID = protocolID
         self.compounds = compounds
-        self.api = api
+        self.store = store
+        self.startDate = Date()
     }
 
     var canSave: Bool {
@@ -33,6 +34,7 @@ final class StarterProtocolViewModel {
     }
 
     func save() async -> Bool {
+        guard !isSaving else { return false }
         guard canSave, let doseMg, let startDate else {
             saveErrorMessage = validationMessage
             return false
@@ -50,16 +52,11 @@ final class StarterProtocolViewModel {
             startDate: startDate
         )
 
-        do {
-            try await api.executeVoid(.activateStarterProtocol(id: protocolID, request))
-            return true
-        } catch let error as APIError {
-            saveErrorMessage = error.userMessage
-            return false
-        } catch {
-            saveErrorMessage = error.localizedDescription
+        guard await store.activateStarter(id: protocolID, request: request) else {
+            saveErrorMessage = store.errorMessage
             return false
         }
+        return true
     }
 
     private var doseMg: Double? {
