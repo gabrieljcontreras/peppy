@@ -16,5 +16,9 @@ DESIGN_SYSTEM.md
 /docs
 .implementation-memory/
 peppy.db
+<<<<<<< HEAD
 graphify-out
 DerivedData
+=======
+/graphify-out
+>>>>>>> 78b21ea (docs: gitignore updates)
