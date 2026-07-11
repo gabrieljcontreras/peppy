@@ -686,7 +686,13 @@ Expected: all selected tests pass.
 **Interfaces:**
 - Validates the complete approved feature.
 
+<<<<<<< HEAD
 - [ ] **Step 1: Run backend migration and suite**
+=======
+> Steps 4–6 are a manual pass (Gabriel drives the simulator): see `2026-07-11-protocols-manual-qa-checklist.md` in this directory.
+
+- [x] **Step 1: Run backend migration and suite** (2026-07-11: migration `c5d6e7f8a9b0` applied, 139 tests passed; venv is `backend/venv`, not `.venv`)
+>>>>>>> 0d55b58 (fix: dashboard had said active on past protocols)
 
 ```bash
 cd backend
@@ -696,7 +702,11 @@ cd backend
 
 Expected: migration succeeds and the full backend suite passes. If unrelated baseline failures exist, record their exact test names and prove all protocol/dose tests pass independently.
 
+<<<<<<< HEAD
 - [ ] **Step 2: Run the complete iOS test suite**
+=======
+- [x] **Step 2: Run the complete iOS test suite** (2026-07-11: TEST SUCCEEDED on iPhone 17 Pro — no 16 Pro sim on this machine)
+>>>>>>> 0d55b58 (fix: dashboard had said active on past protocols)
 
 ```bash
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
@@ -706,7 +716,11 @@ xcodebuild test -project ios/peppy/peppy.xcodeproj \
 
 Expected: `** TEST SUCCEEDED **`.
 
+<<<<<<< HEAD
 - [ ] **Step 3: Run a clean simulator build**
+=======
+- [x] **Step 3: Run a clean simulator build** (2026-07-11: BUILD SUCCEEDED, 0 errors; only pre-existing Swift 6 warnings in APIClient.swift)
+>>>>>>> 0d55b58 (fix: dashboard had said active on past protocols)
 
 ```bash
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \

@@ -1,5 +1,38 @@
 import SwiftUI
 
+/// Card presentation derived from the backend `setup_status` contract, mirroring
+/// the Protocols tab's three-way treatment so a deactivated protocol never
+/// renders as active.
+extension DashboardProtocolSummary {
+    var cardTitle: String {
+        switch status {
+        case "pending_setup": return "Starter protocol"
+        case "inactive": return "Past protocol"
+        default: return "Active protocol"
+        }
+    }
+
+    var badgeText: String {
+        switch status {
+        case "pending_setup": return "Needs setup"
+        case "inactive": return "Inactive"
+        default: return "Active"
+        }
+    }
+
+    var badgeType: PepBadgeType {
+        switch status {
+        case "pending_setup": return .warning
+        case "inactive": return .neutral
+        default: return .success
+        }
+    }
+
+    var actionTitle: String {
+        status == "pending_setup" ? "Finish setup" : "View protocol"
+    }
+}
+
 struct DashboardProtocolCard: View {
     let summary: DashboardProtocolSummary
     let finishSetup: () -> Void
@@ -8,19 +41,13 @@ struct DashboardProtocolCard: View {
         PepCard {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .center, spacing: Spacing.sm) {
-                    Label(
-                        summary.status == "pending_setup" ? "Starter protocol" : "Active protocol",
-                        systemImage: "pills.fill"
-                    )
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.pepPrimary)
+                    Label(summary.cardTitle, systemImage: "pills.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.pepPrimary)
 
                     Spacer(minLength: Spacing.sm)
 
-                    PepBadge(
-                        text: summary.status == "pending_setup" ? "Needs setup" : "Active",
-                        type: summary.status == "pending_setup" ? .warning : .success
-                    )
+                    PepBadge(text: summary.badgeText, type: summary.badgeType)
                 }
 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -38,7 +65,7 @@ struct DashboardProtocolCard: View {
                 }
 
                 PepButton(
-                    title: summary.status == "pending_setup" ? "Finish setup" : "View protocol",
+                    title: summary.actionTitle,
                     style: .primary,
                     action: finishSetup
                 )
