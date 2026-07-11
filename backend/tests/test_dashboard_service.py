@@ -30,6 +30,15 @@ async def test_dashboard_summary_reports_pending_starter(db_session, user):
     assert summary["protocol"]["compounds"] == ["Retatrutide"]
 
 
+async def test_dashboard_summary_without_protocol_prompts_creation(db_session, user):
+    summary = await DashboardService(db_session).summary_for_user(user.id)
+
+    assert summary["protocol"]["id"] is None
+    assert summary["protocol"]["status"] == "missing"
+    assert summary["protocol"]["title"] == "Create your protocol"
+    assert summary["protocol"]["compounds"] == []
+
+
 async def test_dashboard_summary_includes_today_and_weight_trend(db_session, user):
     checkins = CheckinService(db_session)
     await checkins.create(user.id, date.today() - timedelta(days=2), weight_kg=75.2, energy_level=6)

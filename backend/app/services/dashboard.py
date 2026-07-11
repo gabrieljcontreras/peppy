@@ -101,7 +101,7 @@ class DashboardService:
             return {
                 "id": None,
                 "status": "missing",
-                "title": "Create your first protocol",
+                "title": "Create your protocol",
                 "compounds": [],
             }
         return {

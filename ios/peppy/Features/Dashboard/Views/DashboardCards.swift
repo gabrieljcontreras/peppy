@@ -8,6 +8,7 @@ extension DashboardProtocolSummary {
         switch status {
         case "pending_setup": return "Starter protocol"
         case "inactive": return "Past protocol"
+        case "missing": return "Protocol"
         default: return "Active protocol"
         }
     }
@@ -16,6 +17,7 @@ extension DashboardProtocolSummary {
         switch status {
         case "pending_setup": return "Needs setup"
         case "inactive": return "Inactive"
+        case "missing": return "Not started"
         default: return "Active"
         }
     }
@@ -24,12 +26,17 @@ extension DashboardProtocolSummary {
         switch status {
         case "pending_setup": return .warning
         case "inactive": return .neutral
+        case "missing": return .neutral
         default: return .success
         }
     }
 
     var actionTitle: String {
-        status == "pending_setup" ? "Finish setup" : "View protocol"
+        switch status {
+        case "pending_setup": return "Finish setup"
+        case "missing": return "Create protocol"
+        default: return "View protocol"
+        }
     }
 }
 

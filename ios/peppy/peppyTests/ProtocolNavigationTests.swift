@@ -49,15 +49,15 @@ final class ProtocolNavigationTests: XCTestCase {
         XCTAssertEqual(summary.protocolRoute, .detail(id))
     }
 
-    func testMissingProtocolSummaryHasNoRoute() {
+    func testMissingProtocolSummaryRoutesToCreate() {
         let summary = DashboardProtocolSummary(
             id: nil,
             status: "missing",
-            title: "Create your first protocol",
+            title: "Create your protocol",
             compounds: []
         )
 
-        XCTAssertNil(summary.protocolRoute)
+        XCTAssertEqual(summary.protocolRoute, .create)
     }
 
     // MARK: - Dashboard reload signaling

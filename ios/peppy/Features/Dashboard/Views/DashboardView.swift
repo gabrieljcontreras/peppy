@@ -18,9 +18,7 @@ struct DashboardView: View {
 
                         if let summary = state.summary {
                             DashboardProtocolCard(summary: summary.protocol) {
-                                if let route = summary.protocol.protocolRoute {
-                                    deps.protocolNavigation.show(route)
-                                }
+                                deps.protocolNavigation.show(summary.protocol.protocolRoute)
                             }
                             DashboardTodayCard(today: summary.todayCheckin) {
                                 showsCheckin = true
@@ -148,9 +146,9 @@ struct DashboardView: View {
 extension DashboardProtocolSummary {
     /// Route for the Dashboard protocol card: pending starters resume setup,
     /// configured protocols open detail, and summaries without a server ID
-    /// (e.g. no protocol yet) have nowhere to go.
-    var protocolRoute: ProtocolRoute? {
-        guard let id else { return nil }
+    /// (no protocol yet) go to protocol creation.
+    var protocolRoute: ProtocolRoute {
+        guard let id else { return .create }
         return status == "pending_setup"
             ? .starterSetup(protocolID: id, compounds: compounds)
             : .detail(id)

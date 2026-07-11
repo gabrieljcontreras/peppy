@@ -67,6 +67,15 @@ final class DashboardViewModelTests: XCTestCase {
         XCTAssertEqual(summary.actionTitle, "View protocol")
     }
 
+    func testMissingSummaryPresentsCreateProtocolCard() {
+        let summary = DashboardSummary.mockMissingProfile.protocol
+
+        XCTAssertEqual(summary.cardTitle, "Protocol")
+        XCTAssertEqual(summary.badgeText, "Not started")
+        XCTAssertEqual(summary.badgeType, .neutral)
+        XCTAssertEqual(summary.actionTitle, "Create protocol")
+    }
+
     func testPendingSetupSummaryPresentsStarterCard() {
         let summary = DashboardSummary.mockPendingStarter.protocol
 

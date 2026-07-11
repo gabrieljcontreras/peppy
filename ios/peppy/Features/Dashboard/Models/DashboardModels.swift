@@ -121,7 +121,7 @@ extension DashboardSummary {
         protocol: DashboardProtocolSummary(
             id: nil,
             status: "missing",
-            title: "Create your first protocol",
+            title: "Create your protocol",
             compounds: []
         ),
         todayCheckin: DashboardTodayCheckin(logged: false, checkinId: nil),
