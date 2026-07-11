@@ -72,8 +72,22 @@ struct ProtocolsRootView: View {
             } else {
                 ProtocolRoutePlaceholderView(title: "Edit compound", systemImage: "pencil")
             }
-        case .logDose:
-            ProtocolRoutePlaceholderView(title: "Log dose", systemImage: "calendar.badge.plus")
+        case .logDose(let protocolID, let compoundID):
+            if let protocolValue = protocolValue(for: protocolID),
+               let compound = Self.doseLogCompound(in: protocolValue, compoundID: compoundID) {
+                DoseLogView(
+                    protocol: protocolValue,
+                    compound: compound,
+                    store: store
+                ) {
+                    Task {
+                        await store.select(protocolID)
+                        await store.loadDoseLogs(protocolID: protocolID)
+                    }
+                }
+            } else {
+                ProtocolRoutePlaceholderView(title: "Log dose", systemImage: "calendar.badge.plus")
+            }
         case .starterSetup(let protocolID, let compounds):
             StarterProtocolSetupView(
                 protocolID: protocolID,
@@ -95,6 +109,13 @@ struct ProtocolsRootView: View {
 
     private func compound(id: UUID, protocolID: UUID) -> Compound? {
         protocolValue(for: protocolID)?.compounds.first { $0.id == id }
+    }
+
+    static func doseLogCompound(in protocolValue: ProtocolModel, compoundID: UUID?) -> Compound? {
+        if let compoundID {
+            return protocolValue.compounds.first { $0.id == compoundID }
+        }
+        return protocolValue.compounds.first
     }
 }
 

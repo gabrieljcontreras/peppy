@@ -311,6 +311,7 @@ extension View {
 
 struct ProtocolPrimaryButton: View {
     let title: String
+    var systemImage: String?
     var isDisabled = false
     var isLoading = false
     let action: () -> Void
@@ -318,9 +319,16 @@ struct ProtocolPrimaryButton: View {
     var body: some View {
         Button(action: action) {
             ZStack {
-                Text(title)
-                    .font(.system(size: 17, weight: .bold))
-                    .opacity(isLoading ? 0 : 1)
+                HStack(spacing: 8) {
+                    if let systemImage {
+                        Image(systemName: systemImage)
+                            .font(.system(size: 17, weight: .semibold))
+                    }
+
+                    Text(title)
+                        .font(.system(size: 17, weight: .bold))
+                }
+                .opacity(isLoading ? 0 : 1)
 
                 if isLoading {
                     ProgressView()

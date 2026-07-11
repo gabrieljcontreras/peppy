@@ -708,6 +708,27 @@ final class ProtocolStoreTests: XCTestCase {
         XCTAssertEqual(store.doseLogs, [logged, older])
     }
 
+    func testLogDoseKeepsLoadedHistorySortedByAdministeredAtDescending() async {
+        let api = MockAPIClient()
+        let newer = makeDoseLog(
+            protocolID: ProtocolModel.fixture.id,
+            administeredAt: Date(timeIntervalSince1970: 1_783_953_000)
+        )
+        let older = makeDoseLog(
+            protocolID: ProtocolModel.fixture.id,
+            administeredAt: Date(timeIntervalSince1970: 1_783_000_000)
+        )
+        api.setMockResponse([newer], for: Endpoint.getDoseLogs(protocolID: ProtocolModel.fixture.id))
+        api.setMockResponse(older, for: Endpoint.createDoseLog(.fixture))
+        let store = ProtocolStore(api: api)
+        await store.loadDoseLogs(protocolID: ProtocolModel.fixture.id)
+
+        let result = await store.logDose(.fixture)
+
+        XCTAssertEqual(result, older)
+        XCTAssertEqual(store.doseLogs, [newer, older])
+    }
+
     func testLogDoseFailureReturnsNilAndSetsError() async {
         let api = MockAPIClient()
         api.setMockError(.serverError, for: Endpoint.createDoseLog(.fixture))

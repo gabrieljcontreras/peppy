@@ -217,6 +217,7 @@ final class ProtocolStore {
         do {
             let logged: DoseLog = try await api.execute(.createDoseLog(request))
             doseLogs.insert(logged, at: 0)
+            doseLogs.sort { $0.administeredAt > $1.administeredAt }
             return logged
         } catch {
             errorMessage = message(for: error)
