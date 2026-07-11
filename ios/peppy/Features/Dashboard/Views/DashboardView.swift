@@ -3,7 +3,6 @@ import SwiftUI
 struct DashboardView: View {
     @Environment(\.dependencies) private var deps
     @State private var model: DashboardViewModel?
-    @State private var starterSetupRoute: StarterSetupRoute?
     @State private var showsCheckin = false
 
     var body: some View {
@@ -19,12 +18,8 @@ struct DashboardView: View {
 
                         if let summary = state.summary {
                             DashboardProtocolCard(summary: summary.protocol) {
-                                if summary.protocol.status == "pending_setup",
-                                   let protocolID = summary.protocol.id {
-                                    starterSetupRoute = StarterSetupRoute(
-                                        protocolID: protocolID,
-                                        compounds: summary.protocol.compounds
-                                    )
+                                if let route = summary.protocol.protocolRoute {
+                                    deps.protocolNavigation.show(route)
                                 }
                             }
                             DashboardTodayCard(today: summary.todayCheckin) {
@@ -49,15 +44,6 @@ struct DashboardView: View {
             }
             .background(Color.pepBackground.ignoresSafeArea())
             .navigationBarHidden(true)
-            .sheet(item: $starterSetupRoute) { route in
-                StarterProtocolSetupView(
-                    protocolID: route.protocolID,
-                    compounds: route.compounds,
-                    store: deps.protocolStore
-                ) {
-                    Task { await model?.load() }
-                }
-            }
             .sheet(isPresented: $showsCheckin) {
                 CheckinView {
                     Task { await model?.load() }
@@ -67,10 +53,14 @@ struct DashboardView: View {
                 if model == nil {
                     model = DashboardViewModel(
                         api: deps.api,
+                        protocolStore: deps.protocolStore,
                         hasProfileAttachFailure: deps.flow.hasProfileAttachFailure
                     )
                 }
                 await model?.load()
+            }
+            .onChange(of: deps.protocolStore.revision) {
+                Task { await model?.refreshIfProtocolStateChanged() }
             }
         }
     }
@@ -155,11 +145,16 @@ struct DashboardView: View {
     }
 }
 
-private struct StarterSetupRoute: Identifiable {
-    let protocolID: UUID
-    let compounds: [String]
-
-    var id: UUID { protocolID }
+extension DashboardProtocolSummary {
+    /// Route for the Dashboard protocol card: pending starters resume setup,
+    /// configured protocols open detail, and summaries without a server ID
+    /// (e.g. no protocol yet) have nowhere to go.
+    var protocolRoute: ProtocolRoute? {
+        guard let id else { return nil }
+        return status == "pending_setup"
+            ? .starterSetup(protocolID: id, compounds: compounds)
+            : .detail(id)
+    }
 }
 
 #Preview {

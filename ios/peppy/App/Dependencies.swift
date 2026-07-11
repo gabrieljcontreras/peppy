@@ -11,6 +11,7 @@ final class Dependencies {
     let flow: AppFlowCoordinator
     let onboardingViewModel: OnboardingViewModel
     let protocolStore: ProtocolStore
+    let protocolNavigation: ProtocolNavigationCoordinator
 
     init(
         api: APIClientProtocol,
@@ -21,7 +22,8 @@ final class Dependencies {
         notifications: NotificationPermissionServiceProtocol,
         flow: AppFlowCoordinator,
         onboardingViewModel: OnboardingViewModel,
-        protocolStore: ProtocolStore
+        protocolStore: ProtocolStore,
+        protocolNavigation: ProtocolNavigationCoordinator
     ) {
         self.api = api
         self.keychain = keychain
@@ -32,6 +34,7 @@ final class Dependencies {
         self.flow = flow
         self.onboardingViewModel = onboardingViewModel
         self.protocolStore = protocolStore
+        self.protocolNavigation = protocolNavigation
     }
 
     static func live() -> Dependencies {
@@ -63,7 +66,8 @@ final class Dependencies {
             notifications: notifications,
             flow: flow,
             onboardingViewModel: onboardingViewModel,
-            protocolStore: protocolStore
+            protocolStore: protocolStore,
+            protocolNavigation: ProtocolNavigationCoordinator()
         )
     }
 
@@ -96,7 +100,8 @@ final class Dependencies {
             notifications: notifications,
             flow: flow,
             onboardingViewModel: onboardingViewModel,
-            protocolStore: protocolStore
+            protocolStore: protocolStore,
+            protocolNavigation: ProtocolNavigationCoordinator()
         )
     }
 }

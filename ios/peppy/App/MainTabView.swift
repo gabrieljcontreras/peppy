@@ -18,11 +18,27 @@ enum Tab: String, CaseIterable {
     }
 }
 
+/// Shared navigation intent for the Protocols stack. The Dashboard (and any
+/// other tab) routes into Protocols through `show`, which switches the selected
+/// tab before replacing the stack so the route lands on a visible screen.
+@MainActor
+@Observable
+final class ProtocolNavigationCoordinator {
+    var selectedTab: Tab = .home
+    var path: [ProtocolRoute] = []
+
+    func show(_ route: ProtocolRoute) {
+        selectedTab = .protocols
+        path = [route]
+    }
+}
+
 struct MainTabView: View {
-    @State private var selectedTab: Tab = .home
+    @Environment(\.dependencies) private var deps
 
     var body: some View {
-        TabView(selection: $selectedTab) {
+        @Bindable var navigation = deps.protocolNavigation
+        TabView(selection: $navigation.selectedTab) {
             HomeTab()
                 .tabItem {
                     Label(Tab.home.rawValue, systemImage: Tab.home.icon)
@@ -75,7 +91,7 @@ struct ProtocolsTab: View {
     @Environment(\.dependencies) private var deps
 
     var body: some View {
-        ProtocolsRootView(store: deps.protocolStore)
+        ProtocolsRootView(store: deps.protocolStore, navigation: deps.protocolNavigation)
     }
 }
 
