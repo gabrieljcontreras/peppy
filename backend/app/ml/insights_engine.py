@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional, Callable, Awaitable, Sequence
+from typing import Awaitable, Callable, Optional, Sequence
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.insight import InsightType, InsightSeverity
+from app.models.insight import InsightSeverity, InsightType
 
 
 @dataclass
@@ -22,6 +22,7 @@ class GeneratedInsight:
     explanation: str
     confidence: float
     source_data_refs: Optional[str] = None
+    supporting_data: Optional[str] = None  # JSON list of evidence rows
 
 
 Rule = Callable[[AsyncSession, UUID, date, date], Awaitable[list[GeneratedInsight]]]

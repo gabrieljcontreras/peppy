@@ -1,8 +1,10 @@
+import json
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, Field
-from uuid import UUID
 from enum import Enum
+from typing import Optional
+from uuid import UUID
+
+from pydantic import BaseModel, Field, field_validator
 
 
 class InsightType(str, Enum):
@@ -31,6 +33,13 @@ class InsightCreate(InsightBase):
     source_data_refs: Optional[str] = None
 
 
+class SupportingDataItem(BaseModel):
+    icon_key: str
+    label: str
+    sublabel: Optional[str] = None
+    value: str
+
+
 class InsightResponse(InsightBase):
     id: UUID
     created_at: datetime
@@ -38,6 +47,15 @@ class InsightResponse(InsightBase):
     dismissed_at: Optional[datetime] = None
     action_taken: Optional[str] = None
     action_notes: Optional[str] = None
+    snoozed_until: Optional[datetime] = None
+    supporting_data: Optional[list[SupportingDataItem]] = None
+
+    @field_validator("supporting_data", mode="before")
+    @classmethod
+    def _parse_supporting_data(cls, value):
+        if isinstance(value, str):
+            return json.loads(value) if value else None
+        return value
 
     model_config = {"from_attributes": True}
 

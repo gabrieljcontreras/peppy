@@ -1,12 +1,11 @@
-from uuid import UUID
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Sequence
+from uuid import UUID
 
-from sqlalchemy import select, and_, exists
+from sqlalchemy import and_, exists, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.insight import Insight, InsightType, InsightSeverity
-
+from app.models.insight import Insight, InsightSeverity, InsightType
 
 _VALID_ACTIONS = {"accept", "dismiss", "snooze"}
 
@@ -55,6 +54,10 @@ class InsightService:
             query = query.where(Insight.read_at.is_(None))
         if not include_dismissed:
             query = query.where(Insight.dismissed_at.is_(None))
+        now = datetime.now(timezone.utc)
+        query = query.where(
+            or_(Insight.snoozed_until.is_(None), Insight.snoozed_until <= now)
+        )
         if type is not None:
             query = query.where(Insight.type == type)
         if severity is not None:
@@ -75,6 +78,7 @@ class InsightService:
         explanation: str,
         confidence: float,
         source_data_refs: Optional[str] = None,
+        supporting_data: Optional[str] = None,
     ) -> Insight:
         insight = Insight(
             user_id=user_id,
@@ -85,6 +89,7 @@ class InsightService:
             explanation=explanation,
             confidence=confidence,
             source_data_refs=source_data_refs,
+            supporting_data=supporting_data,
         )
         self.db.add(insight)
         await self.db.commit()
@@ -124,6 +129,7 @@ class InsightService:
         insight.action_taken = None
         insight.action_notes = None
         insight.dismissed_at = None
+        insight.snoozed_until = None
 
         await self.db.commit()
         await self.db.refresh(insight)
@@ -148,6 +154,9 @@ class InsightService:
         insight.action_notes = notes
         if action == "dismiss":
             insight.dismissed_at = datetime.now(timezone.utc)
+        if action == "snooze":
+            insight.snoozed_until = datetime.now(timezone.utc) + timedelta(days=7)
+            insight.read_at = None
 
         await self.db.commit()
         await self.db.refresh(insight)
