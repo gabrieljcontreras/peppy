@@ -30,23 +30,23 @@ async def symptom_after_dose_rule(
     end_date: date,
 ) -> list[GeneratedInsight]:
     """Detect symptoms recurring on a dose date or the following day."""
-    window_start = datetime.combine(start_date, time.min, tzinfo=timezone.utc)
-    window_end = datetime.combine(end_date + timedelta(days=1), time.min, tzinfo=timezone.utc)
-    dose_rows = await db.execute(
+    start_at = datetime.combine(start_date, time.min, tzinfo=timezone.utc)
+    end_at = datetime.combine(end_date + timedelta(days=1), time.min, tzinfo=timezone.utc)
+    dose_result = await db.execute(
         select(DoseLog.administered_at).where(
             and_(
                 DoseLog.user_id == user_id,
-                DoseLog.administered_at >= window_start,
-                DoseLog.administered_at < window_end,
+                DoseLog.administered_at >= start_at,
+                DoseLog.administered_at < end_at,
             )
         )
     )
-    dose_dates = sorted({row[0].date() for row in dose_rows.all()})
+    dose_dates = sorted({administered_at.date() for (administered_at,) in dose_result.all()})
     if len(dose_dates) < _MIN_DOSE_DATES:
         return []
-    recent_doses = dose_dates[-_LOOKBACK_DOSES:]
 
-    checkin_rows = await db.execute(
+    recent_dose_dates = dose_dates[-_LOOKBACK_DOSES:]
+    checkin_result = await db.execute(
         select(Checkin).where(
             and_(
                 Checkin.user_id == user_id,
@@ -55,44 +55,48 @@ async def symptom_after_dose_rule(
             )
         )
     )
-    checkins_by_date = {checkin.date: checkin for checkin in checkin_rows.scalars().all()}
-
-    dose_window_days = {
-        day for dose_date in dose_dates for day in (dose_date, dose_date + timedelta(days=1))
+    checkins_by_date = {checkin.date: checkin for checkin in checkin_result.scalars().all()}
+    dose_window_dates = {
+        window_date
+        for dose_date in dose_dates
+        for window_date in (dose_date, dose_date + timedelta(days=1))
     }
 
-    results: list[GeneratedInsight] = []
-    for field, display in _SYMPTOMS.items():
+    insights: list[GeneratedInsight] = []
+    for field, display_name in _SYMPTOMS.items():
         occurrences = 0
-        for dose_date in recent_doses:
-            for day in (dose_date, dose_date + timedelta(days=1)):
-                checkin = checkins_by_date.get(day)
-                if checkin and (getattr(checkin, field) or 0) >= _SEVERITY_THRESHOLD:
-                    occurrences += 1
-                    break
+        for dose_date in recent_dose_dates:
+            if any(
+                (checkin := checkins_by_date.get(checkin_date))
+                and (getattr(checkin, field) or 0) >= _SEVERITY_THRESHOLD
+                for checkin_date in (dose_date, dose_date + timedelta(days=1))
+            ):
+                occurrences += 1
 
         if occurrences < _MIN_OCCURRENCES:
             continue
 
-        non_dose_days = [day for day in checkins_by_date if day not in dose_window_days]
+        non_dose_dates = [
+            checkin_date
+            for checkin_date in checkins_by_date
+            if checkin_date not in dose_window_dates
+        ]
         non_dose_hits = sum(
-            (getattr(checkins_by_date[day], field) or 0) >= _SEVERITY_THRESHOLD
-            for day in non_dose_days
+            (getattr(checkins_by_date[checkin_date], field) or 0) >= _SEVERITY_THRESHOLD
+            for checkin_date in non_dose_dates
         )
-        if non_dose_days and 2 * non_dose_hits * len(recent_doses) >= occurrences * len(
-            non_dose_days
+        if non_dose_dates and 2 * non_dose_hits * len(recent_dose_dates) >= occurrences * len(
+            non_dose_dates
         ):
             continue
 
-        confidence = min(0.5 + 0.1 * occurrences, 0.9)
-        month_key = recent_doses[-1].strftime("%Y-%m")
-        supporting_data = json.dumps(
+        evidence = json.dumps(
             [
                 {
                     "icon_key": "symptom",
-                    "label": f"{display} after dose",
+                    "label": f"{display_name} after dose",
                     "sublabel": "Within 24h of a logged dose",
-                    "value": f"{occurrences} of last {len(recent_doses)} dose days",
+                    "value": f"{occurrences} of last {len(recent_dose_dates)} dose days",
                 },
                 {
                     "icon_key": "calendar",
@@ -105,34 +109,39 @@ async def symptom_after_dose_rule(
                     "label": "On non-dose days",
                     "sublabel": "Same symptom, days without a dose",
                     "value": (
-                        f"{non_dose_hits} of {len(non_dose_days)} days"
-                        if non_dose_days
+                        f"{non_dose_hits} of {len(non_dose_dates)} days"
+                        if non_dose_dates
                         else "no data"
                     ),
                 },
             ]
         )
-        results.append(
+        confidence = min(0.5 + 0.1 * occurrences, 0.9)
+        insights.append(
             GeneratedInsight(
                 type=InsightType.ANOMALY,
                 severity=InsightSeverity.WARNING,
-                title=f"{display} is appearing after dose day",
+                title=f"{display_name} is appearing after dose day",
                 description=(
-                    f"You've logged {display.lower()} within 24 hours after your dose "
-                    f"on {occurrences} of the last {len(recent_doses)} dose days."
+                    f"You've logged {display_name.lower()} within 24 hours after your dose "
+                    f"on {occurrences} of the last {len(recent_dose_dates)} dose days."
                 ),
                 explanation=(
                     f"Computed from {len(checkins_by_date)} check-ins and {len(dose_dates)} "
                     f"dose days between {start_date.isoformat()} and {end_date.isoformat()}. "
-                    f"A dose day counts when {display.lower()} severity is "
+                    f"A dose day counts when {display_name.lower()} severity is "
                     f"{_SEVERITY_THRESHOLD}+ on the dose day or the day after."
                 ),
                 confidence=confidence,
                 source_data_refs=json.dumps(
-                    {"rule": "symptom_after_dose", "symptom": field, "month": month_key}
+                    {
+                        "rule": "symptom_after_dose",
+                        "symptom": field,
+                        "month": recent_dose_dates[-1].strftime("%Y-%m"),
+                    }
                 ),
-                supporting_data=supporting_data,
+                supporting_data=evidence,
             )
         )
 
-    return results
+    return insights
