@@ -70,6 +70,24 @@ async def test_snooze_sets_snoozed_until_and_clears_read(db_session):
 
 
 @pytest.mark.asyncio
+async def test_dismiss_then_snooze_resurfaces_after_snooze_expires(db_session):
+    user = await _user(db_session)
+    service = InsightService(db_session)
+    insight = await _insight(db_session, user)
+    await service.record_action(insight, action="dismiss")
+
+    updated = await service.record_action(insight, action="snooze")
+
+    assert updated.action_taken == "snooze"
+    assert updated.dismissed_at is None
+    updated.snoozed_until = datetime.now(timezone.utc) - timedelta(days=1)
+    await db_session.commit()
+
+    visible = await service.list_for_user(user.id)
+    assert [item.id for item in visible] == [insight.id]
+
+
+@pytest.mark.asyncio
 async def test_list_excludes_actively_snoozed_and_includes_expired(db_session):
     user = await _user(db_session)
     service = InsightService(db_session)

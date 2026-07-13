@@ -152,9 +152,11 @@ class InsightService:
 
         insight.action_taken = action
         insight.action_notes = notes
+        insight.dismissed_at = None
+        insight.snoozed_until = None
         if action == "dismiss":
             insight.dismissed_at = datetime.now(timezone.utc)
-        if action == "snooze":
+        elif action == "snooze":
             insight.snoozed_until = datetime.now(timezone.utc) + timedelta(days=7)
             insight.read_at = None
 

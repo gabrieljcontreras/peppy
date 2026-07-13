@@ -52,6 +52,7 @@ async def _run_insight_generation(
                     explanation=candidate.explanation,
                     confidence=candidate.confidence,
                     source_data_refs=candidate.source_data_refs,
+                    supporting_data=candidate.supporting_data,
                 )
                 created.append(candidate)
 
