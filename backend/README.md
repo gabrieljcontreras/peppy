@@ -58,6 +58,8 @@ cp .env.example .env
 >
 > Then create the SQLite tables with `alembic upgrade head`.
 
+Optional: set `ANTHROPIC_API_KEY` to enable AI-written insight narratives; without it the app uses templated text.
+
 ### Running the Server (Development)
 
 Development mode uses SQLite — no database setup needed.
@@ -125,5 +127,4 @@ backend/
 ├── tests/               # Test suite
 └── requirements.txt
 ```
-
 
