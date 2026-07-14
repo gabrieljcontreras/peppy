@@ -1,5 +1,6 @@
 import json
 from datetime import date, datetime, timezone
+from uuid import UUID
 
 import pytest
 
@@ -297,3 +298,195 @@ async def test_snapshot_organizes_full_window_and_excludes_account_identity(db_s
     serialized = json.dumps(snapshot)
     assert "svc@test.com" not in serialized
     assert "Private Display Name" not in serialized
+    assert str(user.id) not in serialized
+
+    def all_keys(value):
+        if isinstance(value, dict):
+            return set(value).union(*(all_keys(item) for item in value.values()))
+        if isinstance(value, list):
+            return set().union(*(all_keys(item) for item in value))
+        return set()
+
+    assert all_keys(snapshot).isdisjoint({"user_id", "email", "display_name"})
+
+
+@pytest.mark.asyncio
+async def test_snapshot_excludes_inconsistent_cross_tenant_dose_reference(db_session):
+    user = User(email="snapshot-owner@test.com", hashed_password="x")
+    other_user = User(email="other-owner@test.com", hashed_password="x")
+    db_session.add_all([user, other_user])
+    await db_session.flush()
+
+    protocol = Protocol(
+        user_id=user.id,
+        name="Owner protocol",
+        start_date=date(2026, 6, 1),
+        is_active=True,
+    )
+    other_protocol = Protocol(
+        user_id=other_user.id,
+        name="Other protocol",
+        start_date=date(2026, 6, 1),
+        is_active=True,
+    )
+    db_session.add_all([protocol, other_protocol])
+    await db_session.flush()
+    other_compound = Compound(
+        protocol_id=other_protocol.id,
+        name="Other tenant secret compound",
+        dose_mg=10,
+        dose_unit="mg",
+        frequency="weekly",
+        administration_route="subcutaneous",
+    )
+    db_session.add(other_compound)
+    await db_session.flush()
+    db_session.add(
+        DoseLog(
+            user_id=user.id,
+            protocol_id=protocol.id,
+            compound_id=other_compound.id,
+            dose=10,
+            unit="mg",
+            route="subcutaneous",
+            administered_at=datetime(2026, 6, 10, 9, tzinfo=timezone.utc),
+        )
+    )
+    await db_session.commit()
+
+    snapshot = await build_longitudinal_snapshot(
+        db_session,
+        user.id,
+        date(2026, 6, 1),
+        date(2026, 6, 30),
+    )
+
+    assert snapshot["doses"] == []
+    assert "Other tenant secret compound" not in json.dumps(snapshot)
+
+
+@pytest.mark.asyncio
+async def test_snapshot_uses_stable_id_tiebreakers(db_session):
+    user = User(email="stable-snapshot@test.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.flush()
+    protocol = Protocol(
+        user_id=user.id,
+        name="Stable protocol",
+        start_date=date(2026, 6, 1),
+        is_active=True,
+    )
+    db_session.add(protocol)
+    await db_session.flush()
+    compound_high = Compound(
+        id=UUID(int=2),
+        protocol_id=protocol.id,
+        name="Same name",
+        dose_mg=2,
+        dose_unit="mg",
+        frequency="weekly",
+        administration_route="subcutaneous",
+    )
+    compound_low = Compound(
+        id=UUID(int=1),
+        protocol_id=protocol.id,
+        name="Same name",
+        dose_mg=1,
+        dose_unit="mg",
+        frequency="weekly",
+        administration_route="subcutaneous",
+    )
+    db_session.add_all([compound_high, compound_low])
+    await db_session.flush()
+
+    tied_at = datetime(2026, 6, 10, 9, tzinfo=timezone.utc)
+    db_session.add_all(
+        [
+            Checkin(
+                id=UUID(int=2),
+                user_id=user.id,
+                date=date(2026, 6, 10),
+                notes="second checkin",
+            ),
+            Checkin(
+                id=UUID(int=1),
+                user_id=user.id,
+                date=date(2026, 6, 10),
+                notes="first checkin",
+            ),
+            DoseLog(
+                id=UUID(int=2),
+                user_id=user.id,
+                protocol_id=protocol.id,
+                compound_id=compound_high.id,
+                dose=2,
+                unit="mg",
+                route="subcutaneous",
+                administered_at=tied_at,
+            ),
+            DoseLog(
+                id=UUID(int=1),
+                user_id=user.id,
+                protocol_id=protocol.id,
+                compound_id=compound_low.id,
+                dose=1,
+                unit="mg",
+                route="subcutaneous",
+                administered_at=tied_at,
+            ),
+        ]
+    )
+    lab_high = LabResult(
+        id=UUID(int=2),
+        user_id=user.id,
+        date=date(2026, 6, 15),
+        panel_type="second panel",
+    )
+    lab_low = LabResult(
+        id=UUID(int=1),
+        user_id=user.id,
+        date=date(2026, 6, 15),
+        panel_type="first panel",
+    )
+    lab_low.markers.extend(
+        [
+            LabMarker(id=UUID(int=2), name="Same marker", value=2, unit="x"),
+            LabMarker(id=UUID(int=1), name="Same marker", value=1, unit="x"),
+        ]
+    )
+    db_session.add_all([lab_high, lab_low])
+    await db_session.commit()
+
+    snapshot = await build_longitudinal_snapshot(
+        db_session,
+        user.id,
+        date(2026, 6, 1),
+        date(2026, 6, 30),
+    )
+
+    assert [item["dose"] for item in snapshot["protocol"]["compounds"]] == [1.0, 2.0]
+    assert [item["notes"] for item in snapshot["checkins"]] == [
+        "first checkin",
+        "second checkin",
+    ]
+    assert [item["dose"] for item in snapshot["doses"]] == [1.0, 2.0]
+    assert [item["panel"] for item in snapshot["labs"]] == [
+        "first panel",
+        "second panel",
+    ]
+    assert [item["value"] for item in snapshot["labs"][0]["markers"]] == [1.0, 2.0]
+
+
+@pytest.mark.asyncio
+async def test_snapshot_rejects_inverted_window(db_session):
+    user = User(email="invalid-window@test.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.commit()
+
+    with pytest.raises(ValueError, match="start_date must be on or before end_date"):
+        await build_longitudinal_snapshot(
+            db_session,
+            user.id,
+            date(2026, 6, 30),
+            date(2026, 6, 1),
+        )

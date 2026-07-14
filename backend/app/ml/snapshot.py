@@ -10,7 +10,7 @@ from app.models.checkin import Checkin
 from app.models.dose_log import DoseLog
 from app.models.lab import LabResult
 from app.models.profile import OnboardingProfile
-from app.models.protocol import Protocol
+from app.models.protocol import Compound, Protocol
 
 _PROFILE_FIELDS = (
     "age",
@@ -45,6 +45,9 @@ async def build_longitudinal_snapshot(
     end_date: date,
 ) -> dict:
     """Build a JSON-serializable, identity-free view of a user's health data."""
+    if start_date > end_date:
+        raise ValueError("start_date must be on or before end_date")
+
     profile_result = await db.execute(
         select(OnboardingProfile).where(OnboardingProfile.user_id == user_id)
     )
@@ -63,7 +66,7 @@ async def build_longitudinal_snapshot(
         select(Protocol)
         .options(selectinload(Protocol.compounds))
         .where(and_(Protocol.user_id == user_id, Protocol.is_active.is_(True)))
-        .order_by(Protocol.start_date.desc())
+        .order_by(Protocol.start_date.desc(), Protocol.id.asc())
         .limit(1)
     )
     protocol_model = protocol_result.scalar_one_or_none()
@@ -81,7 +84,10 @@ async def build_longitudinal_snapshot(
                     "route": compound.administration_route,
                     **({"notes": compound.notes} if compound.notes is not None else {}),
                 }
-                for compound in sorted(protocol_model.compounds, key=lambda item: item.name)
+                for compound in sorted(
+                    protocol_model.compounds,
+                    key=lambda item: (item.name, str(item.id)),
+                )
             ],
             **({"notes": protocol_model.notes} if protocol_model.notes is not None else {}),
         }
@@ -95,7 +101,7 @@ async def build_longitudinal_snapshot(
                 Checkin.date <= end_date,
             )
         )
-        .order_by(Checkin.date.asc())
+        .order_by(Checkin.date.asc(), Checkin.id.asc())
     )
     checkin_models = list(checkin_result.scalars().all())
     checkins = [
@@ -120,15 +126,19 @@ async def build_longitudinal_snapshot(
     end_at = datetime.combine(end_date + timedelta(days=1), time.min, tzinfo=timezone.utc)
     dose_result = await db.execute(
         select(DoseLog)
+        .join(Protocol, DoseLog.protocol_id == Protocol.id)
+        .join(Compound, DoseLog.compound_id == Compound.id)
         .options(selectinload(DoseLog.compound))
         .where(
             and_(
                 DoseLog.user_id == user_id,
+                Protocol.user_id == user_id,
+                Compound.protocol_id == DoseLog.protocol_id,
                 DoseLog.administered_at >= start_at,
                 DoseLog.administered_at < end_at,
             )
         )
-        .order_by(DoseLog.administered_at.asc())
+        .order_by(DoseLog.administered_at.asc(), DoseLog.id.asc())
     )
     dose_models = list(dose_result.scalars().all())
     doses = [
@@ -153,7 +163,7 @@ async def build_longitudinal_snapshot(
                 LabResult.date <= end_date,
             )
         )
-        .order_by(LabResult.date.asc())
+        .order_by(LabResult.date.asc(), LabResult.id.asc())
     )
     lab_models = list(lab_result.scalars().all())
     labs = [
@@ -170,7 +180,10 @@ async def build_longitudinal_snapshot(
                     "reference_low": marker.reference_low,
                     "reference_high": marker.reference_high,
                 }
-                for marker in sorted(lab.markers, key=lambda item: item.name)
+                for marker in sorted(
+                    lab.markers,
+                    key=lambda item: (item.name, str(item.id)),
+                )
             ],
         }
         for lab in lab_models
