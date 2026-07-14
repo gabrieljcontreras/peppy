@@ -365,6 +365,35 @@ async def test_expected_doses_clips_to_protocol_start_and_end_dates(db_session):
 
 
 @pytest.mark.asyncio
+async def test_logged_dose_events_clips_to_protocol_start_and_end_dates(db_session):
+    protocol_start = END - timedelta(days=9)
+    protocol_end = END - timedelta(days=3)
+    user = User(email="logged-protocol-overlap@test.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.flush()
+    protocol, compound = await _seed_protocol(
+        db_session,
+        user,
+        frequency="weekly",
+        start_date=protocol_start,
+        end_date=protocol_end,
+    )
+    _seed_dose(db_session, user, protocol, compound, protocol_start - timedelta(days=1))
+    _seed_dose(db_session, user, protocol, compound, protocol_start)
+    _seed_dose(db_session, user, protocol, compound, protocol_end + timedelta(days=1))
+    await db_session.commit()
+
+    logged = await adherence.logged_dose_events(
+        db_session,
+        user.id,
+        END - timedelta(days=13),
+        END,
+    )
+
+    assert logged == 1
+
+
+@pytest.mark.asyncio
 async def test_dose_at_midnight_after_end_date_is_excluded(db_session):
     user = User(email="midnight-boundary@test.com", hashed_password="x")
     db_session.add(user)
