@@ -1,5 +1,6 @@
 import json
 from datetime import date, datetime, time, timedelta, timezone
+from fractions import Fraction
 from uuid import UUID
 
 from sqlalchemy import and_, select
@@ -12,12 +13,16 @@ from app.models.insight import InsightSeverity, InsightType
 
 _MIN_DOSE_DATES = 3
 _MIN_GROUP_CHECKINS = 2
-_GAP_THRESHOLD = 1.5
-_WARNING_GAP = 3.0
+_GAP_THRESHOLD = Fraction(3, 2)
+_WARNING_GAP = Fraction(3)
 
 
 def _mean(values: list[int]) -> float:
     return sum(values) / len(values)
+
+
+def _exact_mean(values: list[int]) -> Fraction:
+    return Fraction(sum(values), len(values))
 
 
 async def dose_day_energy_dip_rule(
@@ -75,7 +80,7 @@ async def dose_day_energy_dip_rule(
 
     dose_energy_mean = _mean(dose_energy)
     other_energy_mean = _mean(other_energy)
-    energy_gap = other_energy_mean - dose_energy_mean
+    energy_gap = _exact_mean(other_energy) - _exact_mean(dose_energy)
     if energy_gap < _GAP_THRESHOLD:
         return []
 
@@ -83,7 +88,7 @@ async def dose_day_energy_dip_rule(
     mood_dips = (
         len(dose_mood) >= _MIN_GROUP_CHECKINS
         and len(other_mood) >= _MIN_GROUP_CHECKINS
-        and _mean(other_mood) - _mean(dose_mood) >= _GAP_THRESHOLD
+        and _exact_mean(other_mood) - _exact_mean(dose_mood) >= _GAP_THRESHOLD
     )
     mood_clause = " Mood shows the same pattern." if mood_dips else ""
     severity = InsightSeverity.WARNING if energy_gap >= _WARNING_GAP else InsightSeverity.INFO

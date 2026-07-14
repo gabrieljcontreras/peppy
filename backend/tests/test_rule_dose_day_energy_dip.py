@@ -191,6 +191,66 @@ async def test_exact_warning_gap_threshold_fires_warning(db_session):
 
 
 @pytest.mark.asyncio
+async def test_exact_fractional_energy_gap_threshold_fires(db_session):
+    checkins = [
+        (date(2026, 6, 1), {"energy_level": 1}),
+        (date(2026, 6, 9), {"energy_level": 2}),
+        (date(2026, 6, 15), {"energy_level": 2}),
+        (date(2026, 6, 4), {"energy_level": 3}),
+        (date(2026, 6, 5), {"energy_level": 3}),
+        (date(2026, 6, 6), {"energy_level": 3}),
+        (date(2026, 6, 12), {"energy_level": 3}),
+        (date(2026, 6, 19), {"energy_level": 3}),
+        (date(2026, 6, 26), {"energy_level": 4}),
+    ]
+    user = await _seed(db_session, DOSE_DATES, checkins)
+
+    results = await dose_day_energy_dip_rule(db_session, user.id, START, END)
+
+    assert len(results) == 1
+    assert results[0].severity.value == "info"
+
+
+@pytest.mark.asyncio
+async def test_exact_fractional_warning_gap_threshold_fires_warning(db_session):
+    checkins = [
+        (date(2026, 6, 1), {"energy_level": 2}),
+        (date(2026, 6, 9), {"energy_level": 2}),
+        (date(2026, 6, 15), {"energy_level": 3}),
+        (date(2026, 6, 4), {"energy_level": 5}),
+        (date(2026, 6, 12), {"energy_level": 5}),
+        (date(2026, 6, 19), {"energy_level": 6}),
+    ]
+    user = await _seed(db_session, DOSE_DATES, checkins)
+
+    results = await dose_day_energy_dip_rule(db_session, user.id, START, END)
+
+    assert len(results) == 1
+    assert results[0].severity.value == "warning"
+
+
+@pytest.mark.asyncio
+async def test_exact_fractional_mood_gap_threshold_adds_mood_clause(db_session):
+    checkins = [
+        (date(2026, 6, 1), {"energy_level": 2, "mood": 1}),
+        (date(2026, 6, 9), {"energy_level": 2, "mood": 2}),
+        (date(2026, 6, 15), {"energy_level": 2, "mood": 2}),
+        (date(2026, 6, 4), {"energy_level": 6, "mood": 3}),
+        (date(2026, 6, 5), {"energy_level": 6, "mood": 3}),
+        (date(2026, 6, 6), {"energy_level": 6, "mood": 3}),
+        (date(2026, 6, 12), {"energy_level": 6, "mood": 3}),
+        (date(2026, 6, 19), {"energy_level": 6, "mood": 3}),
+        (date(2026, 6, 26), {"energy_level": 6, "mood": 4}),
+    ]
+    user = await _seed(db_session, DOSE_DATES, checkins)
+
+    results = await dose_day_energy_dip_rule(db_session, user.id, START, END)
+
+    assert len(results) == 1
+    assert results[0].description.endswith("Mood shows the same pattern.")
+
+
+@pytest.mark.asyncio
 async def test_omits_mood_clause_when_mood_gap_is_below_threshold(db_session):
     checkins = [
         (date(2026, 6, 1), {"energy_level": 2, "mood": 3}),
