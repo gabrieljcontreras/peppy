@@ -1,3 +1,4 @@
+import asyncio
 import json
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
@@ -20,6 +21,18 @@ def _candidate(title: str = "Weight trending down", supporting_data: str | None 
         confidence=0.7,
         supporting_data=supporting_data,
     )
+
+
+def _schema_keys(value):
+    keys = set()
+    if isinstance(value, dict):
+        keys.update(value)
+        for item in value.values():
+            keys.update(_schema_keys(item))
+    elif isinstance(value, list):
+        for item in value:
+            keys.update(_schema_keys(item))
+    return keys
 
 
 def _fake_text_client(text: str, *, stop_reason: str = "end_turn"):
@@ -45,6 +58,13 @@ def _settings(**overrides):
     return Settings(anthropic_api_key="test-key", debug=True, **overrides)
 
 
+def _assert_guardrails(request_kwargs):
+    system = request_kwargs["system"]
+    assert "Repeat numbers exactly" in system
+    assert "Never give medical advice or dosing instructions" in system
+    assert "discussing with a healthcare provider" in system
+
+
 def test_settings_pin_narrative_models():
     settings = Settings(debug=True)
 
@@ -62,7 +82,11 @@ def test_configured_key_constructs_async_anthropic_client():
         narrator = Narrator(settings=_settings())
 
     assert narrator.enabled is True
-    client_factory.assert_called_once_with(api_key="test-key")
+    client_factory.assert_called_once_with(
+        api_key="test-key",
+        max_retries=0,
+        timeout=20.0,
+    )
 
 
 @pytest.mark.asyncio
@@ -78,7 +102,18 @@ async def test_disabled_without_api_key_never_calls_injected_client():
 @pytest.mark.asyncio
 async def test_enrich_returns_descriptions_in_order_with_haiku_structured_output():
     client = _fake_client(
-        {"descriptions": ["Polished first observation.", "Polished second observation."]}
+        {
+            "descriptions": [
+                {
+                    "candidate_index": 0,
+                    "description": "Polished first observation.",
+                },
+                {
+                    "candidate_index": 1,
+                    "description": "Polished second observation.",
+                },
+            ]
+        }
     )
     narrator = Narrator(settings=_settings(), client=client)
     candidates = [
@@ -101,25 +136,52 @@ async def test_enrich_returns_descriptions_in_order_with_haiku_structured_output
     assert kwargs["output_config"]["format"]["type"] == "json_schema"
     schema = kwargs["output_config"]["format"]["schema"]
     assert schema["required"] == ["descriptions"]
-    assert schema["properties"]["descriptions"]["minItems"] == 2
-    assert schema["properties"]["descriptions"]["maxItems"] == 2
-    assert schema["properties"]["descriptions"]["items"]["minLength"] == 1
+    assert schema["properties"]["descriptions"]["items"]["required"] == [
+        "candidate_index",
+        "description",
+    ]
+    assert {"minItems", "maxItems", "minLength"}.isdisjoint(_schema_keys(schema))
     assert "effort" not in kwargs["output_config"]
     assert "temperature" not in kwargs
     assert "top_p" not in kwargs
+    _assert_guardrails(kwargs)
     assert "First finding" in kwargs["messages"][0]["content"]
     assert "2.0 / 10 avg" in kwargs["messages"][0]["content"]
     assert "user note" in kwargs["messages"][0]["content"]
+    client.messages.create.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "payload",
     [
-        {"descriptions": ["only one"]},
-        {"descriptions": ["valid", "   "]},
+        {"descriptions": [{"candidate_index": 0, "description": "only one"}]},
+        {
+            "descriptions": [
+                {"candidate_index": 0, "description": "valid"},
+                {"candidate_index": 1, "description": "   "},
+            ]
+        },
         {"descriptions": "not a list"},
         {"wrong_key": ["one", "two"]},
+        {
+            "descriptions": [
+                {"candidate_index": 1, "description": "second"},
+                {"candidate_index": 0, "description": "first"},
+            ]
+        },
+        {
+            "descriptions": [
+                {"candidate_index": 0, "description": "first"},
+                {"candidate_index": 0, "description": "duplicate"},
+            ]
+        },
+        {
+            "descriptions": [
+                {"description": "missing index"},
+                {"candidate_index": 1, "description": "second"},
+            ]
+        },
     ],
 )
 async def test_enrich_falls_back_on_response_shape_mismatch(payload):
@@ -141,6 +203,24 @@ async def test_enrich_falls_back_on_api_error():
     narrator = Narrator(settings=_settings(), client=client)
 
     assert await narrator.enrich_insight_descriptions([_candidate()], {}) is None
+
+
+@pytest.mark.asyncio
+async def test_enrich_falls_back_within_application_timeout():
+    async def wait_forever(**_kwargs):
+        await asyncio.Event().wait()
+
+    client = SimpleNamespace(messages=SimpleNamespace(create=AsyncMock(side_effect=wait_forever)))
+    narrator = Narrator(settings=_settings(), client=client)
+
+    with patch("app.ml.narrator._NARRATOR_TIMEOUT_SECONDS", 0.001, create=True):
+        output = await asyncio.wait_for(
+            narrator.enrich_insight_descriptions([_candidate()], {}),
+            timeout=0.1,
+        )
+
+    assert output is None
+    client.messages.create.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -221,13 +301,14 @@ async def test_summary_uses_sonnet_structured_output_and_parses_payload():
     assert kwargs["output_config"]["format"]["type"] == "json_schema"
     schema = kwargs["output_config"]["format"]["schema"]
     assert schema["additionalProperties"] is False
-    assert schema["properties"]["narrative"]["minLength"] == 1
-    assert schema["properties"]["what_to_watch"]["maxItems"] == 3
+    assert {"minItems", "maxItems", "minLength"}.isdisjoint(_schema_keys(schema))
     assert "effort" not in kwargs["output_config"]
     assert "temperature" not in kwargs
     assert "top_p" not in kwargs
+    _assert_guardrails(kwargs)
     assert '"weight_delta_kg": -1.0' in kwargs["messages"][0]["content"]
     assert "felt well" in kwargs["messages"][0]["content"]
+    client.messages.create.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -284,6 +365,24 @@ async def test_summary_falls_back_on_api_error():
     narrator = Narrator(settings=_settings(), client=client)
 
     assert await narrator.write_summary_narrative({}, {}) is None
+
+
+@pytest.mark.asyncio
+async def test_summary_falls_back_within_application_timeout():
+    async def wait_forever(**_kwargs):
+        await asyncio.Event().wait()
+
+    client = SimpleNamespace(messages=SimpleNamespace(create=AsyncMock(side_effect=wait_forever)))
+    narrator = Narrator(settings=_settings(), client=client)
+
+    with patch("app.ml.narrator._NARRATOR_TIMEOUT_SECONDS", 0.001, create=True):
+        output = await asyncio.wait_for(
+            narrator.write_summary_narrative({}, {}),
+            timeout=0.1,
+        )
+
+    assert output is None
+    client.messages.create.assert_awaited_once()
 
 
 @pytest.mark.asyncio

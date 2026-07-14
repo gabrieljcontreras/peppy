@@ -1,5 +1,6 @@
 """Claude narrative layer with wholesale fallback to deterministic rule text."""
 
+import asyncio
 import json
 import logging
 from typing import Optional, Sequence
@@ -11,6 +12,8 @@ from app.ml.insights_engine import GeneratedInsight
 
 logger = logging.getLogger(__name__)
 
+_NARRATOR_TIMEOUT_SECONDS = 20.0
+
 _GUARDRAILS = (
     "You write short, warm, plain-English health observations for the peppy app. "
     "Repeat numbers exactly as given in the input — never invent, recompute, or round them "
@@ -19,18 +22,37 @@ _GUARDRAILS = (
     "('you')."
 )
 
-_SUMMARY_SCHEMA = {
+_ENRICH_SCHEMA = {
     "type": "object",
     "properties": {
-        "narrative": {"type": "string", "minLength": 1},
-        "what_to_watch": {
+        "descriptions": {
             "type": "array",
-            "maxItems": 3,
             "items": {
                 "type": "object",
                 "properties": {
-                    "title": {"type": "string", "minLength": 1},
-                    "detail": {"type": "string", "minLength": 1},
+                    "candidate_index": {"type": "integer"},
+                    "description": {"type": "string"},
+                },
+                "required": ["candidate_index", "description"],
+                "additionalProperties": False,
+            },
+        }
+    },
+    "required": ["descriptions"],
+    "additionalProperties": False,
+}
+
+_SUMMARY_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "narrative": {"type": "string"},
+        "what_to_watch": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "detail": {"type": "string"},
                 },
                 "required": ["title", "detail"],
                 "additionalProperties": False,
@@ -38,29 +60,12 @@ _SUMMARY_SCHEMA = {
         },
         "provider_questions": {
             "type": "array",
-            "maxItems": 3,
-            "items": {"type": "string", "minLength": 1},
+            "items": {"type": "string"},
         },
     },
     "required": ["narrative", "what_to_watch", "provider_questions"],
     "additionalProperties": False,
 }
-
-
-def _enrich_schema(candidate_count: int) -> dict:
-    return {
-        "type": "object",
-        "properties": {
-            "descriptions": {
-                "type": "array",
-                "minItems": candidate_count,
-                "maxItems": candidate_count,
-                "items": {"type": "string", "minLength": 1},
-            }
-        },
-        "required": ["descriptions"],
-        "additionalProperties": False,
-    }
 
 
 def _nonempty_string(value: object) -> bool:
@@ -106,7 +111,11 @@ class Narrator:
         self._settings = settings or get_settings()
         self._client = client
         if self._client is None and self._settings.anthropic_api_key:
-            self._client = anthropic.AsyncAnthropic(api_key=self._settings.anthropic_api_key)
+            self._client = anthropic.AsyncAnthropic(
+                api_key=self._settings.anthropic_api_key,
+                max_retries=0,
+                timeout=_NARRATOR_TIMEOUT_SECONDS,
+            )
 
     @property
     def enabled(self) -> bool:
@@ -122,6 +131,7 @@ class Narrator:
         try:
             findings = [
                 {
+                    "candidate_index": index,
                     "title": candidate.title,
                     "template_description": candidate.description,
                     "explanation": candidate.explanation,
@@ -129,28 +139,27 @@ class Narrator:
                         json.loads(candidate.supporting_data) if candidate.supporting_data else None
                     ),
                 }
-                for candidate in candidates
+                for index, candidate in enumerate(candidates)
             ]
             prompt = (
                 "Rewrite each finding's description as one or two plain-English sentences "
-                "(the 'observation' a user reads on a card). Return exactly "
+                "(the 'observation' a user reads on a card). Copy each candidate_index "
+                "exactly, and return exactly "
                 f"{len(candidates)} descriptions in the same order.\n\n"
                 f"FINDINGS:\n{json.dumps(findings, indent=2)}\n\n"
                 "USER DATA SNAPSHOT (context only — numbers come from FINDINGS):\n"
                 f"{json.dumps(snapshot, indent=2)}"
             )
             assert self._client is not None
-            response = await self._client.messages.create(
-                model=self._settings.insight_narrative_model,
-                max_tokens=2048,
-                system=_GUARDRAILS,
-                output_config={
-                    "format": {
-                        "type": "json_schema",
-                        "schema": _enrich_schema(len(candidates)),
-                    }
-                },
-                messages=[{"role": "user", "content": prompt}],
+            response = await asyncio.wait_for(
+                self._client.messages.create(
+                    model=self._settings.insight_narrative_model,
+                    max_tokens=2048,
+                    system=_GUARDRAILS,
+                    output_config={"format": {"type": "json_schema", "schema": _ENRICH_SCHEMA}},
+                    messages=[{"role": "user", "content": prompt}],
+                ),
+                timeout=_NARRATOR_TIMEOUT_SECONDS,
             )
             if response.stop_reason != "end_turn":
                 return None
@@ -158,17 +167,20 @@ class Narrator:
             payload = json.loads(text)
             if not isinstance(payload, dict) or set(payload) != {"descriptions"}:
                 return None
-            descriptions = payload["descriptions"]
-            if (
-                not isinstance(descriptions, list)
-                or len(descriptions) != len(candidates)
-                or not all(
-                    isinstance(description, str) and description.strip()
-                    for description in descriptions
-                )
-            ):
+            items = payload["descriptions"]
+            if not isinstance(items, list) or len(items) != len(candidates):
                 return None
-            return descriptions
+            for expected_index, item in enumerate(items):
+                if (
+                    not isinstance(item, dict)
+                    or set(item) != {"candidate_index", "description"}
+                    or not isinstance(item["candidate_index"], int)
+                    or isinstance(item["candidate_index"], bool)
+                    or item["candidate_index"] != expected_index
+                    or not _nonempty_string(item["description"])
+                ):
+                    return None
+            return [item["description"] for item in items]
         except Exception:
             logger.warning("narrator: enrichment failed, falling back", exc_info=True)
             return None
@@ -192,12 +204,15 @@ class Narrator:
                 f"USER DATA SNAPSHOT:\n{json.dumps(snapshot, indent=2)}"
             )
             assert self._client is not None
-            response = await self._client.messages.create(
-                model=self._settings.summary_narrative_model,
-                max_tokens=2048,
-                system=_GUARDRAILS,
-                output_config={"format": {"type": "json_schema", "schema": _SUMMARY_SCHEMA}},
-                messages=[{"role": "user", "content": prompt}],
+            response = await asyncio.wait_for(
+                self._client.messages.create(
+                    model=self._settings.summary_narrative_model,
+                    max_tokens=2048,
+                    system=_GUARDRAILS,
+                    output_config={"format": {"type": "json_schema", "schema": _SUMMARY_SCHEMA}},
+                    messages=[{"role": "user", "content": prompt}],
+                ),
+                timeout=_NARRATOR_TIMEOUT_SECONDS,
             )
             if response.stop_reason != "end_turn":
                 return None
