@@ -5,10 +5,9 @@ from uuid import UUID
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ml.adherence import expected_doses
+from app.ml.adherence import expected_doses, logged_dose_events
 from app.ml.insights_engine import GeneratedInsight
 from app.models.checkin import Checkin
-from app.models.dose_log import DoseLog
 from app.models.insight import InsightSeverity, InsightType
 from app.models.protocol import Protocol
 
@@ -116,16 +115,7 @@ async def adherence_consistency_rule(
     window_start = end_date - timedelta(days=_ADHERENCE_WINDOW_DAYS - 1)
     expected = await expected_doses(db, user_id, window_start, end_date)
     if expected is not None and expected >= _MIN_EXPECTED:
-        dose_rows = await db.execute(
-            select(DoseLog.administered_at).where(
-                and_(
-                    DoseLog.user_id == user_id,
-                    DoseLog.administered_at >= window_start,
-                    DoseLog.administered_at <= end_date + timedelta(days=1),
-                )
-            )
-        )
-        logged = len({row[0].date() for row in dose_rows.all()})
+        logged = await logged_dose_events(db, user_id, window_start, end_date)
         if logged / expected < _ADHERENCE_FLOOR:
             results.append(
                 GeneratedInsight(

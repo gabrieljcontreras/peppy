@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
+from app.ml import adherence
 from app.ml.adherence import doses_per_day, expected_doses
 from app.ml.rules import DEFAULT_RULES
 from app.ml.rules.adherence_consistency import adherence_consistency_rule
@@ -15,18 +16,10 @@ START = date(2026, 6, 1)
 END = date(2026, 6, 30)
 
 
-async def _seed_protocol(db, user, *, frequency="weekly", start_date=END, is_active=True):
-    protocol = Protocol(
-        user_id=user.id,
-        name="Test",
-        start_date=start_date,
-        is_active=is_active,
-    )
-    db.add(protocol)
-    await db.flush()
+async def _seed_compound(db, protocol, *, name="Retatrutide", frequency="weekly"):
     compound = Compound(
         protocol_id=protocol.id,
-        name="Retatrutide",
+        name=name,
         dose_mg=4,
         dose_unit="mg",
         frequency=frequency,
@@ -34,7 +27,51 @@ async def _seed_protocol(db, user, *, frequency="weekly", start_date=END, is_act
     )
     db.add(compound)
     await db.flush()
+    return compound
+
+
+async def _seed_protocol(
+    db,
+    user,
+    *,
+    frequency="weekly",
+    start_date=END,
+    end_date=None,
+    is_active=True,
+):
+    protocol = Protocol(
+        user_id=user.id,
+        name="Test",
+        start_date=start_date,
+        end_date=end_date,
+        is_active=is_active,
+    )
+    db.add(protocol)
+    await db.flush()
+    compound = await _seed_compound(db, protocol, frequency=frequency)
     return protocol, compound
+
+
+def _seed_dose(db, user, protocol, compound, administered_at):
+    if isinstance(administered_at, date) and not isinstance(administered_at, datetime):
+        administered_at = datetime(
+            administered_at.year,
+            administered_at.month,
+            administered_at.day,
+            9,
+            tzinfo=timezone.utc,
+        )
+    db.add(
+        DoseLog(
+            user_id=user.id,
+            protocol_id=protocol.id,
+            compound_id=compound.id,
+            dose=4,
+            unit="mg",
+            route="subcutaneous",
+            administered_at=administered_at,
+        )
+    )
 
 
 async def _seed(
@@ -42,7 +79,7 @@ async def _seed(
     *,
     email,
     protocol_frequency=None,
-    protocol_start=END,
+    protocol_start=END - timedelta(days=60),
     protocol_active=True,
     doses=(),
     checkins=(),
@@ -62,25 +99,7 @@ async def _seed(
         )
 
     for administered_at in doses:
-        if isinstance(administered_at, date) and not isinstance(administered_at, datetime):
-            administered_at = datetime(
-                administered_at.year,
-                administered_at.month,
-                administered_at.day,
-                9,
-                tzinfo=timezone.utc,
-            )
-        db.add(
-            DoseLog(
-                user_id=user.id,
-                protocol_id=protocol.id,
-                compound_id=compound.id,
-                dose=4,
-                unit="mg",
-                route="subcutaneous",
-                administered_at=administered_at,
-            )
-        )
+        _seed_dose(db, user, protocol, compound, administered_at)
 
     for checkin_date in checkins:
         db.add(Checkin(user_id=user.id, date=checkin_date))
@@ -239,6 +258,143 @@ async def test_low_adherence_suggestion_is_silent_with_two_weekly_doses(db_sessi
     )
 
     assert await adherence_consistency_rule(db_session, user.id, START, END) == []
+
+
+@pytest.mark.asyncio
+async def test_two_compounds_on_same_dates_count_as_separate_events_without_duplicates(
+    db_session,
+):
+    user = User(email="two-compounds@test.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.flush()
+    protocol, first = await _seed_protocol(
+        db_session,
+        user,
+        frequency="weekly",
+        start_date=END - timedelta(days=60),
+    )
+    second = await _seed_compound(
+        db_session,
+        protocol,
+        name="Cagrilintide",
+        frequency="weekly",
+    )
+    for dose_date in (END - timedelta(days=7), END):
+        _seed_dose(db_session, user, protocol, first, dose_date)
+        _seed_dose(db_session, user, protocol, second, dose_date)
+    _seed_dose(db_session, user, protocol, first, END)
+    await db_session.commit()
+
+    expected = await expected_doses(db_session, user.id, END - timedelta(days=13), END)
+    logged = await adherence.logged_dose_events(
+        db_session,
+        user.id,
+        END - timedelta(days=13),
+        END,
+    )
+    results = await adherence_consistency_rule(db_session, user.id, START, END)
+
+    assert expected == pytest.approx(4.0)
+    assert logged == 4
+    assert all(insight.title != "Doses are slipping" for insight in results)
+
+
+@pytest.mark.asyncio
+async def test_inactive_and_unmappable_compound_logs_cannot_inflate_adherence(db_session):
+    user = User(email="unrelated-logs@test.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.flush()
+    active_protocol, _ = await _seed_protocol(
+        db_session,
+        user,
+        frequency="weekly",
+        start_date=END - timedelta(days=60),
+    )
+    unmappable = await _seed_compound(
+        db_session,
+        active_protocol,
+        name="As-needed compound",
+        frequency="as needed",
+    )
+    inactive_protocol, inactive_compound = await _seed_protocol(
+        db_session,
+        user,
+        frequency="weekly",
+        start_date=END - timedelta(days=60),
+        is_active=False,
+    )
+    for dose_date in (END - timedelta(days=7), END):
+        _seed_dose(db_session, user, inactive_protocol, inactive_compound, dose_date)
+    for dose_date in (END - timedelta(days=6), END - timedelta(days=1)):
+        _seed_dose(db_session, user, active_protocol, unmappable, dose_date)
+    await db_session.commit()
+
+    logged = await adherence.logged_dose_events(
+        db_session,
+        user.id,
+        END - timedelta(days=13),
+        END,
+    )
+    results = await adherence_consistency_rule(db_session, user.id, START, END)
+
+    assert logged == 0
+    assert [insight.title for insight in results] == ["Doses are slipping"]
+
+
+@pytest.mark.asyncio
+async def test_expected_doses_clips_to_protocol_start_and_end_dates(db_session):
+    protocol_start = END - timedelta(days=9)
+    protocol_end = END - timedelta(days=3)
+    user = User(email="protocol-overlap@test.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.flush()
+    await _seed_protocol(
+        db_session,
+        user,
+        frequency="weekly",
+        start_date=protocol_start,
+        end_date=protocol_end,
+    )
+    await db_session.commit()
+
+    expected = await expected_doses(db_session, user.id, END - timedelta(days=13), END)
+    results = await adherence_consistency_rule(db_session, user.id, START, END)
+
+    assert expected == pytest.approx(1.0)
+    assert results == []
+
+
+@pytest.mark.asyncio
+async def test_dose_at_midnight_after_end_date_is_excluded(db_session):
+    user = User(email="midnight-boundary@test.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.flush()
+    protocol, compound = await _seed_protocol(
+        db_session,
+        user,
+        frequency="weekly",
+        start_date=END - timedelta(days=60),
+    )
+    _seed_dose(db_session, user, protocol, compound, END - timedelta(days=7))
+    _seed_dose(
+        db_session,
+        user,
+        protocol,
+        compound,
+        datetime(2026, 7, 1, 0, 0, tzinfo=timezone.utc),
+    )
+    await db_session.commit()
+
+    logged = await adherence.logged_dose_events(
+        db_session,
+        user.id,
+        END - timedelta(days=13),
+        END,
+    )
+    results = await adherence_consistency_rule(db_session, user.id, START, END)
+
+    assert logged == 1
+    assert [insight.title for insight in results] == ["Doses are slipping"]
 
 
 @pytest.mark.asyncio
