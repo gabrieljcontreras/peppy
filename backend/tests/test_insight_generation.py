@@ -1,3 +1,4 @@
+import asyncio
 import json
 from datetime import date, datetime, timedelta, timezone
 from types import SimpleNamespace
@@ -15,7 +16,7 @@ from app.ml.insights_engine import GeneratedInsight, InsightsEngine
 from app.ml.narrator import Narrator
 from app.models.checkin import Checkin
 from app.models.dose_log import DoseLog
-from app.models.insight import InsightSeverity, InsightType
+from app.models.insight import Insight, InsightSeverity, InsightType
 from app.models.protocol import Compound, Protocol
 from app.models.user import User
 from app.services import insight_generation as generation_service
@@ -295,6 +296,214 @@ async def test_run_generation_builds_default_narrator_when_not_injected(
     persisted = (await InsightService(db_session).list_for_user(user.id))[0]
     assert persisted.description == "Default narrator body"
     narrator_factory.assert_called_once_with()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("failure_point", ["constructor", "snapshot"])
+async def test_run_generation_falls_back_to_template_when_enrichment_setup_fails(
+    db_session,
+    monkeypatch,
+    failure_point,
+):
+    user = User(email=f"generation-{failure_point}-failure@example.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    candidate = GeneratedInsight(
+        type=InsightType.TREND,
+        severity=InsightSeverity.INFO,
+        title="Fallback title",
+        description="Template fallback body",
+        explanation="Deterministic explanation",
+        confidence=0.8,
+        source_data_refs=f'{{"rule":"{failure_point}-failure"}}',
+    )
+    monkeypatch.setattr(
+        InsightsEngine,
+        "analyze_user_data",
+        AsyncMock(return_value=[candidate]),
+    )
+
+    narrator = None
+    if failure_point == "constructor":
+        monkeypatch.setattr(
+            generation_service,
+            "Narrator",
+            Mock(side_effect=RuntimeError("narrator unavailable")),
+        )
+    else:
+        narrator = SimpleNamespace(enabled=True)
+        monkeypatch.setattr(
+            generation_service,
+            "build_longitudinal_snapshot",
+            AsyncMock(side_effect=RuntimeError("snapshot unavailable")),
+        )
+
+    result = await run_generation(
+        db_session,
+        user.id,
+        start_date=START,
+        end_date=END,
+        narrator=narrator,
+    )
+
+    assert result["insights_generated"] == 1
+    persisted = (await InsightService(db_session).list_for_user(user.id))[0]
+    assert persisted.description == "Template fallback body"
+
+
+@pytest.mark.asyncio
+async def test_run_generation_rolls_back_all_insights_when_persistence_fails(
+    db_session,
+    monkeypatch,
+):
+    user = User(email="generation-atomicity@example.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    user_id = user.id
+    candidates = [
+        GeneratedInsight(
+            type=InsightType.TREND,
+            severity=InsightSeverity.INFO,
+            title=f"Candidate {index}",
+            description=f"Template {index}",
+            explanation="Deterministic explanation",
+            confidence=0.8,
+            source_data_refs=f'{{"rule":"atomicity-{index}"}}',
+        )
+        for index in range(2)
+    ]
+    monkeypatch.setattr(
+        InsightsEngine,
+        "analyze_user_data",
+        AsyncMock(return_value=candidates),
+    )
+    original_create = InsightService.create
+    create_count = 0
+
+    async def fail_on_second_create(service, **kwargs):
+        nonlocal create_count
+        create_count += 1
+        if create_count == 2:
+            raise RuntimeError("second insert failed")
+        return await original_create(service, **kwargs)
+
+    monkeypatch.setattr(InsightService, "create", fail_on_second_create)
+
+    with pytest.raises(RuntimeError, match="second insert failed"):
+        await run_generation(
+            db_session,
+            user_id,
+            start_date=START,
+            end_date=END,
+            narrator=Narrator(settings=Settings(anthropic_api_key="", debug=True)),
+        )
+
+    await db_session.rollback()
+    persisted = (
+        (await db_session.execute(select(Insight).where(Insight.user_id == user_id)))
+        .scalars()
+        .all()
+    )
+    assert persisted == []
+
+
+@pytest.mark.asyncio
+async def test_concurrent_generation_deduplicates_per_user(
+    db_session,
+    engine,
+    monkeypatch,
+):
+    user = User(email="generation-concurrency@example.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    candidate = GeneratedInsight(
+        type=InsightType.TREND,
+        severity=InsightSeverity.INFO,
+        title="Concurrent candidate",
+        description="Concurrent template",
+        explanation="Deterministic explanation",
+        confidence=0.8,
+        source_data_refs='{"rule":"concurrent-generation"}',
+    )
+
+    async def analyze(*_args, **_kwargs):
+        await asyncio.sleep(0.01)
+        return [candidate]
+
+    monkeypatch.setattr(InsightsEngine, "analyze_user_data", analyze)
+    test_session_factory = async_sessionmaker(
+        engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+    narrator = Narrator(settings=Settings(anthropic_api_key="", debug=True))
+
+    async def generate_once():
+        async with test_session_factory() as db:
+            return await run_generation(
+                db,
+                user.id,
+                start_date=START,
+                end_date=END,
+                narrator=narrator,
+            )
+
+    results = await asyncio.gather(generate_once(), generate_once())
+
+    async with test_session_factory() as verification_db:
+        persisted = (
+            (await verification_db.execute(select(Insight).where(Insight.user_id == user.id)))
+            .scalars()
+            .all()
+        )
+    assert len(persisted) == 1
+    assert sorted(result["insights_generated"] for result in results) == [0, 1]
+
+
+@pytest.mark.asyncio
+async def test_notification_failure_does_not_undo_persisted_generation(
+    db_session,
+    monkeypatch,
+):
+    user = User(email="generation-notification-failure@example.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    candidate = GeneratedInsight(
+        type=InsightType.ANOMALY,
+        severity=InsightSeverity.ALERT,
+        title="Alert title",
+        description="Template alert body",
+        explanation="Deterministic explanation",
+        confidence=0.9,
+        source_data_refs='{"rule":"notification-failure"}',
+    )
+    monkeypatch.setattr(
+        InsightsEngine,
+        "analyze_user_data",
+        AsyncMock(return_value=[candidate]),
+    )
+    monkeypatch.setattr(
+        NotificationService,
+        "send_insight_notification",
+        AsyncMock(side_effect=RuntimeError("push unavailable")),
+    )
+
+    result = await run_generation(
+        db_session,
+        user.id,
+        start_date=START,
+        end_date=END,
+        narrator=Narrator(settings=Settings(anthropic_api_key="", debug=True)),
+    )
+
+    assert result["insights_generated"] == 1
+    assert len(await InsightService(db_session).list_for_user(user.id)) == 1
+    await db_session.refresh(user)
+    assert user.last_insight_run_at is not None
 
 
 @pytest.mark.asyncio

@@ -55,9 +55,7 @@ class InsightService:
         if not include_dismissed:
             query = query.where(Insight.dismissed_at.is_(None))
         now = datetime.now(timezone.utc)
-        query = query.where(
-            or_(Insight.snoozed_until.is_(None), Insight.snoozed_until <= now)
-        )
+        query = query.where(or_(Insight.snoozed_until.is_(None), Insight.snoozed_until <= now))
         if type is not None:
             query = query.where(Insight.type == type)
         if severity is not None:
@@ -79,6 +77,7 @@ class InsightService:
         confidence: float,
         source_data_refs: Optional[str] = None,
         supporting_data: Optional[str] = None,
+        commit: bool = True,
     ) -> Insight:
         insight = Insight(
             user_id=user_id,
@@ -92,8 +91,11 @@ class InsightService:
             supporting_data=supporting_data,
         )
         self.db.add(insight)
-        await self.db.commit()
-        await self.db.refresh(insight)
+        if commit:
+            await self.db.commit()
+            await self.db.refresh(insight)
+        else:
+            await self.db.flush()
         return insight
 
     async def exists_matching(
