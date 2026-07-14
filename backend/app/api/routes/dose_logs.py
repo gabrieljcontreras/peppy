@@ -1,13 +1,14 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import CurrentUser
 from app.api.schemas.dose_log import DoseLogCreate, DoseLogResponse
 from app.database import get_db
 from app.services.dose_log import DoseLogService
+from app.services.insight_generation import run_generation_in_background
 from app.services.protocol import ProtocolService
 
 router = APIRouter()
@@ -17,6 +18,7 @@ protocol_router = APIRouter()
 @router.post("", response_model=DoseLogResponse, status_code=status.HTTP_201_CREATED)
 async def create_dose_log(
     payload: DoseLogCreate,
+    background_tasks: BackgroundTasks,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> DoseLogResponse:
@@ -25,7 +27,7 @@ async def create_dose_log(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Protocol not found")
 
     try:
-        return await DoseLogService(db).create(
+        dose_log = await DoseLogService(db).create(
             user_id=current_user.id,
             protocol_id=payload.protocol_id,
             compound_id=payload.compound_id,
@@ -35,6 +37,11 @@ async def create_dose_log(
             route=payload.route,
             notes=payload.notes,
         )
+        background_tasks.add_task(
+            run_generation_in_background,
+            current_user.id,
+        )
+        return dose_log
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
 

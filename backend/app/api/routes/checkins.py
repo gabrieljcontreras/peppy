@@ -1,19 +1,21 @@
+from datetime import date
 from typing import Annotated, Optional
 from uuid import UUID
-from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
 from app.api.deps import CurrentUser
-from app.services.checkin import CheckinService
 from app.api.schemas.checkin import (
     CheckinCreate,
-    CheckinUpdate,
     CheckinResponse,
     CheckinStats,
+    CheckinUpdate,
     WeightTrendPoint,
 )
+from app.database import get_db
+from app.services.checkin import CheckinService
+from app.services.insight_generation import run_generation_in_background
 
 router = APIRouter()
 
@@ -47,6 +49,7 @@ async def list_checkins(
 @router.post("", response_model=CheckinResponse, status_code=status.HTTP_201_CREATED)
 async def create_checkin(
     checkin_data: CheckinCreate,
+    background_tasks: BackgroundTasks,
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
@@ -73,6 +76,10 @@ async def create_checkin(
             headache=checkin_data.headache,
             gi_issues=checkin_data.gi_issues,
             notes=checkin_data.notes,
+        )
+        background_tasks.add_task(
+            run_generation_in_background,
+            current_user.id,
         )
         return checkin
     except ValueError as e:

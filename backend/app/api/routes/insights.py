@@ -1,26 +1,33 @@
+from datetime import date, timedelta
 from typing import Annotated, Optional, Union
 from uuid import UUID
-from datetime import date, timedelta
-from collections import Counter
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
 from app.api.deps import CurrentUser
-from app.services.insight import InsightService
-from app.services.job import JobService
-from app.services.notification import NotificationService
-from app.ml.insights_engine import InsightsEngine
-from app.models.insight import InsightType as ModelInsightType, InsightSeverity as ModelInsightSeverity
 from app.api.schemas.insight import (
-    InsightResponse,
-    InsightAction,
-    InsightType,
-    InsightSeverity,
     GenerationResult,
+    InsightAction,
+    InsightResponse,
+    InsightSeverity,
+    InsightType,
     JobResponse,
 )
+from app.database import get_db
+from app.models.insight import (
+    InsightSeverity as ModelInsightSeverity,
+)
+from app.models.insight import (
+    InsightType as ModelInsightType,
+)
+from app.services.insight import InsightService
+from app.services.insight_generation import (
+    is_stale,
+    run_generation,
+    run_generation_in_background,
+)
+from app.services.job import JobService
 
 router = APIRouter()
 
@@ -28,11 +35,14 @@ router = APIRouter()
 @router.get("/", response_model=list[InsightResponse])
 async def list_insights(
     current_user: CurrentUser,
+    background_tasks: BackgroundTasks,
     db: Annotated[AsyncSession, Depends(get_db)],
     unread_only: bool = Query(False, description="Only return insights the user has not read"),
     type: Optional[InsightType] = Query(None, description="Filter by insight type"),
     severity: Optional[InsightSeverity] = Query(None, description="Filter by severity"),
-    include_dismissed: bool = Query(False, description="Include dismissed insights (excluded by default)"),
+    include_dismissed: bool = Query(
+        False, description="Include dismissed insights (excluded by default)"
+    ),
     limit: int = Query(100, ge=1, le=200, description="Maximum insights to return"),
     offset: int = Query(0, ge=0, description="Number of insights to skip"),
 ):
@@ -49,6 +59,11 @@ async def list_insights(
         limit=limit,
         offset=offset,
     )
+    if is_stale(current_user):
+        background_tasks.add_task(
+            run_generation_in_background,
+            current_user.id,
+        )
     return insights
 
 
@@ -160,8 +175,12 @@ async def trigger_insight_generation(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
     response: Response,
-    start_date: Optional[date] = Query(None, description="Analyze data from this date (default: today - 30 days)"),
-    end_date: Optional[date] = Query(None, description="Analyze data up to this date (default: today)"),
+    start_date: Optional[date] = Query(
+        None, description="Analyze data from this date (default: today - 30 days)"
+    ),
+    end_date: Optional[date] = Query(
+        None, description="Analyze data up to this date (default: today)"
+    ),
     run_async: bool = Query(False, description="Run generation asynchronously (returns job_id)"),
 ):
     """
@@ -183,41 +202,10 @@ async def trigger_insight_generation(
         response.status_code = status.HTTP_202_ACCEPTED
         return JobResponse(job_id=job.id, status=job.status.value)
 
-    engine = InsightsEngine(db)
-    candidates = await engine.analyze_user_data(current_user.id, start_date, end_date)
-
-    service = InsightService(db)
-    notification_service = NotificationService(db)
-    created = []
-    for candidate in candidates:
-        if await service.exists_matching(
-            current_user.id, candidate.type, candidate.source_data_refs
-        ):
-            continue
-        insight = await service.create(
-            user_id=current_user.id,
-            type=candidate.type,
-            severity=candidate.severity,
-            title=candidate.title,
-            description=candidate.description,
-            explanation=candidate.explanation,
-            confidence=candidate.confidence,
-            source_data_refs=candidate.source_data_refs,
-            supporting_data=candidate.supporting_data,
-        )
-        created.append(candidate)
-
-        if candidate.severity == ModelInsightSeverity.ALERT:
-            await notification_service.send_insight_notification(
-                user_id=current_user.id,
-                insight_id=insight.id,
-                title=candidate.title,
-                body=candidate.description,
-                severity=candidate.severity,
-            )
-
-    breakdown = Counter(c.type.value for c in created)
-    return GenerationResult(
-        insights_generated=len(created),
-        types_breakdown=dict(breakdown),
+    result = await run_generation(
+        db,
+        current_user.id,
+        start_date=start_date,
+        end_date=end_date,
     )
+    return GenerationResult(**result)
