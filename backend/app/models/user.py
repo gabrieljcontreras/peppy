@@ -1,6 +1,7 @@
-from sqlalchemy import Column, String, Boolean
+from sqlalchemy import Boolean, Column, DateTime, String
 from sqlalchemy.orm import relationship
-from app.models.base import Base, UUIDMixin, TimestampMixin
+
+from app.models.base import Base, TimestampMixin, UUIDMixin
 
 
 class User(Base, UUIDMixin, TimestampMixin):
@@ -14,6 +15,9 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Profile
     display_name = Column(String(100), nullable=True)
     timezone = Column(String(50), default="UTC", nullable=False)
+
+    # Staleness marker for generate-if-stale insight list fetches.
+    last_insight_run_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationships
     protocols = relationship("Protocol", back_populates="user", cascade="all, delete-orphan")

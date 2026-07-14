@@ -10,6 +10,7 @@ from app.models.job import Job, JobStatus
 from app.models.notification import DeviceToken, DevicePlatform, NotificationPreference
 from app.models.profile import OnboardingProfile
 from app.models.waitlist import WaitlistEntry
+from app.models.weekly_summary import WeeklySummary
 
 __all__ = [
     "Base",
@@ -31,4 +32,5 @@ __all__ = [
     "NotificationPreference",
     "OnboardingProfile",
     "WaitlistEntry",
+    "WeeklySummary",
 ]
