@@ -121,6 +121,11 @@ class Narrator:
     def enabled(self) -> bool:
         return bool(self._settings.anthropic_api_key and self._client is not None)
 
+    @property
+    def summary_model(self) -> str:
+        """Return the configured model used for weekly-summary audit records."""
+        return self._settings.summary_narrative_model
+
     async def enrich_insight_descriptions(
         self,
         candidates: Sequence[GeneratedInsight],

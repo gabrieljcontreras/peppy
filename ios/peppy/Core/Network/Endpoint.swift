@@ -54,6 +54,7 @@ enum Endpoint {
     case markInsightRead(id: UUID)
     case insightAction(id: UUID, action: String)
     case generateInsights
+    case getWeeklySummary
 
     // MARK: - Wearables
     case getConnections
@@ -113,6 +114,7 @@ enum Endpoint {
         case .getInsight(let id): return "/insights/\(id)"
         case .markInsightRead(let id): return "/insights/\(id)/read"
         case .insightAction(let id, _): return "/insights/\(id)/action"
+        case .getWeeklySummary: return "/insights/summary/weekly"
 
         // Wearables
         case .getConnections: return "/wearables/connections"

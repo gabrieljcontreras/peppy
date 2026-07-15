@@ -18,18 +18,30 @@ enum Tab: String, CaseIterable {
     }
 }
 
-/// Shared navigation intent for the Protocols stack. The Dashboard (and any
-/// other tab) routes into Protocols through `show`, which switches the selected
-/// tab before replacing the stack so the route lands on a visible screen.
+/// Shared navigation intent for the Protocols and Insights stacks. The
+/// Dashboard (and any other tab) routes into them through `show`/`showInsight`,
+/// which switch the selected tab before replacing the stack so the route lands
+/// on a visible screen.
 @MainActor
 @Observable
 final class ProtocolNavigationCoordinator {
     var selectedTab: Tab = .home
     var path: [ProtocolRoute] = []
+    var insightsPath: [InsightRoute] = []
 
     func show(_ route: ProtocolRoute) {
         selectedTab = .protocols
         path = [route]
+    }
+
+    func showInsight(_ route: InsightRoute) {
+        selectedTab = .insights
+        insightsPath = [route]
+    }
+
+    func showInsightsTab() {
+        selectedTab = .insights
+        insightsPath = []
     }
 }
 
@@ -61,6 +73,7 @@ struct MainTabView: View {
                 .tabItem {
                     Label(Tab.insights.rawValue, systemImage: Tab.insights.icon)
                 }
+                .badge(deps.insightsStore.unreadCount)
                 .tag(Tab.insights)
 
             ProfileTab()
@@ -96,11 +109,10 @@ struct ProtocolsTab: View {
 }
 
 struct InsightsTab: View {
+    @Environment(\.dependencies) private var deps
+
     var body: some View {
-        NavigationStack {
-            PlaceholderView(title: "AI Insights", icon: "lightbulb.fill")
-                .navigationTitle("Insights")
-        }
+        InsightsListView(store: deps.insightsStore, navigation: deps.protocolNavigation)
     }
 }
 

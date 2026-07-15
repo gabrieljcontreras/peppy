@@ -25,6 +25,39 @@ final class ProtocolNavigationTests: XCTestCase {
         XCTAssertEqual(coordinator.path, [.detail(ProtocolModel.fixture.id)])
     }
 
+    // MARK: - Insights routing
+
+    func testShowInsightSwitchesToInsightsTabAndSetsPath() {
+        let coordinator = ProtocolNavigationCoordinator()
+        let id = UUID()
+        XCTAssertEqual(coordinator.selectedTab, .home)
+
+        coordinator.showInsight(.detail(id))
+
+        XCTAssertEqual(coordinator.selectedTab, .insights)
+        XCTAssertEqual(coordinator.insightsPath, [.detail(id)])
+    }
+
+    func testShowInsightReplacesExistingInsightsPath() {
+        let coordinator = ProtocolNavigationCoordinator()
+        coordinator.insightsPath = [.weeklySummary]
+        let id = UUID()
+
+        coordinator.showInsight(.detail(id))
+
+        XCTAssertEqual(coordinator.insightsPath, [.detail(id)])
+    }
+
+    func testShowInsightsTabClearsInsightsPath() {
+        let coordinator = ProtocolNavigationCoordinator()
+        coordinator.insightsPath = [.weeklySummary]
+
+        coordinator.showInsightsTab()
+
+        XCTAssertEqual(coordinator.selectedTab, .insights)
+        XCTAssertEqual(coordinator.insightsPath, [])
+    }
+
     // MARK: - Dashboard card routing
 
     func testPendingSetupSummaryRoutesToStarterSetup() throws {

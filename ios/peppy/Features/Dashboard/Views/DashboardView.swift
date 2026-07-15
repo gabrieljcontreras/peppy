@@ -104,18 +104,35 @@ struct DashboardView: View {
     }
 
     private func insightCard(_ insight: DashboardInsightSummary) -> some View {
-        PepCard {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                Text("Insight")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.pepTextPrimary)
+        Button {
+            if let id = insight.id {
+                deps.protocolNavigation.showInsight(.detail(id))
+            } else {
+                deps.protocolNavigation.showInsightsTab()
+            }
+        } label: {
+            PepCard {
+                HStack(spacing: Spacing.sm) {
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Text("Insight")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(Color.pepTextPrimary)
 
-                Text(insight.title ?? insight.emptyMessage ?? "No new insights right now.")
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color.pepTextSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                        Text(insight.title ?? insight.emptyMessage ?? "No new insights right now.")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color.pepTextSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.pepTextTertiary)
+                }
             }
         }
+        .buttonStyle(.plain)
     }
 
     private func connectedContextCard(_ context: DashboardConnectedContext) -> some View {

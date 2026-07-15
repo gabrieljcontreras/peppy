@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
 from typing import Optional
 from uuid import UUID
@@ -70,6 +70,41 @@ class InsightSummary(BaseModel):
     unread: int
     by_type: dict[str, int]
     by_severity: dict[str, int]
+
+
+class WeeklySummaryHero(BaseModel):
+    weight_delta_kg: Optional[float]
+    weight_from_kg: Optional[float]
+    weight_to_kg: Optional[float]
+
+
+class WeeklySummaryMetric(BaseModel):
+    key: str
+    label: str
+    value: str
+    detail: Optional[str] = None
+    positive: Optional[bool] = None
+
+
+class WeeklyWatchItem(BaseModel):
+    title: str
+    detail: str
+
+
+class WeeklySummaryPayload(BaseModel):
+    week_start: date
+    week_end: date
+    hero: WeeklySummaryHero
+    weight_series: list[dict]
+    what_changed: list[WeeklySummaryMetric]
+    what_to_watch: list[WeeklyWatchItem]
+    provider_questions: list[str]
+    narrative: Optional[str]
+
+
+class WeeklySummaryEnvelope(BaseModel):
+    available: bool
+    summary: Optional[WeeklySummaryPayload] = None
 
 
 class GenerationResult(BaseModel):
