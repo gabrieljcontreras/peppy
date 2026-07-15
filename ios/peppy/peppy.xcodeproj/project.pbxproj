@@ -63,6 +63,7 @@
 		49C365722FF001400C1F5DE /* InsightsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365732FF001400C1F5DE /* InsightsStoreTests.swift */; };
 		49C365812FF001700C1F5DE /* InsightsListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365802FF001700C1F5DE /* InsightsListViewModelTests.swift */; };
 		49C3658C2FF001800C1F5DE /* InsightDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3658B2FF001800C1F5DE /* InsightDetailViewModelTests.swift */; };
+		49C3658D2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3658E2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift */; };
 		49C365742FF001500C1F5DE /* InsightsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365752FF001500C1F5DE /* InsightsStore.swift */; };
 		49C365792FF001700C1F5DE /* InsightModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365782FF001700C1F5DE /* InsightModels.swift */; };
 		49C3657B2FF001700C1F5DE /* InsightsListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3657A2FF001700C1F5DE /* InsightsListViewModel.swift */; };
@@ -71,6 +72,8 @@
 		49C365862FF001800C1F5DE /* InsightDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365852FF001800C1F5DE /* InsightDetailViewModel.swift */; };
 		49C365882FF001800C1F5DE /* ConfidenceRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365872FF001800C1F5DE /* ConfidenceRing.swift */; };
 		49C3658A2FF001800C1F5DE /* InsightDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365892FF001800C1F5DE /* InsightDetailView.swift */; };
+		49C365902FF001900C1F5DE /* WeeklySummaryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3658F2FF001900C1F5DE /* WeeklySummaryViewModel.swift */; };
+		49C365922FF001900C1F5DE /* WeeklySummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365912FF001900C1F5DE /* WeeklySummaryView.swift */; };
 		49C3654B2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3654C2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift */; };
 		49C365512FF000D00C1F5DE /* ProtocolListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365522FF000D00C1F5DE /* ProtocolListViewModelTests.swift */; };
 		49C365632FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365642FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift */; };
@@ -181,6 +184,7 @@
 		49C365732FF001400C1F5DE /* InsightsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsStoreTests.swift; sourceTree = "<group>"; };
 		49C365802FF001700C1F5DE /* InsightsListViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsListViewModelTests.swift; sourceTree = "<group>"; };
 		49C3658B2FF001800C1F5DE /* InsightDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightDetailViewModelTests.swift; sourceTree = "<group>"; };
+		49C3658E2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklySummaryViewModelTests.swift; sourceTree = "<group>"; };
 		49C365752FF001500C1F5DE /* InsightsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsStore.swift; sourceTree = "<group>"; };
 		49C365782FF001700C1F5DE /* InsightModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightModels.swift; sourceTree = "<group>"; };
 		49C3657A2FF001700C1F5DE /* InsightsListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsListViewModel.swift; sourceTree = "<group>"; };
@@ -189,6 +193,8 @@
 		49C365852FF001800C1F5DE /* InsightDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightDetailViewModel.swift; sourceTree = "<group>"; };
 		49C365872FF001800C1F5DE /* ConfidenceRing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfidenceRing.swift; sourceTree = "<group>"; };
 		49C365892FF001800C1F5DE /* InsightDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightDetailView.swift; sourceTree = "<group>"; };
+		49C3658F2FF001900C1F5DE /* WeeklySummaryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklySummaryViewModel.swift; sourceTree = "<group>"; };
+		49C365912FF001900C1F5DE /* WeeklySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklySummaryView.swift; sourceTree = "<group>"; };
 		49C3654C2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolEditorViewModelTests.swift; sourceTree = "<group>"; };
 		49C365522FF000D00C1F5DE /* ProtocolListViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolListViewModelTests.swift; sourceTree = "<group>"; };
 		49C365642FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolDetailViewModelTests.swift; sourceTree = "<group>"; };
@@ -403,6 +409,7 @@
 				49C3656C2FF001200C1F5DE /* ProtocolNavigationTests.swift */,
 				49C365412FF000900C1F5DE /* ProtocolStoreTests.swift */,
 				49C365112FF000500C1F5DE /* StarterProtocolViewModelTests.swift */,
+				49C3658E2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift */,
 			);
 			path = peppyTests;
 			sourceTree = "<group>";
@@ -495,6 +502,7 @@
 			children = (
 				49C365852FF001800C1F5DE /* InsightDetailViewModel.swift */,
 				49C3657A2FF001700C1F5DE /* InsightsListViewModel.swift */,
+				49C3658F2FF001900C1F5DE /* WeeklySummaryViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -506,6 +514,7 @@
 				49C3657C2FF001700C1F5DE /* InsightCardView.swift */,
 				49C365892FF001800C1F5DE /* InsightDetailView.swift */,
 				49C3657E2FF001700C1F5DE /* InsightsListView.swift */,
+				49C365912FF001900C1F5DE /* WeeklySummaryView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -777,6 +786,8 @@
 				49C365862FF001800C1F5DE /* InsightDetailViewModel.swift in Sources */,
 				49C365882FF001800C1F5DE /* ConfidenceRing.swift in Sources */,
 				49C3658A2FF001800C1F5DE /* InsightDetailView.swift in Sources */,
+				49C365902FF001900C1F5DE /* WeeklySummaryViewModel.swift in Sources */,
+				49C365922FF001900C1F5DE /* WeeklySummaryView.swift in Sources */,
 				49C365532FF000E00C1F5DE /* ProtocolRoute.swift in Sources */,
 				49C365552FF000E00C1F5DE /* ProtocolListViewModel.swift in Sources */,
 				49C365572FF000E00C1F5DE /* ProtocolsRootView.swift in Sources */,
@@ -848,6 +859,7 @@
 				49C365722FF001400C1F5DE /* InsightsStoreTests.swift in Sources */,
 				49C365812FF001700C1F5DE /* InsightsListViewModelTests.swift in Sources */,
 				49C3658C2FF001800C1F5DE /* InsightDetailViewModelTests.swift in Sources */,
+				49C3658D2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift in Sources */,
 				49C365632FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift in Sources */,
 				49C3654B2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift in Sources */,
 				49C365512FF000D00C1F5DE /* ProtocolListViewModelTests.swift in Sources */,

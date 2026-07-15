@@ -55,7 +55,7 @@ struct InsightsListView: View {
                 case .detail(let id):
                     InsightDetailView(store: store, api: deps.api, insightID: id)
                 case .weeklySummary:
-                    Text("AI weekly summary") // Task 14 replaces with WeeklySummaryView
+                    WeeklySummaryView(store: store)
                 }
             }
             .task {

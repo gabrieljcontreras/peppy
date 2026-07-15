@@ -1904,11 +1904,11 @@ title: "No summary yet", message: "Your first weekly summary arrives after a
 week with at least 3 check-ins.")`.
 
 **Steps:**
-- [ ] **Step 1: Failing VM tests** — weekRangeText formatting from fixture payload; heroDeltaText sign/precision; chartPoints parse date strings; hasNarrative false ⇒ (view logic) narrative/watch/questions sections hidden (test the VM booleans).
-- [ ] **Step 2: Verify failure; pbxproj.**
-- [ ] **Step 3: Implement; wire destination; `#Preview` for full + no-narrative states.**
-- [ ] **Step 4: Tests + full build.**
-- [ ] **Step 5: Commit** — `git commit -m "feat(ios): AI weekly summary screen with sparkline and adaptive metric grid"`.
+- [X] **Step 1: Failing VM tests** — weekRangeText formatting from fixture payload; heroDeltaText sign/precision; chartPoints parse date strings; hasNarrative false ⇒ (view logic) narrative/watch/questions sections hidden (test the VM booleans).
+- [X] **Step 2: Verify failure; pbxproj.**
+- [X] **Step 3: Implement; wire destination; `#Preview` for full + no-narrative states.** (VM also exposes `hasLoaded` for the loading-vs-unavailable branch and `weekRangeCaption` for the hero footer; sparkline uses a fitted y-domain so the gradient hugs the line.)
+- [X] **Step 4: Tests + full build.**
+- [X] **Step 5: Commit** — `git commit -m "feat(ios): AI weekly summary screen with sparkline and adaptive metric grid"`.
 
 ---
 
