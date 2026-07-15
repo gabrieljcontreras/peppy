@@ -1941,11 +1941,11 @@ week with at least 3 check-ins.")`.
 - `DashboardView.insightCard`: wrap content in a `Button`; action: `if let id = summary.insight.id { navigation.showInsight(.detail(id)) } else { navigation.showInsightsTab() }`; add trailing chevron. Reach the coordinator the same way DashboardView reaches it for protocols (it already navigates cross-tab — copy that access pattern).
 
 **Steps:**
-- [ ] **Step 1: Failing tests** — coordinator: `showInsight(.detail(id))` sets `selectedTab == .insights` and path `[.detail(id)]`; `showInsightsTab` clears path.
-- [ ] **Step 2: Verify failure.**
-- [ ] **Step 3: Implement all three wirings.**
-- [ ] **Step 4: Full iOS test suite + build.**
-- [ ] **Step 5: Commit** — `git commit -m "feat(ios): dashboard insight card deep-links into insights tab"`.
+- [X] **Step 1: Failing tests** — coordinator: `showInsight(.detail(id))` sets `selectedTab == .insights` and path `[.detail(id)]`; `showInsightsTab` clears path.
+- [X] **Step 2: Verify failure.**
+- [X] **Step 3: Implement all three wirings.**
+- [X] **Step 4: Full iOS test suite + build.**
+- [X] **Step 5: Commit** — `git commit -m "feat(ios): dashboard insight card deep-links into insights tab"`.
 
 ---
 

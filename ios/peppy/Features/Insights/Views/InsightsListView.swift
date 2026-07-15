@@ -3,18 +3,18 @@ import SwiftUI
 struct InsightsListView: View {
     let store: InsightsStore
     @Environment(\.dependencies) private var deps
+    @Bindable private var navigation: ProtocolNavigationCoordinator
     @State private var model: InsightsListViewModel
-    // Task 15 swaps this to the shared coordinator
-    @State private var path: [InsightRoute] = []
     @State private var toast: Toast?
 
-    init(store: InsightsStore) {
+    init(store: InsightsStore, navigation: ProtocolNavigationCoordinator) {
         self.store = store
+        self.navigation = navigation
         _model = State(initialValue: InsightsListViewModel(store: store))
     }
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack(path: $navigation.insightsPath) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
@@ -276,6 +276,6 @@ struct InsightsListView: View {
             for: Endpoint.getWeeklySummary
         )
     }
-    return InsightsListView(store: deps.insightsStore)
+    return InsightsListView(store: deps.insightsStore, navigation: deps.protocolNavigation)
         .withDependencies(deps)
 }
