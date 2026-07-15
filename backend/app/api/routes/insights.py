@@ -13,8 +13,10 @@ from app.api.schemas.insight import (
     InsightSeverity,
     InsightType,
     JobResponse,
+    WeeklySummaryEnvelope,
 )
 from app.database import get_db
+from app.ml.narrator import Narrator
 from app.models.insight import (
     InsightSeverity as ModelInsightSeverity,
 )
@@ -28,6 +30,7 @@ from app.services.insight_generation import (
     run_generation_in_background,
 )
 from app.services.job import JobService
+from app.services.weekly_summary import get_or_create_weekly_summary
 
 router = APIRouter()
 
@@ -65,6 +68,22 @@ async def list_insights(
             current_user.id,
         )
     return insights
+
+
+@router.get("/summary/weekly", response_model=WeeklySummaryEnvelope)
+async def get_weekly_summary(
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Return the latest qualifying completed-week summary."""
+    payload = await get_or_create_weekly_summary(
+        db,
+        current_user.id,
+        narrator=Narrator(),
+    )
+    if payload is None:
+        return WeeklySummaryEnvelope(available=False)
+    return WeeklySummaryEnvelope(available=True, summary=payload)
 
 
 @router.get("/{insight_id}", response_model=InsightResponse)
