@@ -34,6 +34,7 @@ Python SDK (`claude-haiku-4-5`, `claude-sonnet-5`, structured JSON via
 - The brand is "peppy" (lowercase). Design tokens: use existing `Color.pep*`, `Spacing.*`, `PepCard`/`PepBadge`/`PepButton`/`PepSelectionChip`/`PepEmptyState` components. No shadows, pill buttons, weight ceiling ~600.
 - Insight list privacy-footer copy (exact): "Your data is used only to generate your insights. It's never sold and never used to train AI models."
 - TDD: write the failing test first for every behavior. Frequent commits (executor commits on the feature branch).
+- Production correctness overrides illustrative pseudocode and examples. When an example conflicts with correct units, eligibility, or boundary semantics, implement and test the production-correct behavior and update this plan so later tasks reuse it.
 
 ---
 
@@ -684,8 +685,16 @@ git commit -m "feat(backend): symptom-after-dose anomaly rule"
     `daily→1.0, every other day→0.5, twice weekly→2/7, weekly→1/7,
     every 10 days→0.1, biweekly→1/14, monthly→1/30`; anything else → `None`.
   - `app.ml.adherence.expected_doses(db, user_id, start, end) -> Optional[float]`
-    — sums `doses_per_day * window_days` over active-protocol compounds with a
-    known frequency; `None` when there is no active protocol or no mappable compound.
+    — sums expected compound-dose events over active-protocol compounds with a
+    known frequency, clipping each compound to its protocol's inclusive
+    `start_date`/`end_date` overlap with the requested window; `None` when there
+    is no active, mappable compound with an overlap.
+  - `app.ml.adherence.logged_dose_events(db, user_id, start, end) -> int` — counts
+    logged compound-dose events for that same active, mappable compound/window
+    set. Different compounds on the same date count separately; repeated logs
+    for the same compound/date count once. The datetime query is half-open at
+    midnight after `end`, and unrelated/inactive protocol or compound logs do
+    not count.
   - `adherence_consistency_rule(db, user_id, start_date, end_date) -> list[GeneratedInsight]` emitting:
     1. MILESTONE/INFO "7-day check-in streak" when the 7 most recent consecutive
        days ending at `end_date` all have check-ins. Dedup refs:
@@ -694,11 +703,13 @@ git commit -m "feat(backend): symptom-after-dose anomaly rule"
        `start_date + 28 days` falls inside the window. Refs:
        `{"rule": "protocol_weeks_4", "protocol": <id str>}`.
     3. SUGGESTION/INFO "Doses are slipping" when over the trailing 14 days
-       expected ≥ 2 and logged/expected < 0.7. Refs:
+       expected compound-dose events ≥ 2 and logged/expected compound-dose
+       events < 0.7. Refs:
        `{"rule": "adherence_low", "window_end": <end_date iso>}`.
-- Note: `expected_doses` is reused by the weekly summary (Task 9).
+- Note: `expected_doses` and `logged_dose_events` are reused together by the
+  weekly summary (Task 9); numerator and denominator must remain the same unit.
 
-- [ ] **Step 1: Write the failing tests** — `backend/tests/test_rule_adherence_consistency.py` with the same `_seed`-style helpers as Task 3. Cover: (a) `doses_per_day` mapping incl. unknown→None and case/space variants (`"Twice weekly"`, `"every-other-day"`); (b) streak milestone fires with 7 consecutive check-in days ending at `end_date` and is silent at 6; (c) protocol-anniversary milestone fires when `start_date = end_date - 28 days`; (d) low-adherence suggestion fires with a weekly-frequency compound (expected ≈ 2 over 14 days) and 0 dose logs, and is silent with 2 logs; (e) every emitted insight has non-null `supporting_data` and refs matching the dedup keys above.
+- [ ] **Step 1: Write the failing tests** — `backend/tests/test_rule_adherence_consistency.py` with the same `_seed`-style helpers as Task 3. Cover: (a) `doses_per_day` mapping incl. unknown→None and case/space variants (`"Twice weekly"`, `"every-other-day"`); (b) streak milestone fires with 7 consecutive check-in days ending at `end_date` and is silent at 6; (c) protocol-anniversary milestone fires when `start_date = end_date - 28 days`; (d) low-adherence suggestion fires with a weekly-frequency compound (expected ≈ 2 over 14 days) and 0 dose logs, and is silent with 2 logs; (e) every emitted insight has non-null `supporting_data` and refs matching the dedup keys above; (f) two compounds logged on the same dates count as separate events while duplicate same-compound/date logs count once; (g) inactive and unmappable compound logs do not count; (h) expected/logged events are clipped to protocol start/end overlap; (i) a log exactly at midnight after `end_date` is excluded.
 
 - [ ] **Step 2: Run to verify failure** — `venv/bin/python -m pytest tests/test_rule_adherence_consistency.py -v` → `ModuleNotFoundError`.
 
@@ -706,13 +717,15 @@ git commit -m "feat(backend): symptom-after-dose anomaly rule"
 
 ```python
 # backend/app/ml/adherence.py
-from datetime import date
+from dataclasses import dataclass
+from datetime import date, datetime, time, timedelta, timezone
 from typing import Optional
 from uuid import UUID
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.dose_log import DoseLog
 from app.models.protocol import Compound, Protocol
 
 _RATES = {
@@ -727,31 +740,87 @@ _RATES = {
 }
 
 
+@dataclass(frozen=True)
+class _CompoundDoseWindow:
+    protocol_id: UUID
+    compound_id: UUID
+    start: date
+    end: date
+    expected: float
+
+
 def doses_per_day(frequency: str) -> Optional[float]:
     key = "".join(ch for ch in frequency.lower() if ch.isalnum())
     return _RATES.get(key)
 
 
-async def expected_doses(
+async def _compound_dose_windows(
     db: AsyncSession, user_id: UUID, start: date, end: date,
-) -> Optional[float]:
-    """Expected dose count across active-protocol compounds for [start, end]."""
+) -> list[_CompoundDoseWindow]:
     rows = await db.execute(
-        select(Compound)
+        select(Compound, Protocol.start_date, Protocol.end_date)
         .join(Protocol, Compound.protocol_id == Protocol.id)
         .where(and_(Protocol.user_id == user_id, Protocol.is_active.is_(True)))
     )
-    compounds = rows.scalars().all()
-    days = (end - start).days + 1
-    total = 0.0
-    mapped = False
-    for compound in compounds:
+    windows = []
+    for compound, protocol_start, protocol_end in rows.all():
         rate = doses_per_day(compound.frequency or "")
         if rate is None:
             continue
-        mapped = True
-        total += rate * days
-    return total if mapped else None
+        overlap_start = max(start, protocol_start)
+        overlap_end = min(end, protocol_end) if protocol_end is not None else end
+        if overlap_start > overlap_end:
+            continue
+        windows.append(_CompoundDoseWindow(
+            protocol_id=compound.protocol_id,
+            compound_id=compound.id,
+            start=overlap_start,
+            end=overlap_end,
+            expected=rate * ((overlap_end - overlap_start).days + 1),
+        ))
+    return windows
+
+
+async def expected_doses(
+    db: AsyncSession, user_id: UUID, start: date, end: date,
+) -> Optional[float]:
+    """Expected compound-dose events in each active protocol's window overlap."""
+    windows = await _compound_dose_windows(db, user_id, start, end)
+    return sum(window.expected for window in windows) if windows else None
+
+
+async def logged_dose_events(
+    db: AsyncSession, user_id: UUID, start: date, end: date,
+) -> int:
+    """Count eligible compound/date dose events, de-duplicating repeated logs."""
+    windows = await _compound_dose_windows(db, user_id, start, end)
+    if not windows:
+        return 0
+
+    start_at = datetime.combine(start, time.min, tzinfo=timezone.utc)
+    end_at = datetime.combine(end + timedelta(days=1), time.min, tzinfo=timezone.utc)
+    protocol_ids = {window.protocol_id for window in windows}
+    compound_ids = {window.compound_id for window in windows}
+    rows = await db.execute(
+        select(DoseLog.protocol_id, DoseLog.compound_id, DoseLog.administered_at)
+        .where(and_(
+            DoseLog.user_id == user_id,
+            DoseLog.protocol_id.in_(protocol_ids),
+            DoseLog.compound_id.in_(compound_ids),
+            DoseLog.administered_at >= start_at,
+            DoseLog.administered_at < end_at,
+        ))
+    )
+    windows_by_pair = {
+        (window.protocol_id, window.compound_id): window for window in windows
+    }
+    events = set()
+    for protocol_id, compound_id, administered_at in rows.all():
+        window = windows_by_pair.get((protocol_id, compound_id))
+        administered_date = administered_at.date()
+        if window is not None and window.start <= administered_date <= window.end:
+            events.add((compound_id, administered_date))
+    return len(events)
 ```
 
 then create `app/ml/rules/adherence_consistency.py`:
@@ -765,10 +834,9 @@ from uuid import UUID
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.ml.adherence import expected_doses
+from app.ml.adherence import expected_doses, logged_dose_events
 from app.ml.insights_engine import GeneratedInsight
 from app.models.checkin import Checkin
-from app.models.dose_log import DoseLog
 from app.models.insight import InsightSeverity, InsightType
 from app.models.protocol import Protocol
 
@@ -852,14 +920,7 @@ async def adherence_consistency_rule(
     window_start = end_date - timedelta(days=_ADHERENCE_WINDOW_DAYS - 1)
     expected = await expected_doses(db, user_id, window_start, end_date)
     if expected is not None and expected >= _MIN_EXPECTED:
-        dose_rows = await db.execute(
-            select(DoseLog.administered_at).where(
-                and_(DoseLog.user_id == user_id,
-                     DoseLog.administered_at >= window_start,
-                     DoseLog.administered_at <= end_date + timedelta(days=1))
-            )
-        )
-        logged = len({r[0].date() for r in dose_rows.all()})
+        logged = await logged_dose_events(db, user_id, window_start, end_date)
         if logged / expected < _ADHERENCE_FLOOR:
             results.append(GeneratedInsight(
                 type=InsightType.SUGGESTION, severity=InsightSeverity.INFO,
@@ -1449,7 +1510,8 @@ class WeeklySummaryEnvelope(BaseModel):
 - Stats computed deterministically (no LLM): hero weight delta = mean weight this
   week minus mean weight prior week (None when prior week has no weights);
   what_changed builds from: avg sleep_quality delta, dose adherence % via
-  `expected_doses` (Task 4) vs distinct dose-log dates, check-ins "N of 7",
+  `expected_doses` vs `logged_dose_events` (both Task 4, with identical active
+  mappable compound and protocol-overlap semantics), check-ins "N of 7",
   avg energy delta. Skip any metric with no data.
 - Route in `insights.py` (place ABOVE `get_insight` for readability):
 

@@ -1,7 +1,7 @@
-from pydantic_settings import BaseSettings
-from pydantic import model_validator
 from functools import lru_cache
 
+from pydantic import model_validator
+from pydantic_settings import BaseSettings
 
 _DEFAULT_SECRET_KEY = "CHANGE-ME-IN-PRODUCTION"
 _DEFAULT_ENCRYPTION_KEY = "CHANGE-ME-IN-PRODUCTION"
@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     whoop_client_id: str = ""
     whoop_client_secret: str = ""
 
+    # AI narratives
+    anthropic_api_key: str = ""
+    insight_narrative_model: str = "claude-haiku-4-5"
+    summary_narrative_model: str = "claude-sonnet-5"
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
@@ -55,7 +60,9 @@ class Settings(BaseSettings):
     def fix_database_url(self):
         self.database_url = self.database_url.strip()
         if self.database_url.startswith("postgresql://"):
-            self.database_url = self.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            self.database_url = self.database_url.replace(
+                "postgresql://", "postgresql+asyncpg://", 1
+            )
         return self
 
     @model_validator(mode="after")
@@ -68,9 +75,7 @@ class Settings(BaseSettings):
         if self.encryption_key == _DEFAULT_ENCRYPTION_KEY:
             errors.append("ENCRYPTION_KEY must be set via environment variable")
         if errors:
-            raise ValueError(
-                f"Insecure configuration for production: {'; '.join(errors)}"
-            )
+            raise ValueError(f"Insecure configuration for production: {'; '.join(errors)}")
         return self
 
 

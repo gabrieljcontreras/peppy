@@ -9,6 +9,7 @@ from app.api.routes import insights as insights_routes
 from app.ml.insights_engine import GeneratedInsight
 from app.models.insight import InsightSeverity, InsightType
 from app.models.user import User
+from app.services import insight_generation as generation_service
 from app.services.insight import InsightService
 from app.services.job import JobService
 from app.tasks import insights as insights_tasks
@@ -56,7 +57,7 @@ async def test_sync_generation_persists_candidate_supporting_data(
         return [_candidate(supporting_data)]
 
     monkeypatch.setattr(
-        insights_routes.InsightsEngine,
+        generation_service.InsightsEngine,
         "analyze_user_data",
         analyze_user_data,
     )
