@@ -1524,11 +1524,11 @@ async def get_weekly_summary(current_user: CurrentUser, db: ...):
     return WeeklySummaryEnvelope(available=True, summary=payload)
 ```
 
-- [ ] **Step 1: Write failing tests** — cover: `completed_week_bounds` for a Wednesday and for a Monday (must return the PRIOR full week); no qualifying week (<3 check-ins everywhere) → None/`available: false`; qualifying week computes hero delta + metrics with seeded two weeks of check-ins/doses; narrator success caches one `WeeklySummary` row and a second call does NOT call the narrator again (assert fake client `create` awaited once); narrator failure returns stats payload with `narrative=None` and does NOT cache; route returns envelope JSON with snake_case fields.
-- [ ] **Step 2: Verify failure.**
-- [ ] **Step 3: Implement.** Cache lookup by `(user_id, week_start)`. When cached, return `json.loads(row.payload)`. When narrative succeeds, merge `what_to_watch`/`provider_questions`/`narrative` into the payload and persist. Keep everything JSON-serializable.
-- [ ] **Step 4: Tests pass + full backend suite.**
-- [ ] **Step 5: Commit** — `git commit -m "feat(backend): cached AI weekly summary endpoint"`.
+- [X] **Step 1: Write failing tests** — cover: `completed_week_bounds` for a Wednesday and for a Monday (must return the PRIOR full week); no qualifying week (<3 check-ins everywhere) → None/`available: false`; qualifying week computes hero delta + metrics with seeded two weeks of check-ins/doses; narrator success caches one `WeeklySummary` row and a second call does NOT call the narrator again (assert fake client `create` awaited once); narrator failure returns stats payload with `narrative=None` and does NOT cache; route returns envelope JSON with snake_case fields.
+- [X] **Step 2: Verify failure.**
+- [X] **Step 3: Implement.** Cache lookup by `(user_id, week_start)`. When cached, return `json.loads(row.payload)`. When narrative succeeds, merge `what_to_watch`/`provider_questions`/`narrative` into the payload and persist. Keep everything JSON-serializable.
+- [X] **Step 4: Tests pass + full backend suite.**
+- [X] **Step 5: Commit** — `git commit -m "feat(backend): cached AI weekly summary endpoint"`.
 
 ---
 
@@ -1601,11 +1601,11 @@ as `Date`; same reason `weight_series.date` is a String.)
 - `created_at` datetimes may carry microseconds — if `.iso8601` decoding fails in tests, reuse the existing `APIDateOnly`/custom decoding approach already present in APIModels.swift for `DoseLog`.
 
 **Steps:**
-- [ ] **Step 1: Write failing decoding tests** — `InsightAPIModelsTests.swift`: decode a backend-shaped insight JSON fixture (all fields incl. `supporting_data` array and nulls) with `JSONDecoder` configured like `APIClient` (`.iso8601`); decode a `WeeklySummaryEnvelope` fixture with `available: true` and one with `available: false, summary: null`; assert `Endpoint.getWeeklySummary.path == "/insights/summary/weekly"`. Register the test file in project.pbxproj (peppyTests group + Sources phase).
-- [ ] **Step 2: Build to verify failure** — `cd /Users/gabri/peppy/ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build-for-testing` → compile error (models missing).
-- [ ] **Step 3: Implement** the models + endpoint case (add to the GET list in the `method` switch and no-op in body/query switches).
-- [ ] **Step 4: Run tests** — `... xcodebuild test -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/InsightAPIModelsTests` → pass.
-- [ ] **Step 5: Commit** — `git add ios/peppy/Core/Network ios/peppy/peppyTests/InsightAPIModelsTests.swift ios/peppy/peppy.xcodeproj/project.pbxproj && git commit -m "feat(ios): backend-accurate insight models + weekly summary endpoint"`.
+- [X] **Step 1: Write failing decoding tests** — `InsightAPIModelsTests.swift`: decode a backend-shaped insight JSON fixture (all fields incl. `supporting_data` array and nulls) with `JSONDecoder` configured like `APIClient` (`.iso8601`); decode a `WeeklySummaryEnvelope` fixture with `available: true` and one with `available: false, summary: null`; assert `Endpoint.getWeeklySummary.path == "/insights/summary/weekly"`. Register the test file in project.pbxproj (peppyTests group + Sources phase).
+- [X] **Step 2: Build to verify failure** — `cd /Users/gabri/peppy/ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build-for-testing` → compile error (models missing).
+- [X] **Step 3: Implement** the models + endpoint case (add to the GET list in the `method` switch and no-op in body/query switches).
+- [X] **Step 4: Run tests** — `... xcodebuild test -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/InsightAPIModelsTests` → pass.
+- [X] **Step 5: Commit** — `git add ios/peppy/Core/Network ios/peppy/peppyTests/InsightAPIModelsTests.swift ios/peppy/peppy.xcodeproj/project.pbxproj && git commit -m "feat(ios): backend-accurate insight models + weekly summary endpoint"`.
 
 ---
 
@@ -1661,11 +1661,11 @@ extension Insight {
 ```
 
 **Steps:**
-- [ ] **Step 1: Write failing tests** — `InsightsStoreTests` (@MainActor, MockAPIClient): load populates + unreadCount counts only unread; second `loadInsights()` without force doesn't re-hit API (assert `requestLog` count); `markRead` replaces element (mock returns updated insight for `POST /insights/<id>/read` via `setMockResponse(_, for: endpoint)`); `act(dismiss)` removes the row; API error sets `errorMessage` and keeps prior list.
-- [ ] **Step 2: Verify failure** (compile error), register files in pbxproj as you add them.
-- [ ] **Step 3: Implement store + Dependencies wiring.**
-- [ ] **Step 4: Run** `-only-testing:peppyTests/InsightsStoreTests` + full `xcodebuild test` to catch Dependencies init breakage in other tests.
-- [ ] **Step 5: Commit** — `git commit -m "feat(ios): InsightsStore with unread count, actions, weekly summary"`.
+- [X] **Step 1: Write failing tests** — `InsightsStoreTests` (@MainActor, MockAPIClient): load populates + unreadCount counts only unread; second `loadInsights()` without force doesn't re-hit API (assert `requestLog` count); `markRead` replaces element (mock returns updated insight for `POST /insights/<id>/read` via `setMockResponse(_, for: endpoint)`); `act(dismiss)` removes the row; API error sets `errorMessage` and keeps prior list.
+- [X] **Step 2: Verify failure** (compile error), register files in pbxproj as you add them.
+- [X] **Step 3: Implement store + Dependencies wiring.**
+- [X] **Step 4: Run** `-only-testing:peppyTests/InsightsStoreTests` + full `xcodebuild test` to catch Dependencies init breakage in other tests.
+- [X] **Step 5: Commit** — `git commit -m "feat(ios): InsightsStore with unread count, actions, weekly summary"`.
 
 ---
 
@@ -1774,11 +1774,11 @@ InsightRoute.self)` switching to `InsightDetailView` / `WeeklySummaryView`
 (stub `Text("...")` destinations until Tasks 13–14 land, replaced there).
 
 **Steps:**
-- [ ] **Step 1: Failing VM tests** — filter mapping (`.anomalies` shows only type "anomaly"), unread/earlier sectioning, `showsSummaryCard` false when envelope unavailable, `onAppear` triggers both loads (assert MockAPIClient `requestLog` contains both endpoints).
-- [ ] **Step 2: Verify failure; register the 5 files in pbxproj.**
-- [ ] **Step 3: Implement models → VM → card → list → tab.** Add a `#Preview` for `InsightsListView` using `.mock()` dependencies with fixture insights preloaded.
-- [ ] **Step 4: Run** `-only-testing:peppyTests/InsightsListViewModelTests`, then full build.
-- [ ] **Step 5: Commit** — `git commit -m "feat(ios): insights list screen with filters, sections, empty state, tab badge"`.
+- [X] **Step 1: Failing VM tests** — filter mapping (`.anomalies` shows only type "anomaly"), unread/earlier sectioning, `showsSummaryCard` false when envelope unavailable, `onAppear` triggers both loads (assert MockAPIClient `requestLog` contains both endpoints).
+- [X] **Step 2: Verify failure; register the 5 files in pbxproj.**
+- [X] **Step 3: Implement models → VM → card → list → tab.** Add a `#Preview` for `InsightsListView` using `.mock()` dependencies with fixture insights preloaded. (Note: real component enum is `PepBadgeType`, not `PepBadgeStyle`.)
+- [X] **Step 4: Run** `-only-testing:peppyTests/InsightsListViewModelTests`, then full build.
+- [X] **Step 5: Commit** — `git commit -m "feat(ios): insights list screen with filters, sections, empty state, tab badge"`.
 
 ---
 

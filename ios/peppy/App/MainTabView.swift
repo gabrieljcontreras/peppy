@@ -61,6 +61,7 @@ struct MainTabView: View {
                 .tabItem {
                     Label(Tab.insights.rawValue, systemImage: Tab.insights.icon)
                 }
+                .badge(deps.insightsStore.unreadCount)
                 .tag(Tab.insights)
 
             ProfileTab()
@@ -96,11 +97,10 @@ struct ProtocolsTab: View {
 }
 
 struct InsightsTab: View {
+    @Environment(\.dependencies) private var deps
+
     var body: some View {
-        NavigationStack {
-            PlaceholderView(title: "AI Insights", icon: "lightbulb.fill")
-                .navigationTitle("Insights")
-        }
+        InsightsListView(store: deps.insightsStore)
     }
 }
 
