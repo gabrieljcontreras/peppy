@@ -83,4 +83,35 @@ extension Insight {
         default: return "info.circle"
         }
     }
+
+    var severityBadgeStyle: PepBadgeType {
+        switch severity {
+        case "warning": return .warning
+        case "alert": return .error
+        default: return .info
+        }
+    }
+
+    var severityDisplayName: String {
+        severity.capitalized
+    }
+
+    /// "May 31, 2025 • 8:30 AM"
+    var formattedTimestamp: String {
+        let date = Self.timestampDateFormatter.string(from: createdAt)
+        let time = Self.timestampTimeFormatter.string(from: createdAt)
+        return "\(date) • \(time)"
+    }
+
+    private static let timestampDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, yyyy"
+        return formatter
+    }()
+
+    private static let timestampTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a"
+        return formatter
+    }()
 }

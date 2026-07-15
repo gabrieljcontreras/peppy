@@ -45,7 +45,7 @@ struct InsightCardView: View {
                     Image(systemName: "calendar")
                         .font(.system(size: 13))
                         .foregroundStyle(Color.pepTextSecondary)
-                    Text(Self.timestamp(for: insight.createdAt))
+                    Text(insight.formattedTimestamp)
                         .font(.system(size: 13))
                         .foregroundStyle(Color.pepTextSecondary)
 
@@ -62,21 +62,6 @@ struct InsightCardView: View {
         }
     }
 
-    private static func timestamp(for date: Date) -> String {
-        "\(dateFormatter.string(from: date)) • \(timeFormatter.string(from: date))"
-    }
-
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d, yyyy"
-        return formatter
-    }()
-
-    private static let timeFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "h:mm a"
-        return formatter
-    }()
 }
 
 #Preview {

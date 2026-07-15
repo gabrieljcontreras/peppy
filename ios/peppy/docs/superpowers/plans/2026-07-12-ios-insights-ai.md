@@ -1844,11 +1844,11 @@ cards, Accept ("Helpful insight") as filled rust button; all disabled while
 dismissed" / "Marked as helpful") and `dismiss()` (Environment).
 
 **Steps:**
-- [ ] **Step 1: Failing VM tests** — onAppear marks read exactly once (requestLog); deep-link fallback fetch when store empty; accept/dismiss/snooze call the right endpoint and flip `didCompleteAction`; failed action leaves `didCompleteAction == false` and sets store error.
-- [ ] **Step 2: Verify failure; pbxproj registration.**
-- [ ] **Step 3: Implement ring → VM → view; wire destination in list.** `#Preview` with fixture.
-- [ ] **Step 4: Tests + full build.**
-- [ ] **Step 5: Commit** — `git commit -m "feat(ios): insight detail with confidence ring, evidence rows, snooze/dismiss/accept"`.
+- [X] **Step 1: Failing VM tests** — onAppear marks read exactly once (requestLog); deep-link fallback fetch when store empty; accept/dismiss/snooze call the right endpoint and flip `didCompleteAction`; failed action leaves `didCompleteAction == false` and sets store error.
+- [X] **Step 2: Verify failure; pbxproj registration.**
+- [X] **Step 3: Implement ring → VM → view; wire destination in list.** `#Preview` with fixture. (Shared `formattedTimestamp`/`severityBadgeStyle` added to the InsightModels presentation extension; post-action toast uses the global `AppState.showSuccess` so it survives the pop.)
+- [X] **Step 4: Tests + full build.**
+- [X] **Step 5: Commit** — `git commit -m "feat(ios): insight detail with confidence ring, evidence rows, snooze/dismiss/accept"`.
 
 ---
 

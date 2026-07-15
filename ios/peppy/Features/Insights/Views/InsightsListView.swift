@@ -2,6 +2,7 @@ import SwiftUI
 
 struct InsightsListView: View {
     let store: InsightsStore
+    @Environment(\.dependencies) private var deps
     @State private var model: InsightsListViewModel
     // Task 15 swaps this to the shared coordinator
     @State private var path: [InsightRoute] = []
@@ -51,8 +52,8 @@ struct InsightsListView: View {
             }
             .navigationDestination(for: InsightRoute.self) { route in
                 switch route {
-                case .detail:
-                    Text("Insight detail") // Task 13 replaces with InsightDetailView
+                case .detail(let id):
+                    InsightDetailView(store: store, api: deps.api, insightID: id)
                 case .weeklySummary:
                     Text("AI weekly summary") // Task 14 replaces with WeeklySummaryView
                 }
