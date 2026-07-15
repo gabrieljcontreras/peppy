@@ -12,6 +12,7 @@ final class Dependencies {
     let onboardingViewModel: OnboardingViewModel
     let protocolStore: ProtocolStore
     let protocolNavigation: ProtocolNavigationCoordinator
+    let insightsStore: InsightsStore
 
     init(
         api: APIClientProtocol,
@@ -23,7 +24,8 @@ final class Dependencies {
         flow: AppFlowCoordinator,
         onboardingViewModel: OnboardingViewModel,
         protocolStore: ProtocolStore,
-        protocolNavigation: ProtocolNavigationCoordinator
+        protocolNavigation: ProtocolNavigationCoordinator,
+        insightsStore: InsightsStore
     ) {
         self.api = api
         self.keychain = keychain
@@ -35,6 +37,7 @@ final class Dependencies {
         self.onboardingViewModel = onboardingViewModel
         self.protocolStore = protocolStore
         self.protocolNavigation = protocolNavigation
+        self.insightsStore = insightsStore
     }
 
     static func live() -> Dependencies {
@@ -56,6 +59,7 @@ final class Dependencies {
             notifications: notifications
         )
         let protocolStore = ProtocolStore(api: api)
+        let insightsStore = InsightsStore(api: api)
 
         return Dependencies(
             api: api,
@@ -67,7 +71,8 @@ final class Dependencies {
             flow: flow,
             onboardingViewModel: onboardingViewModel,
             protocolStore: protocolStore,
-            protocolNavigation: ProtocolNavigationCoordinator()
+            protocolNavigation: ProtocolNavigationCoordinator(),
+            insightsStore: insightsStore
         )
     }
 
@@ -90,6 +95,7 @@ final class Dependencies {
             notifications: notifications
         )
         let protocolStore = ProtocolStore(api: api)
+        let insightsStore = InsightsStore(api: api)
 
         return Dependencies(
             api: api,
@@ -101,7 +107,8 @@ final class Dependencies {
             flow: flow,
             onboardingViewModel: onboardingViewModel,
             protocolStore: protocolStore,
-            protocolNavigation: ProtocolNavigationCoordinator()
+            protocolNavigation: ProtocolNavigationCoordinator(),
+            insightsStore: insightsStore
         )
     }
 }

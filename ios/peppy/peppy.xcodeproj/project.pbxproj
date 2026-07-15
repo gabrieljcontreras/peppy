@@ -60,6 +60,8 @@
 		49C365692FF001100C1F5DE /* DoseLogViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3656A2FF001100C1F5DE /* DoseLogViewModelTests.swift */; };
 		49C3656B2FF001200C1F5DE /* ProtocolNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3656C2FF001200C1F5DE /* ProtocolNavigationTests.swift */; };
 		49C365702FF001300C1F5DE /* InsightAPIModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365712FF001300C1F5DE /* InsightAPIModelsTests.swift */; };
+		49C365722FF001400C1F5DE /* InsightsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365732FF001400C1F5DE /* InsightsStoreTests.swift */; };
+		49C365742FF001500C1F5DE /* InsightsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365752FF001500C1F5DE /* InsightsStore.swift */; };
 		49C3654B2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3654C2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift */; };
 		49C365512FF000D00C1F5DE /* ProtocolListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365522FF000D00C1F5DE /* ProtocolListViewModelTests.swift */; };
 		49C365632FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365642FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift */; };
@@ -167,6 +169,8 @@
 		49C3656A2FF001100C1F5DE /* DoseLogViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoseLogViewModelTests.swift; sourceTree = "<group>"; };
 		49C3656C2FF001200C1F5DE /* ProtocolNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolNavigationTests.swift; sourceTree = "<group>"; };
 		49C365712FF001300C1F5DE /* InsightAPIModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightAPIModelsTests.swift; sourceTree = "<group>"; };
+		49C365732FF001400C1F5DE /* InsightsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsStoreTests.swift; sourceTree = "<group>"; };
+		49C365752FF001500C1F5DE /* InsightsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsStore.swift; sourceTree = "<group>"; };
 		49C3654C2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolEditorViewModelTests.swift; sourceTree = "<group>"; };
 		49C365522FF000D00C1F5DE /* ProtocolListViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolListViewModelTests.swift; sourceTree = "<group>"; };
 		49C365642FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolDetailViewModelTests.swift; sourceTree = "<group>"; };
@@ -348,6 +352,7 @@
 				49C364922FD4DE4B00C1F5DE /* Auth */,
 				49C365262FF000700C1F5DE /* Checkins */,
 				49C365082FF000300C1F5DE /* Dashboard */,
+				49C365762FF001600C1F5DE /* Insights */,
 				49C364BF2FEE100100C1F5DE /* Onboarding */,
 				49C365162FF000600C1F5DE /* Protocols */,
 			);
@@ -365,6 +370,7 @@
 				49C364DA2FEE600100C1F5DE /* OnboardingComponentTests.swift */,
 				49C365032FF000200C1F5DE /* DashboardViewModelTests.swift */,
 				49C365712FF001300C1F5DE /* InsightAPIModelsTests.swift */,
+				49C365732FF001400C1F5DE /* InsightsStoreTests.swift */,
 				49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */,
 				49C364EB2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift */,
 				49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */,
@@ -435,6 +441,22 @@
 				49C365182FF000600C1F5DE /* Views */,
 			);
 			path = Protocols;
+			sourceTree = "<group>";
+		};
+		49C365762FF001600C1F5DE /* Insights */ = {
+			isa = PBXGroup;
+			children = (
+				49C365772FF001600C1F5DE /* Stores */,
+			);
+			path = Insights;
+			sourceTree = "<group>";
+		};
+		49C365772FF001600C1F5DE /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				49C365752FF001500C1F5DE /* InsightsStore.swift */,
+			);
+			path = Stores;
 			sourceTree = "<group>";
 		};
 		49C365442FF000900C1F5DE /* Models */ = {
@@ -696,6 +718,7 @@
 				49C3656D2FF001100C1F5DE /* DoseLogView.swift in Sources */,
 				49C365422FF000900C1F5DE /* ProtocolModels.swift in Sources */,
 				49C365462FF000A00C1F5DE /* ProtocolStore.swift in Sources */,
+				49C365742FF001500C1F5DE /* InsightsStore.swift in Sources */,
 				49C365532FF000E00C1F5DE /* ProtocolRoute.swift in Sources */,
 				49C365552FF000E00C1F5DE /* ProtocolListViewModel.swift in Sources */,
 				49C365572FF000E00C1F5DE /* ProtocolsRootView.swift in Sources */,
@@ -764,6 +787,7 @@
 				49C365692FF001100C1F5DE /* DoseLogViewModelTests.swift in Sources */,
 				49C3656B2FF001200C1F5DE /* ProtocolNavigationTests.swift in Sources */,
 				49C365702FF001300C1F5DE /* InsightAPIModelsTests.swift in Sources */,
+				49C365722FF001400C1F5DE /* InsightsStoreTests.swift in Sources */,
 				49C365632FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift in Sources */,
 				49C3654B2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift in Sources */,
 				49C365512FF000D00C1F5DE /* ProtocolListViewModelTests.swift in Sources */,
