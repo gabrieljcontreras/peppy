@@ -742,21 +742,205 @@ struct CreateMarkerRequest: Encodable {
 
 // MARK: - Insight
 
-struct Insight: Codable, Identifiable {
+struct InsightSupportingItem: Codable, Equatable, Hashable {
+    let iconKey: String
+    let label: String
+    let sublabel: String?
+    let value: String
+
+    enum CodingKeys: String, CodingKey {
+        case label, sublabel, value
+        case iconKey = "icon_key"
+    }
+}
+
+struct Insight: Codable, Identifiable, Equatable {
     let id: UUID
     let type: String
     let severity: String
     let title: String
-    let body: String
-    let isRead: Bool
-    let action: String?
+    let description: String
+    let explanation: String
+    let confidence: Double
     let createdAt: Date
+    let readAt: Date?
+    let dismissedAt: Date?
+    let snoozedUntil: Date?
+    let actionTaken: String?
+    let actionNotes: String?
+    let supportingData: [InsightSupportingItem]?
 
     enum CodingKeys: String, CodingKey {
-        case id, type, severity, title, body, action
-        case isRead = "is_read"
+        case id, type, severity, title, description, explanation, confidence
         case createdAt = "created_at"
+        case readAt = "read_at"
+        case dismissedAt = "dismissed_at"
+        case snoozedUntil = "snoozed_until"
+        case actionTaken = "action_taken"
+        case actionNotes = "action_notes"
+        case supportingData = "supporting_data"
     }
+
+    var isUnread: Bool {
+        readAt == nil && dismissedAt == nil
+    }
+
+    init(
+        id: UUID,
+        type: String,
+        severity: String,
+        title: String,
+        description: String,
+        explanation: String,
+        confidence: Double,
+        createdAt: Date,
+        readAt: Date? = nil,
+        dismissedAt: Date? = nil,
+        snoozedUntil: Date? = nil,
+        actionTaken: String? = nil,
+        actionNotes: String? = nil,
+        supportingData: [InsightSupportingItem]? = nil
+    ) {
+        self.id = id
+        self.type = type
+        self.severity = severity
+        self.title = title
+        self.description = description
+        self.explanation = explanation
+        self.confidence = confidence
+        self.createdAt = createdAt
+        self.readAt = readAt
+        self.dismissedAt = dismissedAt
+        self.snoozedUntil = snoozedUntil
+        self.actionTaken = actionTaken
+        self.actionNotes = actionNotes
+        self.supportingData = supportingData
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        type = try container.decode(String.self, forKey: .type)
+        severity = try container.decode(String.self, forKey: .severity)
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decode(String.self, forKey: .description)
+        explanation = try container.decode(String.self, forKey: .explanation)
+        confidence = try container.decode(Double.self, forKey: .confidence)
+        createdAt = try Self.decodeTimestamp(forKey: .createdAt, from: container)
+        readAt = try Self.decodeTimestampIfPresent(forKey: .readAt, from: container)
+        dismissedAt = try Self.decodeTimestampIfPresent(forKey: .dismissedAt, from: container)
+        snoozedUntil = try Self.decodeTimestampIfPresent(forKey: .snoozedUntil, from: container)
+        actionTaken = try container.decodeIfPresent(String.self, forKey: .actionTaken)
+        actionNotes = try container.decodeIfPresent(String.self, forKey: .actionNotes)
+        supportingData = try container.decodeIfPresent(
+            [InsightSupportingItem].self,
+            forKey: .supportingData
+        )
+    }
+
+    private static func decodeTimestamp(
+        forKey key: CodingKeys,
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) throws -> Date {
+        if let raw = try? container.decode(String.self, forKey: key),
+           let parsed = timestamp(from: raw) {
+            return parsed
+        }
+        return try container.decode(Date.self, forKey: key)
+    }
+
+    private static func decodeTimestampIfPresent(
+        forKey key: CodingKeys,
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) throws -> Date? {
+        guard try !container.decodeNil(forKey: key) else {
+            return nil
+        }
+        if let raw = try? container.decode(String.self, forKey: key),
+           let parsed = timestamp(from: raw) {
+            return parsed
+        }
+        return try container.decodeIfPresent(Date.self, forKey: key)
+    }
+
+    private static func timestamp(from raw: String) -> Date? {
+        timestampFormatter.date(from: raw) ?? fractionalTimestampFormatter.date(from: raw)
+    }
+
+    private static let timestampFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+
+    private static let fractionalTimestampFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+}
+
+struct WeeklySummaryHero: Codable, Equatable {
+    let weightDeltaKg: Double?
+    let weightFromKg: Double?
+    let weightToKg: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case weightDeltaKg = "weight_delta_kg"
+        case weightFromKg = "weight_from_kg"
+        case weightToKg = "weight_to_kg"
+    }
+}
+
+struct WeeklySummaryMetric: Codable, Equatable, Identifiable {
+    let key: String
+    let label: String
+    let value: String
+    let detail: String?
+    let positive: Bool?
+
+    var id: String { key }
+}
+
+struct WeeklyWatchItem: Codable, Equatable {
+    let title: String
+    let detail: String
+}
+
+struct WeeklyWeightPoint: Codable, Equatable {
+    let date: String
+    let weightKg: Double
+
+    enum CodingKeys: String, CodingKey {
+        case date
+        case weightKg = "weight_kg"
+    }
+}
+
+struct WeeklySummaryPayload: Codable, Equatable {
+    let weekStart: String
+    let weekEnd: String
+    let hero: WeeklySummaryHero
+    let weightSeries: [WeeklyWeightPoint]
+    let whatChanged: [WeeklySummaryMetric]
+    let whatToWatch: [WeeklyWatchItem]
+    let providerQuestions: [String]
+    let narrative: String?
+
+    enum CodingKeys: String, CodingKey {
+        case hero, narrative
+        case weekStart = "week_start"
+        case weekEnd = "week_end"
+        case weightSeries = "weight_series"
+        case whatChanged = "what_changed"
+        case whatToWatch = "what_to_watch"
+        case providerQuestions = "provider_questions"
+    }
+}
+
+struct WeeklySummaryEnvelope: Codable, Equatable {
+    let available: Bool
+    let summary: WeeklySummaryPayload?
 }
 
 // MARK: - Wearable

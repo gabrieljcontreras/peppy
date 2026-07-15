@@ -59,6 +59,7 @@
 		49C365492FF000B00C1F5DE /* CompoundEditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3654A2FF000B00C1F5DE /* CompoundEditorViewModelTests.swift */; };
 		49C365692FF001100C1F5DE /* DoseLogViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3656A2FF001100C1F5DE /* DoseLogViewModelTests.swift */; };
 		49C3656B2FF001200C1F5DE /* ProtocolNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3656C2FF001200C1F5DE /* ProtocolNavigationTests.swift */; };
+		49C365702FF001300C1F5DE /* InsightAPIModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365712FF001300C1F5DE /* InsightAPIModelsTests.swift */; };
 		49C3654B2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3654C2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift */; };
 		49C365512FF000D00C1F5DE /* ProtocolListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365522FF000D00C1F5DE /* ProtocolListViewModelTests.swift */; };
 		49C365632FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365642FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift */; };
@@ -165,6 +166,7 @@
 		49C3654A2FF000B00C1F5DE /* CompoundEditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompoundEditorViewModelTests.swift; sourceTree = "<group>"; };
 		49C3656A2FF001100C1F5DE /* DoseLogViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoseLogViewModelTests.swift; sourceTree = "<group>"; };
 		49C3656C2FF001200C1F5DE /* ProtocolNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolNavigationTests.swift; sourceTree = "<group>"; };
+		49C365712FF001300C1F5DE /* InsightAPIModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightAPIModelsTests.swift; sourceTree = "<group>"; };
 		49C3654C2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolEditorViewModelTests.swift; sourceTree = "<group>"; };
 		49C365522FF000D00C1F5DE /* ProtocolListViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolListViewModelTests.swift; sourceTree = "<group>"; };
 		49C365642FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolDetailViewModelTests.swift; sourceTree = "<group>"; };
@@ -362,6 +364,7 @@
 				49C364E32FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift */,
 				49C364DA2FEE600100C1F5DE /* OnboardingComponentTests.swift */,
 				49C365032FF000200C1F5DE /* DashboardViewModelTests.swift */,
+				49C365712FF001300C1F5DE /* InsightAPIModelsTests.swift */,
 				49C364B12FEE000100C1F5DE /* OnboardingDraftTests.swift */,
 				49C364EB2FEE800100C1F5DE /* OnboardingQuestionnaireStepsTests.swift */,
 				49C364C22FEE200100C1F5DE /* OnboardingStoreTests.swift */,
@@ -760,6 +763,7 @@
 				49C365492FF000B00C1F5DE /* CompoundEditorViewModelTests.swift in Sources */,
 				49C365692FF001100C1F5DE /* DoseLogViewModelTests.swift in Sources */,
 				49C3656B2FF001200C1F5DE /* ProtocolNavigationTests.swift in Sources */,
+				49C365702FF001300C1F5DE /* InsightAPIModelsTests.swift in Sources */,
 				49C365632FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift in Sources */,
 				49C3654B2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift in Sources */,
 				49C365512FF000D00C1F5DE /* ProtocolListViewModelTests.swift in Sources */,
