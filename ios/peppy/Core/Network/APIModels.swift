@@ -576,9 +576,47 @@ struct Checkin: Codable, Identifiable {
         headache = try container.decodeIfPresent(Int.self, forKey: .headache)
         giIssues = try container.decodeIfPresent(Int.self, forKey: .giIssues)
         notes = try container.decodeIfPresent(String.self, forKey: .notes)
-        createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt)
-        updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt)
+        createdAt = try Self.decodeTimestampIfPresent(forKey: .createdAt, from: container)
+        updatedAt = try Self.decodeTimestampIfPresent(forKey: .updatedAt, from: container)
     }
+
+    private static func decodeTimestampIfPresent(
+        forKey key: CodingKeys,
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) throws -> Date? {
+        guard container.contains(key), try !container.decodeNil(forKey: key) else {
+            return nil
+        }
+
+        let raw = try container.decode(String.self, forKey: key)
+        guard let parsed = timestamp(from: raw) else {
+            throw DecodingError.dataCorruptedError(
+                forKey: key,
+                in: container,
+                debugDescription: "Expected ISO-8601 timestamp with or without a timezone."
+            )
+        }
+        return parsed
+    }
+
+    private static func timestamp(from raw: String) -> Date? {
+        timestampFormatter.date(from: raw)
+            ?? fractionalTimestampFormatter.date(from: raw)
+            ?? timestampFormatter.date(from: raw + "Z")
+            ?? fractionalTimestampFormatter.date(from: raw + "Z")
+    }
+
+    private static let timestampFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+
+    private static let fractionalTimestampFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
 
     private static let dateOnlyFormatter: DateFormatter = {
         let formatter = DateFormatter()
