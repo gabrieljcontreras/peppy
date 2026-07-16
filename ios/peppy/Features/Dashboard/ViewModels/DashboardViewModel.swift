@@ -48,16 +48,28 @@ final class DashboardViewModel {
 
         do {
             let summary: DashboardSummary = try await api.execute(.getDashboardSummary)
-            state.summary = summary
+            state.summary = await recoveringProtocol(in: summary)
             state.showsProfileSyncRecovery = hasProfileAttachFailure()
         } catch let error as APIError {
             state.errorMessage = error.userMessage
-            state.summary = .mockMissingProfile
+            state.summary = await recoveringProtocol(in: .mockMissingProfile)
             state.showsProfileSyncRecovery = hasProfileAttachFailure()
         } catch {
             state.errorMessage = error.localizedDescription
-            state.summary = .mockMissingProfile
+            state.summary = await recoveringProtocol(in: .mockMissingProfile)
             state.showsProfileSyncRecovery = hasProfileAttachFailure()
         }
+    }
+
+    private func recoveringProtocol(in summary: DashboardSummary) async -> DashboardSummary {
+        guard summary.protocol.status == "missing" else { return summary }
+
+        await protocolStore?.loadProtocols(force: true)
+
+        guard let protocolValue = protocolStore?.protocols.first(where: \.isActive) else {
+            return summary
+        }
+
+        return summary.replacingProtocol(with: protocolValue)
     }
 }

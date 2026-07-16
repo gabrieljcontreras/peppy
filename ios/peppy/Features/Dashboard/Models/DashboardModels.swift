@@ -84,6 +84,23 @@ struct DashboardConnectedContext: Codable, Equatable {
 }
 
 extension DashboardSummary {
+    func replacingProtocol(with protocolValue: ProtocolModel) -> DashboardSummary {
+        DashboardSummary(
+            generatedAt: generatedAt,
+            profileStatus: profileStatus,
+            protocol: DashboardProtocolSummary(
+                id: protocolValue.id,
+                status: protocolValue.status.rawValue,
+                title: protocolValue.name,
+                compounds: protocolValue.compounds.map(\.name)
+            ),
+            todayCheckin: todayCheckin,
+            responseSnapshot: responseSnapshot,
+            insight: insight,
+            connectedContext: connectedContext
+        )
+    }
+
     static let mockPendingStarter = DashboardSummary(
         generatedAt: Date(timeIntervalSince1970: 1_788_000_000),
         profileStatus: "present",

@@ -37,6 +37,66 @@ final class DashboardViewModelTests: XCTestCase {
         XCTAssertEqual(model.state.summary?.protocol.title, "Starter protocol")
     }
 
+    func testDashboardFailureUsesActiveProtocolFromStore() async {
+        let api = MockAPIClient()
+        api.setMockError(.serverError, for: Endpoint.getDashboardSummary)
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let store = ProtocolStore(api: api)
+        let model = DashboardViewModel(
+            api: api,
+            protocolStore: store,
+            hasProfileAttachFailure: false
+        )
+
+        await model.load()
+
+        XCTAssertEqual(model.state.summary?.protocol.id, ProtocolModel.fixture.id)
+        XCTAssertEqual(model.state.summary?.protocol.status, "active")
+        XCTAssertEqual(model.state.summary?.protocol.title, ProtocolModel.fixture.name)
+        XCTAssertEqual(
+            model.state.summary?.protocol.compounds,
+            ProtocolModel.fixture.compounds.map(\.name)
+        )
+    }
+
+    func testMissingDashboardSummaryUsesActiveProtocolFromStore() async {
+        let api = MockAPIClient()
+        api.setMockResponse(DashboardSummary.mockMissingProfile, for: Endpoint.getDashboardSummary)
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let store = ProtocolStore(api: api)
+        let model = DashboardViewModel(
+            api: api,
+            protocolStore: store,
+            hasProfileAttachFailure: false
+        )
+
+        await model.load()
+
+        XCTAssertEqual(model.state.summary?.protocol.id, ProtocolModel.fixture.id)
+        XCTAssertEqual(model.state.summary?.protocol.status, "active")
+        XCTAssertEqual(model.state.summary?.protocol.title, ProtocolModel.fixture.name)
+    }
+
+    func testMissingDashboardSummaryRefreshesPreviouslyEmptyProtocolStore() async {
+        let api = MockAPIClient()
+        api.setMockResponse([ProtocolModel](), for: Endpoint.getProtocols)
+        let store = ProtocolStore(api: api)
+        await store.loadProtocols()
+
+        api.setMockResponse(DashboardSummary.mockMissingProfile, for: Endpoint.getDashboardSummary)
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        let model = DashboardViewModel(
+            api: api,
+            protocolStore: store,
+            hasProfileAttachFailure: false
+        )
+
+        await model.load()
+
+        XCTAssertEqual(model.state.summary?.protocol.id, ProtocolModel.fixture.id)
+        XCTAssertEqual(model.state.summary?.protocol.status, "active")
+    }
+
     // MARK: - Protocol card presentation
 
     func testInactiveSummaryPresentsPastProtocolCard() {
