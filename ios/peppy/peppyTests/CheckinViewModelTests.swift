@@ -174,6 +174,32 @@ final class CheckinViewModelTests: XCTestCase {
         }
     }
 
+    func testCheckinResponseRejectsSemanticallyInvalidCalendarTimestamp() throws {
+        XCTAssertThrowsError(
+            try decodeCheckin(
+                createdAt: "2026-02-30T14:25:31Z",
+                updatedAt: "2026-07-16T14:26:32Z"
+            )
+        ) { error in
+            guard case DecodingError.dataCorrupted = error else {
+                return XCTFail("Expected dataCorrupted, got \(error)")
+            }
+        }
+    }
+
+    func testCheckinResponseRejectsInvalidTimezoneOffset() throws {
+        XCTAssertThrowsError(
+            try decodeCheckin(
+                createdAt: "2026-07-16T14:25:31Z",
+                updatedAt: "2026-07-16T14:26:32+99:00"
+            )
+        ) { error in
+            guard case DecodingError.dataCorrupted = error else {
+                return XCTFail("Expected dataCorrupted, got \(error)")
+            }
+        }
+    }
+
     private func decodeCheckin(
         createdAt: Any? = nil,
         updatedAt: Any? = nil
