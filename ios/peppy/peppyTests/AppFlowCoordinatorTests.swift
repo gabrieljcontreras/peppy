@@ -61,7 +61,7 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertEqual(user.email, "alex@example.com")
     }
 
-    func testUnauthorizedSessionClearsCredentialsAndUsesSignedOutRoute() async throws {
+    func testUnauthorizedSessionRoutesReturningUserToSignIn() async throws {
         let fixture = Fixture()
         try fixture.keychain.save("access", for: KeychainKeys.accessToken)
         try fixture.keychain.save("refresh", for: KeychainKeys.refreshToken)
@@ -69,21 +69,52 @@ final class AppFlowCoordinatorTests: XCTestCase {
 
         await fixture.coordinator.resolveLaunch()
 
-        XCTAssertEqual(fixture.coordinator.route, .onboarding)
+        XCTAssertEqual(fixture.coordinator.route, .authentication(.signIn))
+        XCTAssertNil(fixture.coordinator.launchError)
+        XCTAssertFalse(fixture.coordinator.shouldShowAuthenticationBackButton)
+        XCTAssertTrue(fixture.store.hasKnownAccount)
         XCTAssertNil(fixture.keychain.get(KeychainKeys.accessToken))
         XCTAssertNil(fixture.keychain.get(KeychainKeys.refreshToken))
     }
 
-    func testTemporarySessionFailureKeepsLaunchingWithRetryError() async throws {
+    func testNetworkFailureDuringSessionRestoreRoutesReturningUserToSignIn() async throws {
         let fixture = Fixture()
         try fixture.keychain.save("access", for: KeychainKeys.accessToken)
+        try fixture.keychain.save("refresh", for: KeychainKeys.refreshToken)
         fixture.api.setMockError(.networkUnavailable, for: "/auth/me")
 
         await fixture.coordinator.resolveLaunch()
 
-        XCTAssertEqual(fixture.coordinator.route, .launching)
-        XCTAssertEqual(fixture.coordinator.launchError, .networkUnavailable)
-        XCTAssertEqual(fixture.keychain.get(KeychainKeys.accessToken), "access")
+        XCTAssertEqual(fixture.coordinator.route, .authentication(.signIn))
+        XCTAssertNil(fixture.coordinator.launchError)
+        XCTAssertFalse(fixture.coordinator.shouldShowAuthenticationBackButton)
+        XCTAssertTrue(fixture.store.hasKnownAccount)
+        XCTAssertNil(fixture.keychain.get(KeychainKeys.accessToken))
+        XCTAssertNil(fixture.keychain.get(KeychainKeys.refreshToken))
+    }
+
+    func testRawTransportFailureDuringSessionRestoreRoutesReturningUserToSignIn() async throws {
+        let keychain = MockKeychainService()
+        let appState = AppState()
+        let store = InMemoryOnboardingStore()
+        let coordinator = AppFlowCoordinator(
+            api: ThrowingAPIClient(error: URLError(.cannotConnectToHost)),
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: store
+        )
+        try keychain.save("access", for: KeychainKeys.accessToken)
+        try keychain.save("refresh", for: KeychainKeys.refreshToken)
+
+        await coordinator.resolveLaunch()
+
+        XCTAssertEqual(coordinator.route, .authentication(.signIn))
+        XCTAssertNil(coordinator.launchError)
+        XCTAssertFalse(coordinator.shouldShowAuthenticationBackButton)
+        XCTAssertTrue(store.hasKnownAccount)
+        XCTAssertNil(keychain.get(KeychainKeys.accessToken))
+        XCTAssertNil(keychain.get(KeychainKeys.refreshToken))
+        XCTAssertFalse(appState.isAuthenticated)
     }
 
     func testManualAuthenticationRoutesAreExplicit() {
@@ -282,6 +313,22 @@ final class AppFlowCoordinatorTests: XCTestCase {
     func testAuthBackButtonsExposeAccessibleBackLabel() {
         XCTAssertEqual(LoginView.backButtonAccessibilityLabel, "Back")
         XCTAssertEqual(RegisterView.backButtonAccessibilityLabel, "Back")
+    }
+
+    private final class ThrowingAPIClient: APIClientProtocol {
+        private let error: Error
+
+        init(error: Error) {
+            self.error = error
+        }
+
+        func execute<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
+            throw error
+        }
+
+        func executeVoid(_ endpoint: Endpoint) async throws {
+            throw error
+        }
     }
 
     private struct Fixture {

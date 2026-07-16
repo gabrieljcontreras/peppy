@@ -54,18 +54,8 @@ final class AppFlowCoordinator {
             appState.login(user: user)
             onboardingStore.hasKnownAccount = true
             route = .dashboard
-        } catch let error as APIError {
-            if error == .unauthorized {
-                keychain.delete(KeychainKeys.accessToken)
-                keychain.delete(KeychainKeys.refreshToken)
-                resolveSignedOutRoute()
-            } else {
-                launchError = error
-                route = .launching
-            }
         } catch {
-            launchError = .unknown(error.localizedDescription)
-            route = .launching
+            resolveFailedSessionRestoration()
         }
     }
 
@@ -150,6 +140,16 @@ final class AppFlowCoordinator {
     func goBackFromAuthentication() {
         guard let previousRoute = authenticationBackStack.popLast() else { return }
         route = previousRoute
+    }
+
+    private func resolveFailedSessionRestoration() {
+        keychain.delete(KeychainKeys.accessToken)
+        keychain.delete(KeychainKeys.refreshToken)
+        onboardingStore.hasKnownAccount = true
+        appState.logout()
+        launchError = nil
+        authenticationBackStack = []
+        route = .authentication(.signIn)
     }
 
     private func resolveSignedOutRoute() {
