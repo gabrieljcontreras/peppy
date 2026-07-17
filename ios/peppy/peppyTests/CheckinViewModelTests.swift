@@ -224,6 +224,44 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(object["energy_level"] as? Int, 9)
     }
 
+    func testUpdateRequestEncodesUTCDateAndNullForEveryOptionalField() throws {
+        let request = UpdateCheckinRequest(
+            date: Date(timeIntervalSince1970: 1_788_000_000),
+            weightKg: nil,
+            energyLevel: nil,
+            sleepQuality: nil,
+            appetiteLevel: nil,
+            mood: nil,
+            nausea: nil,
+            injectionSiteReaction: nil,
+            fatigue: nil,
+            headache: nil,
+            giIssues: nil,
+            notes: nil
+        )
+
+        let object = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any]
+        )
+
+        XCTAssertEqual(object["date"] as? String, "2026-08-29")
+        for key in [
+            "weight_kg",
+            "energy_level",
+            "sleep_quality",
+            "appetite_level",
+            "mood",
+            "nausea",
+            "injection_site_reaction",
+            "fatigue",
+            "headache",
+            "gi_issues",
+            "notes"
+        ] {
+            XCTAssertTrue(object[key] is NSNull, "Expected explicit null for \(key)")
+        }
+    }
+
     func testUpdateEndpointUsesPatchAndCheckinIdentifier() {
         let id = UUID()
         let request = UpdateCheckinRequest.fixture
@@ -231,6 +269,7 @@ final class CheckinViewModelTests: XCTestCase {
 
         XCTAssertEqual(endpoint.method, .patch)
         XCTAssertEqual(endpoint.path, "/checkins/\(id)")
+        XCTAssertEqual(endpoint.body as? UpdateCheckinRequest, request)
     }
 
     func testConflictErrorPreservesServerMessage() {
@@ -238,6 +277,41 @@ final class CheckinViewModelTests: XCTestCase {
             APIError.conflict("Check-in already exists for 2026-07-17").userMessage,
             "Check-in already exists for 2026-07-17"
         )
+    }
+
+    func testConflictErrorEqualityIncludesAssociatedMessage() {
+        XCTAssertEqual(APIError.conflict("same"), APIError.conflict("same"))
+        XCTAssertNotEqual(APIError.conflict("first"), APIError.conflict("second"))
+        XCTAssertNotEqual(APIError.conflict("same"), APIError.unknown("same"))
+    }
+
+    func testAPIClientDecodesServerMessageFromConflictResponse() async throws {
+        let client = try makeAPIClient(
+            statusCode: 409,
+            body: #"{"detail":"Check-in already exists for 2026-07-17"}"#
+        )
+
+        do {
+            try await client.executeVoid(.updateCheckin(id: UUID(), .fixture))
+            XCTFail("Expected conflict error")
+        } catch let error as APIError {
+            XCTAssertEqual(error, .conflict("Check-in already exists for 2026-07-17"))
+        } catch {
+            XCTFail("Expected APIError.conflict, got \(error)")
+        }
+    }
+
+    func testAPIClientUsesFallbackMessageForMalformedConflictResponse() async throws {
+        let client = try makeAPIClient(statusCode: 409, body: "not-json")
+
+        do {
+            try await client.executeVoid(.updateCheckin(id: UUID(), .fixture))
+            XCTFail("Expected conflict error")
+        } catch let error as APIError {
+            XCTAssertEqual(error, .conflict("A check-in already exists for this date."))
+        } catch {
+            XCTFail("Expected APIError.conflict, got \(error)")
+        }
     }
 
     func testWeightUnitConversionsAndFormatting() {
@@ -273,6 +347,46 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(reloaded.unit, .pounds)
     }
 
+    func testWeightPreferenceReevaluatesSeedThatBecomesAvailableLater() {
+        let suite = "WeightUnitPreferencesLateSeedTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var seed: WeightUnit?
+        let preferences = WeightUnitPreferences(defaults: defaults, seed: { seed })
+
+        XCTAssertEqual(preferences.unit, .pounds)
+        seed = .kilograms
+        XCTAssertEqual(preferences.unit, .kilograms)
+    }
+
+    func testMockDependenciesPreferAuthenticatedUserDraftOverAnonymousDraft() throws {
+        let defaults = UserDefaults.standard
+        let key = "peppy.checkins.weight-unit"
+        let previousValue = defaults.object(forKey: key)
+        defer {
+            if let previousValue {
+                defaults.set(previousValue, forKey: key)
+            } else {
+                defaults.removeObject(forKey: key)
+            }
+        }
+        defaults.removeObject(forKey: key)
+
+        let dependencies = Dependencies.mock()
+        let store = try XCTUnwrap(dependencies.onboardingStore as? InMemoryOnboardingStore)
+        var anonymousDraft = OnboardingDraft()
+        anonymousDraft.preferredWeightUnit = .pounds
+        store.saveAnonymousDraft(anonymousDraft)
+
+        let userID = UUID()
+        var userDraft = OnboardingDraft()
+        userDraft.preferredWeightUnit = .kilograms
+        store.userDrafts[userID] = userDraft
+        dependencies.appState.login(user: User(id: userID, email: "checkins@example.com"))
+
+        XCTAssertEqual(dependencies.weightUnitPreferences.unit, .kilograms)
+    }
+
     private func decodeCheckin(
         createdAt: Any? = nil,
         updatedAt: Any? = nil
@@ -306,6 +420,52 @@ final class CheckinViewModelTests: XCTestCase {
         decoder.dateDecodingStrategy = .iso8601
         return try decoder.decode(Checkin.self, from: data)
     }
+
+    private func makeAPIClient(statusCode: Int, body: String) throws -> APIClient {
+        CheckinURLProtocolStub.statusCode = statusCode
+        CheckinURLProtocolStub.responseData = Data(body.utf8)
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [CheckinURLProtocolStub.self]
+        let keychain = MockKeychainService()
+        try keychain.save("access-token", for: KeychainKeys.accessToken)
+        return APIClient(
+            baseURL: URL(string: "https://checkins.example/api/v1")!,
+            session: URLSession(configuration: configuration),
+            keychain: keychain
+        )
+    }
+}
+
+private final class CheckinURLProtocolStub: URLProtocol {
+    nonisolated(unsafe) static var statusCode = 200
+    nonisolated(unsafe) static var responseData = Data()
+
+    override class func canInit(with request: URLRequest) -> Bool {
+        true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        request
+    }
+
+    override func startLoading() {
+        guard let url = request.url,
+              let response = HTTPURLResponse(
+                url: url,
+                statusCode: Self.statusCode,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+              ) else {
+            client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
+            return
+        }
+
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Self.responseData)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
 }
 
 private extension UpdateCheckinRequest {
