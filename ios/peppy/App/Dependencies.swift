@@ -13,6 +13,7 @@ final class Dependencies {
     let protocolStore: ProtocolStore
     let protocolNavigation: ProtocolNavigationCoordinator
     let insightsStore: InsightsStore
+    let checkinStore: CheckinStore
     let weightUnitPreferences: WeightUnitPreferences
 
     init(
@@ -27,6 +28,7 @@ final class Dependencies {
         protocolStore: ProtocolStore,
         protocolNavigation: ProtocolNavigationCoordinator,
         insightsStore: InsightsStore,
+        checkinStore: CheckinStore,
         weightUnitPreferences: WeightUnitPreferences
     ) {
         self.api = api
@@ -40,6 +42,7 @@ final class Dependencies {
         self.protocolStore = protocolStore
         self.protocolNavigation = protocolNavigation
         self.insightsStore = insightsStore
+        self.checkinStore = checkinStore
         self.weightUnitPreferences = weightUnitPreferences
     }
 
@@ -63,6 +66,7 @@ final class Dependencies {
         )
         let protocolStore = ProtocolStore(api: api)
         let insightsStore = InsightsStore(api: api)
+        let checkinStore = CheckinStore(api: api)
         let weightUnitPreferences = WeightUnitPreferences {
             if let userID = appState.currentUser?.id,
                let draft = onboardingStore.loadDraft(for: userID) {
@@ -83,6 +87,7 @@ final class Dependencies {
             protocolStore: protocolStore,
             protocolNavigation: ProtocolNavigationCoordinator(),
             insightsStore: insightsStore,
+            checkinStore: checkinStore,
             weightUnitPreferences: weightUnitPreferences
         )
     }
@@ -107,6 +112,7 @@ final class Dependencies {
         )
         let protocolStore = ProtocolStore(api: api)
         let insightsStore = InsightsStore(api: api)
+        let checkinStore = CheckinStore(api: api)
         let weightUnitPreferences = WeightUnitPreferences {
             if let userID = appState.currentUser?.id,
                let draft = onboardingStore.loadDraft(for: userID) {
@@ -127,6 +133,7 @@ final class Dependencies {
             protocolStore: protocolStore,
             protocolNavigation: ProtocolNavigationCoordinator(),
             insightsStore: insightsStore,
+            checkinStore: checkinStore,
             weightUnitPreferences: weightUnitPreferences
         )
     }
