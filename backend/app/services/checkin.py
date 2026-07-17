@@ -116,51 +116,32 @@ class CheckinService:
         await self.db.refresh(checkin)
         return checkin
 
-    async def update(
-        self,
-        checkin: Checkin,
-        checkin_date: Optional[date] = None,
-        weight_kg: Optional[float] = None,
-        energy_level: Optional[int] = None,
-        sleep_quality: Optional[int] = None,
-        appetite_level: Optional[int] = None,
-        mood: Optional[int] = None,
-        nausea: Optional[int] = None,
-        injection_site_reaction: Optional[int] = None,
-        fatigue: Optional[int] = None,
-        headache: Optional[int] = None,
-        gi_issues: Optional[int] = None,
-        notes: Optional[str] = None,
-    ) -> Checkin:
-        """Update an existing check-in."""
-        if checkin_date is not None and checkin_date != checkin.date:
-            existing = await self.get_by_date(checkin.user_id, checkin_date)
-            if existing and existing.id != checkin.id:
-                raise ValueError(f"Check-in already exists for {checkin_date}")
-            checkin.date = checkin_date
+    async def update(self, checkin: Checkin, changes: dict[str, object]) -> Checkin:
+        """Apply only provided fields; explicit None clears nullable columns."""
+        if "date" in changes:
+            checkin_date = changes["date"]
+            if checkin_date is not None and checkin_date != checkin.date:
+                existing = await self.get_by_date(checkin.user_id, checkin_date)
+                if existing and existing.id != checkin.id:
+                    raise ValueError(f"Check-in already exists for {checkin_date}")
+                checkin.date = checkin_date
 
-        if weight_kg is not None:
-            checkin.weight_kg = weight_kg
-        if energy_level is not None:
-            checkin.energy_level = energy_level
-        if sleep_quality is not None:
-            checkin.sleep_quality = sleep_quality
-        if appetite_level is not None:
-            checkin.appetite_level = appetite_level
-        if mood is not None:
-            checkin.mood = mood
-        if nausea is not None:
-            checkin.nausea = nausea
-        if injection_site_reaction is not None:
-            checkin.injection_site_reaction = injection_site_reaction
-        if fatigue is not None:
-            checkin.fatigue = fatigue
-        if headache is not None:
-            checkin.headache = headache
-        if gi_issues is not None:
-            checkin.gi_issues = gi_issues
-        if notes is not None:
-            checkin.notes = notes
+        mutable_fields = (
+            "weight_kg",
+            "energy_level",
+            "sleep_quality",
+            "appetite_level",
+            "mood",
+            "nausea",
+            "injection_site_reaction",
+            "fatigue",
+            "headache",
+            "gi_issues",
+            "notes",
+        )
+        for field in mutable_fields:
+            if field in changes:
+                setattr(checkin, field, changes[field])
 
         await self.db.commit()
         await self.db.refresh(checkin)
