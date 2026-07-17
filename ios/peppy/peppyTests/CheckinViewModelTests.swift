@@ -200,6 +200,79 @@ final class CheckinViewModelTests: XCTestCase {
         }
     }
 
+    func testUpdateRequestEncodesNullForClearedFields() throws {
+        let request = UpdateCheckinRequest(
+            date: Date(timeIntervalSince1970: 1_788_000_000),
+            weightKg: nil,
+            energyLevel: 9,
+            sleepQuality: nil,
+            appetiteLevel: nil,
+            mood: nil,
+            nausea: nil,
+            injectionSiteReaction: nil,
+            fatigue: nil,
+            headache: nil,
+            giIssues: nil,
+            notes: nil
+        )
+
+        let object = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any]
+        )
+        XCTAssertTrue(object["weight_kg"] is NSNull)
+        XCTAssertTrue(object["notes"] is NSNull)
+        XCTAssertEqual(object["energy_level"] as? Int, 9)
+    }
+
+    func testUpdateEndpointUsesPatchAndCheckinIdentifier() {
+        let id = UUID()
+        let request = UpdateCheckinRequest.fixture
+        let endpoint = Endpoint.updateCheckin(id: id, request)
+
+        XCTAssertEqual(endpoint.method, .patch)
+        XCTAssertEqual(endpoint.path, "/checkins/\(id)")
+    }
+
+    func testConflictErrorPreservesServerMessage() {
+        XCTAssertEqual(
+            APIError.conflict("Check-in already exists for 2026-07-17").userMessage,
+            "Check-in already exists for 2026-07-17"
+        )
+    }
+
+    func testWeightUnitConversionsAndFormatting() {
+        XCTAssertEqual(WeightUnit.pounds.kilograms(from: 165), 74.84274105, accuracy: 0.000001)
+        XCTAssertEqual(WeightUnit.pounds.displayValue(kilograms: 74.84274105), 165, accuracy: 0.000001)
+        XCTAssertEqual(WeightUnit.pounds.format(kilograms: 74.84274105), "165.0 lb")
+        XCTAssertEqual(WeightUnit.kilograms.format(kilograms: 74.8), "74.8 kg")
+    }
+
+    func testWeightPreferenceDefaultsToPoundsAndPersistsSelection() {
+        let suite = "WeightUnitPreferencesTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let first = WeightUnitPreferences(defaults: defaults)
+        XCTAssertEqual(first.unit, .pounds)
+        first.select(.kilograms)
+
+        let second = WeightUnitPreferences(defaults: defaults)
+        XCTAssertEqual(second.unit, .kilograms)
+    }
+
+    func testWeightPreferenceUsesOnboardingSeedOnlyWhenNoSavedSelectionExists() {
+        let suite = "WeightUnitPreferencesSeedTests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let seeded = WeightUnitPreferences(defaults: defaults, seed: { .kilograms })
+        XCTAssertEqual(seeded.unit, .kilograms)
+        seeded.select(.pounds)
+
+        let reloaded = WeightUnitPreferences(defaults: defaults, seed: { .kilograms })
+        XCTAssertEqual(reloaded.unit, .pounds)
+    }
+
     private func decodeCheckin(
         createdAt: Any? = nil,
         updatedAt: Any? = nil
@@ -233,6 +306,23 @@ final class CheckinViewModelTests: XCTestCase {
         decoder.dateDecodingStrategy = .iso8601
         return try decoder.decode(Checkin.self, from: data)
     }
+}
+
+private extension UpdateCheckinRequest {
+    static let fixture = UpdateCheckinRequest(
+        date: Date(timeIntervalSince1970: 1_788_000_000),
+        weightKg: 74.8,
+        energyLevel: 7,
+        sleepQuality: nil,
+        appetiteLevel: nil,
+        mood: 8,
+        nausea: nil,
+        injectionSiteReaction: nil,
+        fatigue: nil,
+        headache: nil,
+        giIssues: nil,
+        notes: nil
+    )
 }
 
 private extension Checkin {

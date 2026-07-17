@@ -491,7 +491,7 @@ struct StarterProtocolActivationRequest: Encodable {
 
 // MARK: - Check-in
 
-struct Checkin: Codable, Identifiable {
+struct Checkin: Codable, Identifiable, Equatable {
     let id: UUID
     let userId: UUID?
     let date: Date
@@ -734,6 +734,56 @@ struct CreateCheckinRequest: Codable, Equatable {
     }
 
     private static let dateOnlyFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+}
+
+struct UpdateCheckinRequest: Encodable, Equatable {
+    let date: Date
+    let weightKg: Double?
+    let energyLevel: Int?
+    let sleepQuality: Int?
+    let appetiteLevel: Int?
+    let mood: Int?
+    let nausea: Int?
+    let injectionSiteReaction: Int?
+    let fatigue: Int?
+    let headache: Int?
+    let giIssues: Int?
+    let notes: String?
+
+    enum CodingKeys: String, CodingKey {
+        case date, mood, nausea, fatigue, headache, notes
+        case weightKg = "weight_kg"
+        case energyLevel = "energy_level"
+        case sleepQuality = "sleep_quality"
+        case appetiteLevel = "appetite_level"
+        case injectionSiteReaction = "injection_site_reaction"
+        case giIssues = "gi_issues"
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(Self.dateFormatter.string(from: date), forKey: .date)
+        try container.encode(weightKg, forKey: .weightKg)
+        try container.encode(energyLevel, forKey: .energyLevel)
+        try container.encode(sleepQuality, forKey: .sleepQuality)
+        try container.encode(appetiteLevel, forKey: .appetiteLevel)
+        try container.encode(mood, forKey: .mood)
+        try container.encode(nausea, forKey: .nausea)
+        try container.encode(injectionSiteReaction, forKey: .injectionSiteReaction)
+        try container.encode(fatigue, forKey: .fatigue)
+        try container.encode(headache, forKey: .headache)
+        try container.encode(giIssues, forKey: .giIssues)
+        try container.encode(notes, forKey: .notes)
+    }
+
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.calendar = Calendar(identifier: .gregorian)
         formatter.locale = Locale(identifier: "en_US_POSIX")

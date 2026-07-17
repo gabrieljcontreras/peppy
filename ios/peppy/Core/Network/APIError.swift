@@ -4,6 +4,7 @@ enum APIError: Error, Equatable {
     case unauthorized
     case forbidden
     case notFound
+    case conflict(String)
     case validationFailed([String])
     case serverError
     case networkUnavailable
@@ -18,6 +19,8 @@ enum APIError: Error, Equatable {
             return "You don't have permission to do that."
         case .notFound:
             return "The requested item was not found."
+        case .conflict(let message):
+            return message
         case .validationFailed(let messages):
             return messages.joined(separator: "\n")
         case .serverError:
@@ -41,6 +44,8 @@ enum APIError: Error, Equatable {
              (.decodingFailed, .decodingFailed):
             return true
         case (.validationFailed(let a), .validationFailed(let b)):
+            return a == b
+        case (.conflict(let a), .conflict(let b)):
             return a == b
         case (.unknown(let a), .unknown(let b)):
             return a == b
