@@ -65,6 +65,7 @@ SwiftUI design tokens and components rather than introduce a parallel style.
 - New charts or trend analysis beyond the existing Home response snapshot.
 - Changes to backend weight storage; the API remains kilogram-based.
 - Per-entry storage of a display unit.
+- Cross-device synchronization of the inline weight-unit preference.
 - A separate weight-unit control in the More tab.
 - Insight generation changes.
 - Broad navigation or design-system refactors.
@@ -136,7 +137,7 @@ After a successful create or update:
 2. The editor closes or pops back to the hub.
 3. The hub shows the saved details.
 4. Home recomputes its preview from the same store.
-5. The dashboard summary may refresh so its existing logged/id state stays
+5. The dashboard summary refreshes so its existing logged/id state stays
    consistent with the store.
 
 ### Home Connection
@@ -169,7 +170,12 @@ already in memory.
   represented weight does not change accidentally.
 - The selected unit persists locally and becomes the display unit for future
   editors, hub details, history summaries, and Home previews.
-- Existing installations without a stored preference also default to pounds.
+- The preference reuses the existing `WeightUnit` model. When an associated
+  onboarding draft is available, its `preferredWeightUnit` seeds the first
+  Check-in preference; otherwise the preference defaults to pounds.
+- Changing the selector updates every visible weight presentation immediately.
+- Existing installations without an onboarding or Check-in preference default
+  to pounds.
 
 ### Data Rules
 
@@ -183,10 +189,15 @@ The backend contract and database remain kilogram-based.
 - Display values use one decimal place and standard unit labels, for example
   `164.9 lb` or `74.8 kg`.
 - Unit conversions use one shared utility and are not duplicated in views.
+- If the in-progress weight text is incomplete or invalid when the selector is
+  changed, preserve the text and surface normal validation rather than guessing
+  a converted value.
 
-The preference is presentation state, not health data. It may be stored in
-`UserDefaults` behind a small injectable preference interface so defaults and
-persistence can be tested without global state.
+The selector is a device-local presentation preference, not per-entry health
+data. Store it in `UserDefaults` behind a small injectable preference interface
+so defaults and persistence can be tested without global state. The existing
+backend `preferred_weight_unit` remains onboarding/profile metadata in this MVP;
+account-level preference synchronization is future work.
 
 ## Architecture
 
@@ -237,8 +248,7 @@ method that:
 2. Replaces the Check-in path with the requested destination.
 
 Retain the current coordinator type/name during this project to avoid an
-unrelated app-wide rename. The implementation may document that its role has
-expanded beyond protocols.
+unrelated app-wide rename. Document that its role has expanded beyond protocols.
 
 ### Networking
 
@@ -335,6 +345,7 @@ conflict.
 - The editor produces create and update requests with normalized values.
 - Pounds are the default when no preference exists.
 - The unit selector persists the last choice.
+- An associated onboarding draft seeds the initial unit preference.
 - lb/kg conversion is correct in both directions and request payloads remain kg.
 - Display formatting uses one decimal place and the selected unit.
 - Home preview priority and fallbacks use only available values.
@@ -375,4 +386,3 @@ conflict.
 - Network errors preserve user input or already-loaded content and offer a
   recovery action.
 - The app builds and the relevant automated tests pass.
-
