@@ -404,6 +404,26 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(store.checkins.map(\.date), [today, older])
     }
 
+    func testStoreListKeepsOnlyNewestOneHundredRecords() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let records = (0..<101).map { index in
+            Checkin.fixture(date: today.addingTimeInterval(-Double(index) * 86_400))
+        }
+        api.setMockResponse(
+            Array(records.reversed()),
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        let store = CheckinStore(api: api, now: { today })
+
+        await store.load()
+
+        XCTAssertEqual(store.checkins.count, 100)
+        XCTAssertEqual(store.checkins.first?.id, records.first?.id)
+        XCTAssertEqual(store.checkins.last?.id, records[99].id)
+        XCTAssertFalse(store.checkins.contains { $0.id == records[100].id })
+    }
+
     func testStoreUsesUTCBoundaryForToday() async {
         let api = MockAPIClient()
         let today = Date(timeIntervalSince1970: 1_789_689_600)
@@ -434,6 +454,217 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(store.errorMessage, "No internet connection.")
     }
 
+    func testStoreStaleListSuccessCannotOverwriteNewerCreate() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let created = Checkin.fixture(date: today)
+        let listEndpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        api.setMockResponse([Checkin](), for: listEndpoint)
+        api.setMockResponse(created, for: Endpoint.createCheckin(.fixture))
+        let gate = CheckinAsyncGate()
+        let listStarted = expectation(description: "List request started")
+        api.onRequest = { endpoint in
+            guard case .getCheckins = endpoint else { return }
+            listStarted.fulfill()
+            await gate.wait()
+        }
+        let store = CheckinStore(api: api, now: { today })
+
+        let listLoad = Task { await store.load() }
+        await fulfillment(of: [listStarted], timeout: 2)
+        let result = await store.create(.fixture)
+        XCTAssertEqual(store.checkins, [created])
+
+        await gate.open()
+        await listLoad.value
+
+        XCTAssertEqual(result, .saved(created))
+        XCTAssertEqual(store.checkins, [created])
+        XCTAssertFalse(store.isLoading)
+        XCTAssertEqual(store.revision, 1)
+    }
+
+    func testStoreStaleListFailureCannotOverwriteNewerCreate() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let created = Checkin.fixture(date: today)
+        let listEndpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        api.setMockError(.serverError, for: listEndpoint)
+        api.setMockResponse(created, for: Endpoint.createCheckin(.fixture))
+        let gate = CheckinAsyncGate()
+        let listStarted = expectation(description: "List request started")
+        api.onRequest = { endpoint in
+            guard case .getCheckins = endpoint else { return }
+            listStarted.fulfill()
+            await gate.wait()
+        }
+        let store = CheckinStore(api: api, now: { today })
+
+        let listLoad = Task { await store.load() }
+        await fulfillment(of: [listStarted], timeout: 2)
+        let result = await store.create(.fixture)
+        XCTAssertEqual(store.checkins, [created])
+
+        await gate.open()
+        await listLoad.value
+
+        XCTAssertEqual(result, .saved(created))
+        XCTAssertEqual(store.checkins, [created])
+        XCTAssertNil(store.errorMessage)
+        XCTAssertFalse(store.isLoading)
+        XCTAssertEqual(store.revision, 1)
+    }
+
+    func testStoreStaleListSuccessCannotOverwriteNewerUpdate() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let original = Checkin.fixture(date: today, energyLevel: 7)
+        let updated = original.replacing(energyLevel: 9)
+        let listEndpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        api.setMockResponse([original], for: listEndpoint)
+        api.setMockResponse(updated, for: Endpoint.updateCheckin(id: original.id, .fixture))
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
+        let gate = CheckinAsyncGate()
+        let refreshStarted = expectation(description: "Refresh started")
+        api.onRequest = { endpoint in
+            guard case .getCheckins = endpoint else { return }
+            refreshStarted.fulfill()
+            await gate.wait()
+        }
+
+        let refresh = Task { await store.load(force: true) }
+        await fulfillment(of: [refreshStarted], timeout: 2)
+        let result = await store.update(id: original.id, request: .fixture)
+        XCTAssertEqual(store.checkins, [updated])
+
+        await gate.open()
+        await refresh.value
+
+        XCTAssertEqual(result, updated)
+        XCTAssertEqual(store.checkins, [updated])
+        XCTAssertFalse(store.isLoading)
+        XCTAssertEqual(store.revision, 1)
+    }
+
+    func testStoreStaleListSuccessCannotOverwriteNewerDetail() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let original = Checkin.fixture(date: today, energyLevel: 7)
+        let detail = original.replacing(energyLevel: 9, notes: "Fresh detail")
+        let listEndpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        api.setMockResponse([original], for: listEndpoint)
+        api.setMockResponse(detail, for: Endpoint.getCheckin(id: original.id))
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
+        let gate = CheckinAsyncGate()
+        let refreshStarted = expectation(description: "Refresh started")
+        api.onRequest = { endpoint in
+            guard case .getCheckins = endpoint else { return }
+            refreshStarted.fulfill()
+            await gate.wait()
+        }
+
+        let refresh = Task { await store.load(force: true) }
+        await fulfillment(of: [refreshStarted], timeout: 2)
+        await store.loadDetail(original.id)
+        XCTAssertEqual(store.checkins, [detail])
+
+        await gate.open()
+        await refresh.value
+
+        XCTAssertEqual(store.checkins, [detail])
+        XCTAssertEqual(store.selectedCheckin, detail)
+        XCTAssertFalse(store.isLoading)
+    }
+
+    func testStoreListRefreshUpdatesMatchingSelectedDetail() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let original = Checkin.fixture(date: today, energyLevel: 7)
+        let refreshed = original.replacing(energyLevel: 9, notes: "Refreshed list")
+        let listEndpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        api.setMockResponse([original], for: listEndpoint)
+        api.setMockResponse(original, for: Endpoint.getCheckin(id: original.id))
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
+        await store.loadDetail(original.id)
+        api.setMockResponse([refreshed], for: listEndpoint)
+
+        await store.load(force: true)
+
+        XCTAssertEqual(store.checkins, [refreshed])
+        XCTAssertEqual(store.selectedCheckin, refreshed)
+    }
+
+    func testStoreNewerListSuccessWinsOverStaleListSuccessAndSettlesLoading() async {
+        let api = MockAPIClient()
+        let older = Checkin.fixture(energyLevel: 7)
+        let newer = older.replacing(energyLevel: 9)
+        let listEndpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        api.setMockResponse([older], for: listEndpoint)
+        let gate = CheckinAsyncGate()
+        let firstStarted = expectation(description: "First list started")
+        var requestCount = 0
+        api.onRequest = { endpoint in
+            guard case .getCheckins = endpoint else { return }
+            requestCount += 1
+            guard requestCount == 1 else { return }
+            firstStarted.fulfill()
+            await gate.wait()
+        }
+        let store = CheckinStore(api: api)
+
+        let firstLoad = Task { await store.load(force: true) }
+        await fulfillment(of: [firstStarted], timeout: 2)
+        api.setMockResponse([newer], for: listEndpoint)
+        await store.load(force: true)
+
+        XCTAssertEqual(store.checkins, [newer])
+        XCTAssertFalse(store.isLoading)
+        api.setMockResponse([older], for: listEndpoint)
+        await gate.open()
+        await firstLoad.value
+
+        XCTAssertEqual(store.checkins, [newer])
+        XCTAssertNil(store.errorMessage)
+        XCTAssertFalse(store.isLoading)
+    }
+
+    func testStoreNewerListSuccessWinsOverStaleListFailureAndSettlesLoading() async {
+        let api = MockAPIClient()
+        let newer = Checkin.fixture(energyLevel: 9)
+        let listEndpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        api.setMockError(.serverError, for: listEndpoint)
+        let gate = CheckinAsyncGate()
+        let firstStarted = expectation(description: "First list started")
+        var requestCount = 0
+        api.onRequest = { endpoint in
+            guard case .getCheckins = endpoint else { return }
+            requestCount += 1
+            guard requestCount == 1 else { return }
+            firstStarted.fulfill()
+            await gate.wait()
+        }
+        let store = CheckinStore(api: api)
+
+        let firstLoad = Task { await store.load(force: true) }
+        await fulfillment(of: [firstStarted], timeout: 2)
+        api.mockErrors.removeValue(forKey: listEndpoint.requestID)
+        api.setMockResponse([newer], for: listEndpoint)
+        await store.load(force: true)
+
+        XCTAssertEqual(store.checkins, [newer])
+        XCTAssertFalse(store.isLoading)
+        api.setMockError(.serverError, for: listEndpoint)
+        await gate.open()
+        await firstLoad.value
+
+        XCTAssertEqual(store.checkins, [newer])
+        XCTAssertNil(store.errorMessage)
+        XCTAssertFalse(store.isLoading)
+    }
+
     func testStoreLoadDetailReconcilesSelectedAndListedRecord() async {
         let api = MockAPIClient()
         let local = Checkin.fixture(energyLevel: 7)
@@ -450,13 +681,34 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(store.checkins, [detail])
     }
 
+    func testStoreOffListDetailRetainsSelectionWithoutExceedingOneHundredRecords() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let existing = (0..<100).map { index in
+            Checkin.fixture(date: today.addingTimeInterval(-Double(index) * 86_400))
+        }
+        let detail = Checkin.fixture(date: today.addingTimeInterval(-101 * 86_400))
+        api.setMockResponse(existing, for: Endpoint.getCheckins(startDate: nil, endDate: nil))
+        api.setMockResponse(detail, for: Endpoint.getCheckin(id: detail.id))
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
+
+        await store.loadDetail(detail.id)
+
+        XCTAssertEqual(store.checkins.count, 100)
+        XCTAssertFalse(store.checkins.contains { $0.id == detail.id })
+        XCTAssertEqual(store.selectedCheckin, detail)
+        XCTAssertEqual(store.checkin(id: detail.id), detail)
+    }
+
     func testStoreCreateAndUpdateReconcileByIdentifier() async {
         let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
         let original = Checkin.fixture(energyLevel: 7)
         let updated = original.replacing(energyLevel: 9)
         api.setMockResponse(original, for: Endpoint.createCheckin(.fixture))
         api.setMockResponse(updated, for: Endpoint.updateCheckin(id: original.id, .fixture))
-        let store = CheckinStore(api: api)
+        let store = CheckinStore(api: api, now: { today })
 
         let createResult = await store.create(.fixture)
         let updateResult = await store.update(id: original.id, request: .fixture)
@@ -469,15 +721,61 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(store.revision, 2)
     }
 
+    func testStoreCreateBeforeInitialLoadDoesNotSuppressHistoryLoad() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let created = Checkin.fixture(date: today)
+        let historical = Checkin.fixture(date: today.addingTimeInterval(-86_400))
+        api.setMockResponse(created, for: Endpoint.createCheckin(.fixture))
+        api.setMockResponse(
+            [historical, created],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        let store = CheckinStore(api: api, now: { today })
+
+        let result = await store.create(.fixture)
+        await store.load()
+
+        XCTAssertEqual(result, .saved(created))
+        XCTAssertEqual(store.checkins, [created, historical])
+        XCTAssertEqual(api.requestLog.filter { endpoint in
+            if case .getCheckins = endpoint { return true }
+            return false
+        }.count, 1)
+    }
+
+    func testStoreCreateKeepsCollectionAtOneHundredNewestRecords() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let existing = (0..<100).map { index in
+            Checkin.fixture(date: today.addingTimeInterval(-Double(index + 1) * 86_400))
+        }
+        let created = Checkin.fixture(date: today)
+        api.setMockResponse(existing, for: Endpoint.getCheckins(startDate: nil, endDate: nil))
+        api.setMockResponse(created, for: Endpoint.createCheckin(.fixture))
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
+
+        let result = await store.create(.fixture)
+
+        XCTAssertEqual(result, .saved(created))
+        XCTAssertEqual(store.checkins.count, 100)
+        XCTAssertEqual(store.checkins.first, created)
+        XCTAssertFalse(store.checkins.contains { $0.id == existing.last?.id })
+    }
+
     func testStoreFailedMutationsDoNotIncrementRevision() async {
         let api = MockAPIClient()
-        let id = UUID()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let existing = Checkin.fixture(date: today)
+        api.setMockResponse([existing], for: Endpoint.getCheckins(startDate: nil, endDate: nil))
         api.setMockError(.networkUnavailable, for: Endpoint.createCheckin(.fixture))
-        api.setMockError(.serverError, for: Endpoint.updateCheckin(id: id, .fixture))
-        let store = CheckinStore(api: api)
+        api.setMockError(.serverError, for: Endpoint.updateCheckin(id: existing.id, .fixture))
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
 
         let createResult = await store.create(.fixture)
-        let updateResult = await store.update(id: id, request: .fixture)
+        let updateResult = await store.update(id: existing.id, request: .fixture)
 
         XCTAssertEqual(createResult, .failed)
         XCTAssertNil(updateResult)
@@ -486,9 +784,13 @@ final class CheckinViewModelTests: XCTestCase {
 
     func testStoreRejectsDuplicateConcurrentUpdateForSameIdentifier() async {
         let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
         let original = Checkin.fixture(energyLevel: 7)
         let updated = original.replacing(energyLevel: 9)
+        api.setMockResponse([original], for: Endpoint.getCheckins(startDate: nil, endDate: nil))
         api.setMockResponse(updated, for: Endpoint.updateCheckin(id: original.id, .fixture))
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
         let firstRequestStarted = expectation(description: "First update started")
         let gate = CheckinAsyncGate()
         var updateRequestCount = 0
@@ -499,7 +801,6 @@ final class CheckinViewModelTests: XCTestCase {
             firstRequestStarted.fulfill()
             await gate.wait()
         }
-        let store = CheckinStore(api: api)
 
         let firstUpdate = Task {
             await store.update(id: original.id, request: .fixture)
@@ -516,6 +817,47 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(store.revision, 1)
     }
 
+    func testStoreRejectsUpdatingHistoricalRecordWithoutNetworkCall() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let historical = Checkin.fixture(date: today.addingTimeInterval(-86_400))
+        api.setMockResponse([historical], for: Endpoint.getCheckins(startDate: nil, endDate: nil))
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
+
+        let result = await store.update(id: historical.id, request: .fixture)
+
+        XCTAssertNil(result)
+        XCTAssertEqual(store.errorMessage, "Only today's check-in can be edited.")
+        XCTAssertEqual(store.revision, 0)
+        XCTAssertFalse(api.requestLog.contains { endpoint in
+            if case .updateCheckin = endpoint { return true }
+            return false
+        })
+    }
+
+    func testStoreRejectsMovingTodayCheckinToAnotherUTCDate() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let existing = Checkin.fixture(date: today)
+        api.setMockResponse([existing], for: Endpoint.getCheckins(startDate: nil, endDate: nil))
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
+
+        let result = await store.update(
+            id: existing.id,
+            request: .fixture(date: today.addingTimeInterval(-86_400))
+        )
+
+        XCTAssertNil(result)
+        XCTAssertEqual(store.errorMessage, "Today's check-in cannot be moved to another date.")
+        XCTAssertEqual(store.revision, 0)
+        XCTAssertFalse(api.requestLog.contains { endpoint in
+            if case .updateCheckin = endpoint { return true }
+            return false
+        })
+    }
+
     func testStoreConflictReloadsAndReturnsExistingToday() async {
         let api = MockAPIClient()
         let today = Date(timeIntervalSince1970: 1_789_689_600)
@@ -528,6 +870,52 @@ final class CheckinViewModelTests: XCTestCase {
 
         XCTAssertEqual(result, .existing(existing))
         XCTAssertEqual(store.today?.id, existing.id)
+        XCTAssertEqual(store.revision, 0)
+    }
+
+    func testStoreConflictReloadFailureUsesRecoveryMessage() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        api.setMockError(.conflict("Already exists"), for: Endpoint.createCheckin(.fixture))
+        api.setMockError(
+            .networkUnavailable,
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        let store = CheckinStore(api: api, now: { today })
+
+        let result = await store.create(.fixture)
+
+        XCTAssertEqual(result, .failed)
+        XCTAssertEqual(
+            store.errorMessage,
+            "A check-in already exists for today, but it could not be loaded."
+        )
+        XCTAssertNil(store.today)
+        XCTAssertFalse(store.isLoading)
+        XCTAssertEqual(store.revision, 0)
+    }
+
+    func testStoreConflictReloadWithoutTodayUsesRecoveryMessage() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let historical = Checkin.fixture(date: today.addingTimeInterval(-86_400))
+        api.setMockError(.conflict("Already exists"), for: Endpoint.createCheckin(.fixture))
+        api.setMockResponse(
+            [historical],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        let store = CheckinStore(api: api, now: { today })
+
+        let result = await store.create(.fixture)
+
+        XCTAssertEqual(result, .failed)
+        XCTAssertEqual(
+            store.errorMessage,
+            "A check-in already exists for today, but it could not be loaded."
+        )
+        XCTAssertNil(store.today)
+        XCTAssertEqual(store.checkins, [historical])
+        XCTAssertFalse(store.isLoading)
         XCTAssertEqual(store.revision, 0)
     }
 
@@ -625,20 +1013,24 @@ private final class CheckinURLProtocolStub: URLProtocol {
 }
 
 private extension UpdateCheckinRequest {
-    static let fixture = UpdateCheckinRequest(
-        date: Date(timeIntervalSince1970: 1_788_000_000),
-        weightKg: 74.8,
-        energyLevel: 7,
-        sleepQuality: nil,
-        appetiteLevel: nil,
-        mood: 8,
-        nausea: nil,
-        injectionSiteReaction: nil,
-        fatigue: nil,
-        headache: nil,
-        giIssues: nil,
-        notes: nil
-    )
+    static let fixture = fixture(date: Date(timeIntervalSince1970: 1_789_689_600))
+
+    static func fixture(date: Date) -> UpdateCheckinRequest {
+        UpdateCheckinRequest(
+            date: date,
+            weightKg: 74.8,
+            energyLevel: 7,
+            sleepQuality: nil,
+            appetiteLevel: nil,
+            mood: 8,
+            nausea: nil,
+            injectionSiteReaction: nil,
+            fatigue: nil,
+            headache: nil,
+            giIssues: nil,
+            notes: nil
+        )
+    }
 }
 
 private extension CreateCheckinRequest {

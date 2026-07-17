@@ -14,6 +14,7 @@ final class CheckinStore {
     private let now: () -> Date
     private var didLoad = false
     private var loadToken = 0
+    private var collectionVersion = 0
     private var mutatingIDs: Set<UUID> = []
 
     private(set) var checkins: [Checkin] = []
@@ -44,6 +45,7 @@ final class CheckinStore {
         guard force || !didLoad else { return }
         loadToken += 1
         let token = loadToken
+        let version = collectionVersion
         isLoading = true
         errorMessage = nil
         do {
@@ -51,13 +53,19 @@ final class CheckinStore {
                 .getCheckins(startDate: nil, endDate: nil)
             )
             guard token == loadToken else { return }
-            checkins = loaded.sorted { $0.date > $1.date }
-            didLoad = true
             isLoading = false
+            guard version == collectionVersion else { return }
+            checkins = Self.normalized(loaded)
+            if let selectedID = selectedCheckin?.id,
+               let refreshedSelection = checkins.first(where: { $0.id == selectedID }) {
+                selectedCheckin = refreshedSelection
+            }
+            didLoad = true
         } catch {
             guard token == loadToken else { return }
-            errorMessage = Self.message(for: error)
             isLoading = false
+            guard version == collectionVersion else { return }
+            errorMessage = Self.message(for: error)
         }
     }
 
@@ -78,7 +86,6 @@ final class CheckinStore {
         do {
             let created: Checkin = try await api.execute(.createCheckin(request))
             reconcile(created)
-            didLoad = true
             revision += 1
             return .saved(created)
         } catch APIError.conflict(_) {
@@ -93,6 +100,18 @@ final class CheckinStore {
     }
 
     func update(id: UUID, request: UpdateCheckinRequest) async -> Checkin? {
+        guard let existing = checkin(id: id) else {
+            errorMessage = "The check-in could not be found. Refresh and try again."
+            return nil
+        }
+        guard isToday(existing.date) else {
+            errorMessage = "Only today's check-in can be edited."
+            return nil
+        }
+        guard isToday(request.date) else {
+            errorMessage = "Today's check-in cannot be moved to another date."
+            return nil
+        }
         guard mutatingIDs.insert(id).inserted else { return nil }
         defer { mutatingIDs.remove(id) }
         errorMessage = nil
@@ -113,12 +132,21 @@ final class CheckinStore {
         } else {
             checkins.append(value)
         }
-        checkins.sort { $0.date > $1.date }
+        checkins = Self.normalized(checkins)
         if selectedCheckin?.id == value.id { selectedCheckin = value }
+        collectionVersion += 1
+    }
+
+    private func isToday(_ date: Date) -> Bool {
+        Self.utcCalendar.isDate(date, inSameDayAs: now())
     }
 
     private static func message(for error: Error) -> String {
         (error as? APIError)?.userMessage ?? error.localizedDescription
+    }
+
+    private static func normalized(_ values: [Checkin]) -> [Checkin] {
+        Array(values.sorted { $0.date > $1.date }.prefix(100))
     }
 
     private static let utcCalendar: Calendar = {
