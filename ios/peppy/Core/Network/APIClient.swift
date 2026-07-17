@@ -83,6 +83,12 @@ actor APIClient: APIClientProtocol {
         case 404:
             throw APIError.notFound
 
+        case 409:
+            if let response = try? decoder.decode(APIErrorResponse.self, from: data) {
+                throw APIError.conflict(response.errorMessage)
+            }
+            throw APIError.conflict("A check-in already exists for this date.")
+
         case 422:
             if let errorResponse = try? decoder.decode(APIErrorResponse.self, from: data) {
                 throw APIError.validationFailed(errorResponse.errors ?? [errorResponse.errorMessage])

@@ -42,6 +42,7 @@ enum Endpoint {
     case getCheckins(startDate: Date?, endDate: Date?)
     case getCheckin(id: UUID)
     case createCheckin(CreateCheckinRequest)
+    case updateCheckin(id: UUID, UpdateCheckinRequest)
 
     // MARK: - Labs
     case getLabs
@@ -103,7 +104,7 @@ enum Endpoint {
 
         // Check-ins
         case .getCheckins, .createCheckin: return "/checkins"
-        case .getCheckin(let id): return "/checkins/\(id)"
+        case .getCheckin(let id), .updateCheckin(let id, _): return "/checkins/\(id)"
 
         // Labs
         case .getLabs, .createLab: return "/labs"
@@ -142,7 +143,7 @@ enum Endpoint {
              .connectWearable, .syncWearable,
              .registerDevice:
             return .post
-        case .updateProtocol, .updateCompound, .updateNotificationPreferences:
+        case .updateProtocol, .updateCompound, .updateCheckin, .updateNotificationPreferences:
             return .patch
         case .deleteProtocol, .removeCompound, .disconnectWearable, .deleteDevice:
             return .delete
@@ -174,6 +175,8 @@ enum Endpoint {
         case .createDoseLog(let request):
             return request
         case .createCheckin(let request):
+            return request
+        case .updateCheckin(_, let request):
             return request
         case .createLab(let request):
             return request

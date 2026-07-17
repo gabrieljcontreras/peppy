@@ -13,6 +13,8 @@ final class Dependencies {
     let protocolStore: ProtocolStore
     let protocolNavigation: ProtocolNavigationCoordinator
     let insightsStore: InsightsStore
+    let checkinStore: CheckinStore
+    let weightUnitPreferences: WeightUnitPreferences
 
     init(
         api: APIClientProtocol,
@@ -25,7 +27,9 @@ final class Dependencies {
         onboardingViewModel: OnboardingViewModel,
         protocolStore: ProtocolStore,
         protocolNavigation: ProtocolNavigationCoordinator,
-        insightsStore: InsightsStore
+        insightsStore: InsightsStore,
+        checkinStore: CheckinStore,
+        weightUnitPreferences: WeightUnitPreferences
     ) {
         self.api = api
         self.keychain = keychain
@@ -38,6 +42,8 @@ final class Dependencies {
         self.protocolStore = protocolStore
         self.protocolNavigation = protocolNavigation
         self.insightsStore = insightsStore
+        self.checkinStore = checkinStore
+        self.weightUnitPreferences = weightUnitPreferences
     }
 
     static func live() -> Dependencies {
@@ -60,6 +66,14 @@ final class Dependencies {
         )
         let protocolStore = ProtocolStore(api: api)
         let insightsStore = InsightsStore(api: api)
+        let checkinStore = CheckinStore(api: api)
+        let weightUnitPreferences = WeightUnitPreferences {
+            if let userID = appState.currentUser?.id,
+               let draft = onboardingStore.loadDraft(for: userID) {
+                return draft.preferredWeightUnit
+            }
+            return onboardingStore.loadAnonymousDraft()?.preferredWeightUnit
+        }
 
         return Dependencies(
             api: api,
@@ -72,7 +86,9 @@ final class Dependencies {
             onboardingViewModel: onboardingViewModel,
             protocolStore: protocolStore,
             protocolNavigation: ProtocolNavigationCoordinator(),
-            insightsStore: insightsStore
+            insightsStore: insightsStore,
+            checkinStore: checkinStore,
+            weightUnitPreferences: weightUnitPreferences
         )
     }
 
@@ -96,6 +112,14 @@ final class Dependencies {
         )
         let protocolStore = ProtocolStore(api: api)
         let insightsStore = InsightsStore(api: api)
+        let checkinStore = CheckinStore(api: api)
+        let weightUnitPreferences = WeightUnitPreferences {
+            if let userID = appState.currentUser?.id,
+               let draft = onboardingStore.loadDraft(for: userID) {
+                return draft.preferredWeightUnit
+            }
+            return onboardingStore.loadAnonymousDraft()?.preferredWeightUnit
+        }
 
         return Dependencies(
             api: api,
@@ -108,7 +132,9 @@ final class Dependencies {
             onboardingViewModel: onboardingViewModel,
             protocolStore: protocolStore,
             protocolNavigation: ProtocolNavigationCoordinator(),
-            insightsStore: insightsStore
+            insightsStore: insightsStore,
+            checkinStore: checkinStore,
+            weightUnitPreferences: weightUnitPreferences
         )
     }
 }

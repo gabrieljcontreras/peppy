@@ -201,18 +201,7 @@ async def update_checkin(
     try:
         updated = await service.update(
             checkin,
-            checkin_date=update_data.date,
-            weight_kg=update_data.weight_kg,
-            energy_level=update_data.energy_level,
-            sleep_quality=update_data.sleep_quality,
-            appetite_level=update_data.appetite_level,
-            mood=update_data.mood,
-            nausea=update_data.nausea,
-            injection_site_reaction=update_data.injection_site_reaction,
-            fatigue=update_data.fatigue,
-            headache=update_data.headache,
-            gi_issues=update_data.gi_issues,
-            notes=update_data.notes,
+            update_data.model_dump(exclude_unset=True),
         )
         return updated
     except ValueError as e:
