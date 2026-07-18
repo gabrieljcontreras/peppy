@@ -19,3 +19,4 @@ peppy.db
 graphify-out
 DerivedData
 .worktrees/
+.DS_Store
