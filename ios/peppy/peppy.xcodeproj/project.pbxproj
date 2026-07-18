@@ -20,6 +20,8 @@
 		49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3647F2FD4DE4B00C1F5DE /* KeychainService.swift */; };
 		A2C200022607170000000002 /* WeightUnitPreferenceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C200012607170000000001 /* WeightUnitPreferenceStore.swift */; };
 		A2C300022607170000000002 /* CheckinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C300012607170000000001 /* CheckinStore.swift */; };
+		A2C400022607170000000002 /* CheckinModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C400012607170000000001 /* CheckinModels.swift */; };
+		A2C400052607170000000005 /* CheckinHubViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C400042607170000000004 /* CheckinHubViewModel.swift */; };
 		49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364822FD4DE4B00C1F5DE /* PepBadge.swift */; };
 		49C364A02FD4DE7E00C1F5DE /* PepButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364832FD4DE4B00C1F5DE /* PepButton.swift */; };
 		49C364A12FD4DE7E00C1F5DE /* PepCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364842FD4DE4B00C1F5DE /* PepCard.swift */; };
@@ -142,6 +144,8 @@
 		49C3647F2FD4DE4B00C1F5DE /* KeychainService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainService.swift; sourceTree = "<group>"; };
 		A2C200012607170000000001 /* WeightUnitPreferenceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightUnitPreferenceStore.swift; sourceTree = "<group>"; };
 		A2C300012607170000000001 /* CheckinStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinStore.swift; sourceTree = "<group>"; };
+		A2C400012607170000000001 /* CheckinModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinModels.swift; sourceTree = "<group>"; };
+		A2C400042607170000000004 /* CheckinHubViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinHubViewModel.swift; sourceTree = "<group>"; };
 		49C364822FD4DE4B00C1F5DE /* PepBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepBadge.swift; sourceTree = "<group>"; };
 		49C364832FD4DE4B00C1F5DE /* PepButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepButton.swift; sourceTree = "<group>"; };
 		49C364842FD4DE4B00C1F5DE /* PepCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepCard.swift; sourceTree = "<group>"; };
@@ -573,6 +577,7 @@
 		49C365262FF000700C1F5DE /* Checkins */ = {
 			isa = PBXGroup;
 			children = (
+				A2C400032607170000000003 /* Models */,
 				A2C300032607170000000003 /* Stores */,
 				49C365272FF000700C1F5DE /* ViewModels */,
 				49C365282FF000700C1F5DE /* Views */,
@@ -588,10 +593,19 @@
 			path = Stores;
 			sourceTree = "<group>";
 		};
+		A2C400032607170000000003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A2C400012607170000000001 /* CheckinModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		49C365272FF000700C1F5DE /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
 				49C365232FF000700C1F5DE /* CheckinViewModel.swift */,
+				A2C400042607170000000004 /* CheckinHubViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -811,6 +825,8 @@
 				49C365222FF000700C1F5DE /* CheckinViewModel.swift in Sources */,
 				49C365242FF000700C1F5DE /* CheckinView.swift in Sources */,
 				A2C300022607170000000002 /* CheckinStore.swift in Sources */,
+				A2C400022607170000000002 /* CheckinModels.swift in Sources */,
+				A2C400052607170000000005 /* CheckinHubViewModel.swift in Sources */,
 				49C3649D2FD4DE7E00C1F5DE /* MockAPIClient.swift in Sources */,
 				49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */,
 				A2C200022607170000000002 /* WeightUnitPreferenceStore.swift in Sources */,

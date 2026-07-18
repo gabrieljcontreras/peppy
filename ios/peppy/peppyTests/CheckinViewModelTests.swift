@@ -919,6 +919,165 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(store.revision, 0)
     }
 
+    func testHubSeparatesTodayAndMapsOnlyRecordedDetailValues() async {
+        let fixture = HubFixture()
+        let today = fixture.makeCheckin(
+            weightKg: 74.8,
+            energyLevel: 7,
+            sleepQuality: nil,
+            mood: 8,
+            nausea: 1,
+            notes: "Felt steady."
+        )
+        fixture.api.setMockResponse(
+            [today],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+
+        await fixture.model.loadIfNeeded()
+
+        XCTAssertEqual(fixture.model.state, .loaded)
+        XCTAssertEqual(
+            fixture.model.todayDetail?.metrics.map(\.label),
+            ["Weight", "Energy", "Mood"]
+        )
+        XCTAssertEqual(fixture.model.todayDetail?.metrics.first?.value, "164.9 lb")
+        XCTAssertEqual(fixture.model.todayDetail?.dateText, "Friday, September 18")
+        XCTAssertEqual(fixture.model.todayDetail?.isToday, true)
+        XCTAssertEqual(
+            fixture.model.todayDetail?.symptoms,
+            [.init(label: "Nausea", severity: 1)]
+        )
+        XCTAssertEqual(fixture.model.todayDetail?.notes, "Felt steady.")
+        XCTAssertTrue(fixture.model.historyRows.isEmpty)
+    }
+
+    func testHubHistoryIsNewestFirstAndRoutesToReadOnlyDetail() async {
+        let fixture = HubFixture()
+        let newer = fixture.makeCheckin(daysAgo: 1, energyLevel: 7)
+        let older = fixture.makeCheckin(daysAgo: 2, mood: 6)
+        fixture.api.setMockResponse(
+            [older, newer],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+
+        await fixture.model.loadIfNeeded()
+
+        XCTAssertEqual(fixture.model.historyRows.map(\.id), [newer.id, older.id])
+        XCTAssertEqual(fixture.model.historyRows.first?.dateText, "Thursday, September 17")
+        XCTAssertEqual(fixture.model.historyRows.first?.route, .detail(newer.id))
+        XCTAssertFalse(fixture.model.detail(for: newer).isToday)
+    }
+
+    func testHubPreservesLoadedRowsAndExposesRefreshError() async {
+        let fixture = HubFixture()
+        let row = fixture.makeCheckin(daysAgo: 1)
+        let endpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        fixture.api.setMockResponse([row], for: endpoint)
+        await fixture.model.loadIfNeeded()
+        fixture.api.setMockError(.networkUnavailable, for: endpoint)
+
+        await fixture.model.refresh()
+
+        XCTAssertEqual(fixture.model.state, .loaded)
+        XCTAssertEqual(fixture.model.refreshErrorMessage, "No internet connection.")
+        XCTAssertEqual(fixture.model.historyRows.map(\.id), [row.id])
+    }
+
+    func testChangingPreferredUnitRecomputesHubWeight() async {
+        let fixture = HubFixture()
+        let today = fixture.makeCheckin(weightKg: 74.8)
+        fixture.api.setMockResponse(
+            [today],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await fixture.model.loadIfNeeded()
+
+        fixture.preferences.select(.kilograms)
+
+        XCTAssertEqual(fixture.model.todayDetail?.metrics.first?.value, "74.8 kg")
+    }
+
+    func testHubStateMovesFromIdleToEmptyAfterSuccessfulEmptyLoad() async {
+        let fixture = HubFixture()
+        fixture.api.setMockResponse(
+            [Checkin](),
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+
+        XCTAssertEqual(fixture.model.state, .idle)
+        XCTAssertEqual(fixture.model.createRoute, .create)
+
+        await fixture.model.loadIfNeeded()
+
+        XCTAssertEqual(fixture.model.state, .empty)
+    }
+
+    func testHubInitialLoadFailureProducesFailedState() async {
+        let fixture = HubFixture()
+        fixture.api.setMockError(
+            .networkUnavailable,
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+
+        await fixture.model.loadIfNeeded()
+
+        XCTAssertEqual(fixture.model.state, .failed("No internet connection."))
+        XCTAssertNil(fixture.model.refreshErrorMessage)
+    }
+
+    func testHubReportsLoadingWhileInitialRequestIsInFlight() async {
+        let fixture = HubFixture()
+        let endpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        let gate = CheckinAsyncGate()
+        let requestStarted = expectation(description: "Check-in list request started")
+        fixture.api.setMockResponse([Checkin](), for: endpoint)
+        fixture.api.onRequest = { request in
+            guard case .getCheckins = request else { return }
+            requestStarted.fulfill()
+            await gate.wait()
+        }
+
+        let load = Task { await fixture.model.loadIfNeeded() }
+        await fulfillment(of: [requestStarted], timeout: 2)
+
+        XCTAssertEqual(fixture.model.state, .loading)
+
+        await gate.open()
+        await load.value
+        XCTAssertEqual(fixture.model.state, .empty)
+    }
+
+    func testHubHistorySummaryUsesRecordedValuesAndFallbacks() async {
+        let fixture = HubFixture()
+        let values = fixture.makeCheckin(
+            daysAgo: 1,
+            weightKg: 74.8,
+            energyLevel: 7,
+            mood: 8,
+            nausea: 1
+        )
+        let symptoms = fixture.makeCheckin(daysAgo: 2, fatigue: 2)
+        let notes = fixture.makeCheckin(daysAgo: 3, notes: "Felt steady.")
+        let saved = fixture.makeCheckin(daysAgo: 4)
+        fixture.api.setMockResponse(
+            [saved, notes, symptoms, values],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+
+        await fixture.model.loadIfNeeded()
+
+        XCTAssertEqual(
+            fixture.model.historyRows.map(\.summary),
+            [
+                "164.9 lb · Energy 7 · Mood 8",
+                "Symptoms logged",
+                "Notes added",
+                "Check-in saved",
+            ]
+        )
+    }
+
     func testMockDependenciesShareAPIWithCheckinStore() async throws {
         let dependencies = Dependencies.mock()
         let api = try XCTUnwrap(dependencies.api as? MockAPIClient)
@@ -976,6 +1135,51 @@ final class CheckinViewModelTests: XCTestCase {
             baseURL: URL(string: "https://checkins.example/api/v1")!,
             session: URLSession(configuration: configuration),
             keychain: keychain
+        )
+    }
+}
+
+@MainActor
+private final class HubFixture {
+    let now = Date(timeIntervalSince1970: 1_789_689_600)
+    let api = MockAPIClient()
+    let defaults: UserDefaults
+    let suite: String
+    let preferences: WeightUnitPreferences
+    let store: CheckinStore
+    let model: CheckinHubViewModel
+
+    init() {
+        suite = "HubFixture.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suite)!
+        preferences = WeightUnitPreferences(defaults: defaults)
+        store = CheckinStore(api: api, now: { [now] in now })
+        model = CheckinHubViewModel(store: store, preferences: preferences)
+    }
+
+    deinit {
+        defaults.removePersistentDomain(forName: suite)
+    }
+
+    func makeCheckin(
+        daysAgo: Int = 0,
+        weightKg: Double? = nil,
+        energyLevel: Int? = nil,
+        sleepQuality: Int? = nil,
+        mood: Int? = nil,
+        nausea: Int? = nil,
+        fatigue: Int? = nil,
+        notes: String? = nil
+    ) -> Checkin {
+        .fixture(
+            date: now.addingTimeInterval(-Double(daysAgo) * 86_400),
+            weightKg: weightKg,
+            energyLevel: energyLevel,
+            sleepQuality: sleepQuality,
+            mood: mood,
+            nausea: nausea,
+            fatigue: fatigue,
+            notes: notes
         )
     }
 }
