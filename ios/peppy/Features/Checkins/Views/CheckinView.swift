@@ -1,63 +1,55 @@
 import SwiftUI
 
-struct CheckinView: View {
-    @Environment(\.dependencies) private var deps
-    @Environment(\.dismiss) private var dismiss
-    @State private var model: CheckinViewModel?
-    private let onSaved: () -> Void
+struct CheckinEditorView: View {
+    @State private var model: CheckinViewModel
+    private let onComplete: (CheckinEditorOutcome) -> Void
 
-    init(onSaved: @escaping () -> Void = {}) {
-        self.onSaved = onSaved
+    init(
+        store: CheckinStore,
+        preferences: WeightUnitPreferences,
+        mode: CheckinEditorMode,
+        onComplete: @escaping (CheckinEditorOutcome) -> Void
+    ) {
+        _model = State(initialValue: CheckinViewModel(
+            store: store,
+            preferences: preferences,
+            mode: mode
+        ))
+        self.onComplete = onComplete
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.lg) {
-                    header
+        ScrollView {
+            VStack(alignment: .leading, spacing: Spacing.lg) {
+                header
+                metricsCard(model)
+                symptomsCard(model)
+                notesCard(model)
 
-                    if let model {
-                        metricsCard(model)
-                        symptomsCard(model)
-                        notesCard(model)
+                if let error = model.errorMessage {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(Color.pepError)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
-                        if let error = model.errorMessage {
-                            Text(error)
-                                .font(.caption)
-                                .foregroundStyle(Color.pepError)
-                                .fixedSize(horizontal: false, vertical: true)
+                PepButton(
+                    title: "Save check-in",
+                    style: .primary,
+                    isLoading: model.isSaving,
+                    isDisabled: !model.canSave
+                ) {
+                    Task {
+                        if let outcome = await model.save() {
+                            onComplete(outcome)
                         }
-
-                        PepButton(
-                            title: "Save check-in",
-                            style: .primary,
-                            isLoading: model.isSaving,
-                            isDisabled: !model.canSave
-                        ) {
-                            Task {
-                                if await model.save() {
-                                    onSaved()
-                                    dismiss()
-                                }
-                            }
-                        }
-                    } else {
-                        PepLoadingView(message: "Loading check-in")
-                            .frame(minHeight: 220)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, Spacing.lg)
             }
-            .background(Color.pepBackground.ignoresSafeArea())
-            .navigationTitle("Check-in")
-            .navigationBarTitleDisplayMode(.inline)
-            .task {
-                if model == nil {
-                    model = CheckinViewModel(api: deps.api)
-                }
-            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, Spacing.lg)
         }
+        .background(Color.pepBackground.ignoresSafeArea())
     }
 
     private var header: some View {
@@ -81,9 +73,18 @@ struct CheckinView: View {
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(Color.pepTextPrimary)
 
+                Picker("Weight unit", selection: Binding(
+                    get: { model.selectedWeightUnit },
+                    set: { model.changeWeightUnit(to: $0) }
+                )) {
+                    Text("lb").tag(WeightUnit.pounds)
+                    Text("kg").tag(WeightUnit.kilograms)
+                }
+                .pickerStyle(.segmented)
+
                 PepTextFieldWithLabel(
-                    label: "Weight (kg)",
-                    placeholder: "74.8",
+                    label: "Weight (\(model.selectedWeightUnit.symbol))",
+                    placeholder: model.selectedWeightUnit == .pounds ? "165.0" : "74.8",
                     text: Binding(
                         get: { model.weightText },
                         set: { model.weightText = $0 }
@@ -210,6 +211,32 @@ struct CheckinView: View {
                 step: 1
             )
             .tint(.pepPrimary)
+        }
+    }
+}
+
+struct CheckinView: View {
+    @Environment(\.dependencies) private var deps
+    @Environment(\.dismiss) private var dismiss
+    @State private var date = Date()
+    private let onSaved: () -> Void
+
+    init(onSaved: @escaping () -> Void = {}) {
+        self.onSaved = onSaved
+    }
+
+    var body: some View {
+        NavigationStack {
+            CheckinEditorView(
+                store: deps.checkinStore,
+                preferences: deps.weightUnitPreferences,
+                mode: .create(date)
+            ) { _ in
+                onSaved()
+                dismiss()
+            }
+            .navigationTitle("Check-in")
+            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }

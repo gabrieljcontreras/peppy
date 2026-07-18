@@ -66,32 +66,31 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertNil(json["weight"])
     }
 
-    func testSavePostsCreateCheckinRequestWhenFormHasSignal() async {
-        let api = MockAPIClient()
+    func testEditorDefaultsToPoundsAndCreatesKilogramPayload() async {
         let date = Date(timeIntervalSince1970: 1_788_000_000)
-        let response = Checkin.mock(date: date, weightKg: 74.8, energyLevel: 7, mood: 8)
-        api.setMockResponse(response, for: "/checkins")
+        let fixture = EditorFixture(
+            mode: .create(date)
+        )
+        let saved = Checkin.fixture(weightKg: 74.84274105)
+        fixture.api.setMockResponse(saved, for: Endpoint.createCheckin(.fixture))
+        fixture.model.weightText = "165"
+        fixture.model.energyLevel = 7
+        fixture.model.mood = 8
+        fixture.model.nausea = 1
+        fixture.model.fatigue = 2
+        fixture.model.notes = "Felt steady after morning dose."
 
-        let model = CheckinViewModel(api: api, date: date)
-        model.weightText = "74.8"
-        model.energyLevel = 7
-        model.mood = 8
-        model.nausea = 1
-        model.fatigue = 2
-        model.notes = "Felt steady after morning dose."
+        let outcome = await fixture.model.save()
 
-        let didSave = await model.save()
-
-        XCTAssertTrue(didSave)
-        XCTAssertFalse(model.isSaving)
-        XCTAssertNil(model.errorMessage)
-        XCTAssertEqual(api.requestLog.count, 1)
-        guard let endpoint = api.requestLog.first,
-              case .createCheckin(let request) = endpoint else {
-            return XCTFail("Expected create check-in endpoint")
+        XCTAssertEqual(fixture.model.selectedWeightUnit, .pounds)
+        XCTAssertEqual(outcome, .saved(saved.id))
+        XCTAssertFalse(fixture.model.isSaving)
+        XCTAssertNil(fixture.model.errorMessage)
+        guard case .createCheckin(let request) = fixture.api.requestLog.last else {
+            return XCTFail("Expected create endpoint")
         }
         XCTAssertEqual(request.date, date)
-        XCTAssertEqual(request.weightKg, 74.8)
+        XCTAssertEqual(request.weightKg ?? 0, 74.84274105, accuracy: 0.000001)
         XCTAssertEqual(request.energyLevel, 7)
         XCTAssertEqual(request.mood, 8)
         XCTAssertEqual(request.nausea, 1)
@@ -100,12 +99,100 @@ final class CheckinViewModelTests: XCTestCase {
     }
 
     func testSaveRequiresAtLeastOneMetricSymptomOrNote() async {
-        let model = CheckinViewModel(api: MockAPIClient(), date: Date())
+        let fixture = EditorFixture(mode: .create(Date()))
 
-        let didSave = await model.save()
+        let outcome = await fixture.model.save()
 
-        XCTAssertFalse(didSave)
-        XCTAssertEqual(model.errorMessage, "Add at least one metric, symptom, or note.")
+        XCTAssertNil(outcome)
+        XCTAssertEqual(
+            fixture.model.errorMessage,
+            "Add at least one metric, symptom, or note."
+        )
+    }
+
+    func testEditModePrefillsAndSendsExplicitNullableSnapshot() async {
+        let existing = Checkin.fixture(weightKg: 74.8, energyLevel: 7, notes: "Original")
+        let fixture = EditorFixture(mode: .edit(existing))
+        let updated = existing.replacing(energyLevel: 9, notes: nil)
+        fixture.api.setMockResponse(
+            [existing],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await fixture.store.load()
+        fixture.api.setMockResponse(
+            updated,
+            for: Endpoint.updateCheckin(id: existing.id, .fixture)
+        )
+
+        XCTAssertEqual(Double(fixture.model.weightText) ?? 0, 164.9, accuracy: 0.1)
+        XCTAssertEqual(fixture.model.energyLevel, 7)
+        XCTAssertEqual(fixture.model.notes, "Original")
+
+        fixture.model.weightText = ""
+        fixture.model.energyLevel = 9
+        fixture.model.notes = ""
+
+        let outcome = await fixture.model.save()
+
+        XCTAssertEqual(outcome, .saved(existing.id))
+        guard case .updateCheckin(_, let request) = fixture.api.requestLog.last else {
+            return XCTFail("Expected update endpoint")
+        }
+        XCTAssertNil(request.weightKg)
+        XCTAssertNil(request.notes)
+        XCTAssertEqual(request.energyLevel, 9)
+    }
+
+    func testSwitchingUnitConvertsValidTextAndPersistsPreference() {
+        let fixture = EditorFixture(mode: .create(Date()))
+        fixture.model.weightText = "165"
+
+        fixture.model.changeWeightUnit(to: .kilograms)
+
+        XCTAssertEqual(Double(fixture.model.weightText) ?? 0, 74.8, accuracy: 0.1)
+        XCTAssertEqual(fixture.preferences.unit, .kilograms)
+    }
+
+    func testSwitchingUnitPreservesInvalidTextForValidation() {
+        let fixture = EditorFixture(mode: .create(Date()))
+        fixture.model.weightText = "16."
+
+        fixture.model.changeWeightUnit(to: .kilograms)
+
+        XCTAssertEqual(fixture.model.weightText, "16.")
+        XCTAssertEqual(fixture.preferences.unit, .kilograms)
+    }
+
+    func testInvalidWeightDoesNotSaveAsAnIntentionalClear() async {
+        let fixture = EditorFixture(mode: .create(Date()))
+        fixture.model.weightText = "16."
+        fixture.model.notes = "Keep this note"
+
+        let outcome = await fixture.model.save()
+
+        XCTAssertNil(outcome)
+        XCTAssertEqual(fixture.model.errorMessage, "Enter a valid weight in lb.")
+        XCTAssertTrue(fixture.api.requestLog.isEmpty)
+    }
+
+    func testConflictReturnsExistingOutcomeAndKeepsFormUsable() async {
+        let date = Date(timeIntervalSince1970: 1_789_689_600)
+        let fixture = EditorFixture(mode: .create(date))
+        let existing = Checkin.fixture(date: date)
+        fixture.api.setMockError(
+            .conflict("Already exists"),
+            for: Endpoint.createCheckin(.fixture)
+        )
+        fixture.api.setMockResponse(
+            [existing],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        fixture.model.notes = "Duplicate attempt"
+
+        let outcome = await fixture.model.save()
+
+        XCTAssertEqual(outcome, .existing(existing.id))
+        XCTAssertEqual(fixture.model.notes, "Duplicate attempt")
     }
 
     func testCheckinResponseDecodesSQLiteTimestampsAsUTC() throws {
@@ -1136,6 +1223,40 @@ final class CheckinViewModelTests: XCTestCase {
             session: URLSession(configuration: configuration),
             keychain: keychain
         )
+    }
+}
+
+@MainActor
+private final class EditorFixture {
+    let api = MockAPIClient()
+    let defaults: UserDefaults
+    let suite: String
+    let preferences: WeightUnitPreferences
+    let store: CheckinStore
+    let model: CheckinViewModel
+
+    init(mode: CheckinEditorMode) {
+        let now: Date
+        switch mode {
+        case .create(let date):
+            now = date
+        case .edit(let checkin):
+            now = checkin.date
+        }
+
+        suite = "EditorFixture.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suite)!
+        preferences = WeightUnitPreferences(defaults: defaults)
+        store = CheckinStore(api: api, now: { now })
+        model = CheckinViewModel(
+            store: store,
+            preferences: preferences,
+            mode: mode
+        )
+    }
+
+    deinit {
+        defaults.removePersistentDomain(forName: suite)
     }
 }
 
