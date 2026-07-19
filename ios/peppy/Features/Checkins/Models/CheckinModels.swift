@@ -4,6 +4,22 @@ enum CheckinRoute: Hashable {
     case create
     case detail(UUID)
     case edit(UUID)
+
+    var loadingIntent: CheckinLoadingIntent? {
+        switch self {
+        case .create:
+            nil
+        case .detail:
+            .detail
+        case .edit:
+            .edit
+        }
+    }
+}
+
+enum CheckinLoadingIntent: Equatable {
+    case detail
+    case edit
 }
 
 enum CheckinHubState: Equatable {

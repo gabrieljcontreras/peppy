@@ -1191,6 +1191,28 @@ final class CheckinViewModelTests: XCTestCase {
         })
     }
 
+    func testStoreRejectsUpdatingUnknownIdentifierWithoutNetworkCall() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let existing = Checkin.fixture(date: today)
+        api.setMockResponse([existing], for: Endpoint.getCheckins(startDate: nil, endDate: nil))
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
+
+        let result = await store.update(id: UUID(), request: .fixture)
+
+        XCTAssertNil(result)
+        XCTAssertEqual(
+            store.errorMessage,
+            "The check-in could not be found. Refresh and try again."
+        )
+        XCTAssertEqual(store.revision, 0)
+        XCTAssertFalse(api.requestLog.contains { endpoint in
+            if case .updateCheckin = endpoint { return true }
+            return false
+        })
+    }
+
     func testStoreRejectsMovingTodayCheckinToAnotherUTCDate() async {
         let api = MockAPIClient()
         let today = Date(timeIntervalSince1970: 1_789_689_600)

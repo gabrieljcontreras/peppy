@@ -80,6 +80,14 @@ final class ProtocolNavigationTests: XCTestCase {
         XCTAssertEqual(coordinator.checkinPath, [.create])
     }
 
+    func testUncachedCheckinRoutesPreserveLoadingIntent() {
+        let id = UUID()
+
+        XCTAssertEqual(CheckinRoute.edit(id).loadingIntent, .edit)
+        XCTAssertEqual(CheckinRoute.detail(id).loadingIntent, .detail)
+        XCTAssertNil(CheckinRoute.create.loadingIntent)
+    }
+
     func testShowCheckinHubReturnsFromMissingDetailToRoot() {
         let coordinator = ProtocolNavigationCoordinator()
         coordinator.checkinPath = [.detail(UUID())]

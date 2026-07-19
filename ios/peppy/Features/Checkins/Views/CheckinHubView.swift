@@ -195,7 +195,9 @@ struct CheckinHubView: View {
                     store: store,
                     preferences: preferences,
                     navigation: navigation,
-                    id: id
+                    id: id,
+                    route: route,
+                    onEditorComplete: handleEditorOutcome
                 )
             }
         case .detail(let id):
@@ -203,7 +205,9 @@ struct CheckinHubView: View {
                 store: store,
                 preferences: preferences,
                 navigation: navigation,
-                id: id
+                id: id,
+                route: route,
+                onEditorComplete: { _ in }
             )
         }
     }
@@ -442,23 +446,15 @@ private struct CheckinLoadingDestination: View {
     let preferences: WeightUnitPreferences
     let navigation: ProtocolNavigationCoordinator
     let id: UUID
+    let route: CheckinRoute
+    let onEditorComplete: (CheckinEditorOutcome) -> Void
     @State private var isLoading = false
     @State private var didFail = false
 
     var body: some View {
         Group {
             if let value = store.checkin(id: id) {
-                ScrollView {
-                    CheckinDetailView(
-                        model: CheckinHubViewModel(
-                            store: store,
-                            preferences: preferences
-                        ).detail(for: value),
-                        showsEdit: false,
-                        onEdit: {}
-                    )
-                    .padding(20)
-                }
+                loadedDestination(value)
             } else if isLoading {
                 PepLoadingView(message: "Loading check-in")
             } else if didFail {
@@ -480,6 +476,32 @@ private struct CheckinLoadingDestination: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.pepBackground.ignoresSafeArea())
         .task { await loadDetail() }
+    }
+
+    @ViewBuilder
+    private func loadedDestination(_ value: Checkin) -> some View {
+        let detail = CheckinHubViewModel(
+            store: store,
+            preferences: preferences
+        ).detail(for: value)
+
+        if route.loadingIntent == .edit, detail.isToday {
+            CheckinEditorView(
+                store: store,
+                preferences: preferences,
+                mode: .edit(value),
+                onComplete: onEditorComplete
+            )
+        } else {
+            ScrollView {
+                CheckinDetailView(
+                    model: detail,
+                    showsEdit: false,
+                    onEdit: {}
+                )
+                .padding(20)
+            }
+        }
     }
 
     private func loadDetail() async {
