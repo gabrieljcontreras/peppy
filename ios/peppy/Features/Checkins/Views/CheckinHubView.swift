@@ -26,6 +26,9 @@ struct CheckinHubView: View {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     header
                     content
+                    if let error = model.detailErrorMessage {
+                        missingDetailCard(error)
+                    }
                     if let error = model.refreshErrorMessage { retryCard(error) }
                 }
                 .padding(.horizontal, 20)
@@ -45,12 +48,12 @@ struct CheckinHubView: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             PeppyLogo(size: 28, showsWordmark: true)
 
-            Text("Check-in")
-                .font(.system(size: 28, weight: .semibold))
+            Text(model.title)
+                .font(.title.bold())
                 .foregroundStyle(Color.pepTextPrimary)
 
             Text("See today's signals and revisit how you've been feeling.")
-                .font(.system(size: 13))
+                .font(.subheadline)
                 .foregroundStyle(Color.pepTextSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -105,7 +108,7 @@ struct CheckinHubView: View {
     private var historySection: some View {
         if !model.historyRows.isEmpty {
             Text("Recent check-ins")
-                .font(.system(size: 20, weight: .semibold))
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(Color.pepTextPrimary)
             VStack(spacing: Spacing.sm) {
                 ForEach(model.historyRows) { row in
@@ -121,10 +124,10 @@ struct CheckinHubView: View {
                                 )
                                 VStack(alignment: .leading, spacing: Spacing.xs) {
                                     Text(row.dateText)
-                                        .font(.system(size: 15, weight: .semibold))
+                                        .font(.headline)
                                         .foregroundStyle(Color.pepTextPrimary)
                                     Text(row.summary)
-                                        .font(.system(size: 13))
+                                        .font(.subheadline)
                                         .foregroundStyle(Color.pepTextSecondary)
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
@@ -145,14 +148,31 @@ struct CheckinHubView: View {
         PepCard {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 Text("Couldn't refresh check-ins")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.headline)
                     .foregroundStyle(Color.pepTextPrimary)
                 Text(message)
-                    .font(.system(size: 13))
+                    .font(.subheadline)
                     .foregroundStyle(Color.pepTextSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 PepButton(title: "Try again", style: .secondary) {
                     Task { await model.retry() }
+                }
+            }
+        }
+    }
+
+    private func missingDetailCard(_ message: String) -> some View {
+        PepCard {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text("Check-in not found")
+                    .font(.headline)
+                    .foregroundStyle(Color.pepTextPrimary)
+                Text(message)
+                    .font(.subheadline)
+                    .foregroundStyle(Color.pepTextSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                PepButton(title: "Refresh check-ins", style: .secondary) {
+                    Task { await model.recoverFromMissingDetail() }
                 }
             }
         }
@@ -171,10 +191,20 @@ struct CheckinHubView: View {
                     handleEditorOutcome($0)
                 }
             } else {
-                CheckinLoadingDestination(store: store, preferences: preferences, id: id)
+                CheckinLoadingDestination(
+                    store: store,
+                    preferences: preferences,
+                    navigation: navigation,
+                    id: id
+                )
             }
         case .detail(let id):
-            CheckinLoadingDestination(store: store, preferences: preferences, id: id)
+            CheckinLoadingDestination(
+                store: store,
+                preferences: preferences,
+                navigation: navigation,
+                id: id
+            )
         }
     }
 
@@ -228,7 +258,7 @@ struct CheckinDetailView: View {
                     background: .pepPrimaryMuted
                 )
                 Text(model.dateText)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.headline)
                     .foregroundStyle(Color.pepTextPrimary)
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: Spacing.sm)
@@ -254,16 +284,16 @@ struct CheckinDetailView: View {
                             background: style.background
                         )
                         Text(metric.label)
-                            .font(.system(size: 15, weight: .medium))
+                            .font(.body.weight(.medium))
                             .foregroundStyle(Color.pepTextPrimary)
                         Spacer(minLength: Spacing.sm)
                         if style.showsPlainValue {
                             Text(metric.value)
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.headline)
                                 .foregroundStyle(Color.pepTextPrimary)
                         } else {
                             Text(metric.value)
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(style.tint)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, Spacing.xs)
@@ -291,19 +321,19 @@ struct CheckinDetailView: View {
                             background: .pepErrorMuted
                         )
                         Text(symptom.label)
-                            .font(.system(size: 15, weight: .medium))
+                            .font(.body.weight(.medium))
                             .foregroundStyle(Color.pepTextPrimary)
                         Spacer(minLength: Spacing.sm)
                         VStack(alignment: .trailing, spacing: 2) {
                             Text("\(symptom.severity)/10")
-                                .font(.system(size: 13, weight: .semibold))
+                                .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(Color.pepError)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, Spacing.xs)
                                 .background(Color.pepErrorMuted)
                                 .clipShape(Capsule())
                             Text(Self.severityText(symptom.severity))
-                                .font(.system(size: 11))
+                                .font(.caption)
                                 .foregroundStyle(Color.pepTextSecondary)
                         }
                     }
@@ -325,7 +355,7 @@ struct CheckinDetailView: View {
                         background: .pepSurfaceElevated
                     )
                     Text(notes)
-                        .font(.system(size: 15))
+                        .font(.body)
                         .foregroundStyle(Color.pepTextSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -359,7 +389,7 @@ private struct CheckinSectionHeader: View {
 
     var body: some View {
         Text(text.uppercased())
-            .font(.system(size: 12, weight: .semibold))
+            .font(.caption.weight(.semibold))
             .kerning(0.6)
             .foregroundStyle(Color.pepTextSecondary)
     }
@@ -410,9 +440,10 @@ private struct CheckinMetricStyle {
 private struct CheckinLoadingDestination: View {
     let store: CheckinStore
     let preferences: WeightUnitPreferences
+    let navigation: ProtocolNavigationCoordinator
     let id: UUID
-    @Environment(\.dismiss) private var dismiss
-    @State private var didLoad = false
+    @State private var isLoading = false
+    @State private var didFail = false
 
     var body: some View {
         Group {
@@ -428,25 +459,42 @@ private struct CheckinLoadingDestination: View {
                     )
                     .padding(20)
                 }
-            } else if !didLoad {
+            } else if isLoading {
                 PepLoadingView(message: "Loading check-in")
-            } else {
+            } else if didFail {
                 VStack(spacing: Spacing.md) {
                     PepEmptyState(
                         icon: "exclamationmark.circle",
-                        title: "Check-in not found",
-                        message: store.errorMessage ?? "This check-in is no longer available."
+                        title: "Couldn't load check-in",
+                        message: store.detailErrorMessage ?? "Try loading this check-in again."
                     )
-                    PepButton(title: "Back", style: .secondary) { dismiss() }
+                    PepButton(title: "Try again", style: .secondary) {
+                        Task { await loadDetail() }
+                    }
                 }
                 .padding(20)
+            } else {
+                PepLoadingView(message: "Loading check-in")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.pepBackground.ignoresSafeArea())
-        .task {
-            if store.checkin(id: id) == nil { await store.loadDetail(id) }
-            didLoad = true
+        .task { await loadDetail() }
+    }
+
+    private func loadDetail() async {
+        guard store.checkin(id: id) == nil else { return }
+        isLoading = true
+        didFail = false
+        let result = await store.loadDetail(id)
+        isLoading = false
+        switch result {
+        case .loaded:
+            break
+        case .notFound:
+            navigation.showCheckinHub()
+        case .failed:
+            didFail = true
         }
     }
 }

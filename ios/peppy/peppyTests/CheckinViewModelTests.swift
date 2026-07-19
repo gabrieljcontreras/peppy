@@ -110,6 +110,39 @@ final class CheckinViewModelTests: XCTestCase {
         )
     }
 
+    func testEditorPresentationDistinguishesCreateAndEditModes() {
+        let create = EditorFixture(mode: .create(Date()))
+        let edit = EditorFixture(mode: .edit(Checkin.fixture()))
+
+        XCTAssertEqual(create.model.editorTitle, "Add check-in")
+        XCTAssertEqual(
+            create.model.supportingText,
+            "Log today's signals so Peppy can understand your protocol response."
+        )
+        XCTAssertEqual(create.model.primaryActionTitle, "Add check-in")
+        XCTAssertEqual(edit.model.editorTitle, "Update check-in")
+        XCTAssertEqual(
+            edit.model.supportingText,
+            "Review or change today's saved signals."
+        )
+        XCTAssertEqual(edit.model.primaryActionTitle, "Update check-in")
+    }
+
+    func testInvalidWeightExposesLiveFieldGuidanceAndPreservesDraft() {
+        let fixture = EditorFixture(mode: .create(Date()))
+        fixture.model.notes = "Keep this draft"
+        fixture.model.weightText = "16."
+
+        XCTAssertEqual(
+            fixture.model.weightErrorMessage,
+            "Enter a valid weight in lb."
+        )
+        XCTAssertEqual(fixture.model.weightFieldAccessibilityLabel, "Weight in pounds")
+        XCTAssertFalse(fixture.model.canSave)
+        XCTAssertEqual(fixture.model.notes, "Keep this draft")
+        XCTAssertNil(fixture.model.errorMessage)
+    }
+
     func testEditModePrefillsAndSendsExplicitNullableSnapshot() async {
         let existing = Checkin.fixture(weightKg: 74.8, energyLevel: 7, notes: "Original")
         let fixture = EditorFixture(mode: .edit(existing))
@@ -511,6 +544,38 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertFalse(store.checkins.contains { $0.id == records[100].id })
     }
 
+    func testStoreDeduplicatesIdentifiersBeforeApplyingOneHundredRecordCap() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let duplicateID = UUID()
+        let staleDuplicate = Checkin.fixture(
+            id: duplicateID,
+            date: today,
+            energyLevel: 4,
+            updatedAt: today.addingTimeInterval(-60)
+        )
+        let freshDuplicate = Checkin.fixture(
+            id: duplicateID,
+            date: today,
+            energyLevel: 9,
+            updatedAt: today
+        )
+        let otherRecords = (1...99).map { index in
+            Checkin.fixture(date: today.addingTimeInterval(-Double(index) * 86_400))
+        }
+        api.setMockResponse(
+            [staleDuplicate, freshDuplicate] + otherRecords,
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        let store = CheckinStore(api: api, now: { today })
+
+        await store.load()
+
+        XCTAssertEqual(store.checkins.count, 100)
+        XCTAssertEqual(Set(store.checkins.map(\.id)).count, 100)
+        XCTAssertEqual(store.checkin(id: duplicateID)?.energyLevel, 9)
+    }
+
     func testStoreUsesUTCBoundaryForToday() async {
         let api = MockAPIClient()
         let today = Date(timeIntervalSince1970: 1_789_689_600)
@@ -766,6 +831,209 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(store.selectedCheckin, detail)
         XCTAssertEqual(store.checkin(id: local.id), detail)
         XCTAssertEqual(store.checkins, [detail])
+    }
+
+    func testStoreDetailReconciliationRemovesEveryExistingDuplicate() async {
+        let api = MockAPIClient()
+        let id = UUID()
+        let stale = Checkin.fixture(id: id, energyLevel: 4)
+        let duplicate = Checkin.fixture(id: id, energyLevel: 6)
+        let detail = Checkin.fixture(id: id, energyLevel: 9, notes: "Fresh detail")
+        api.setMockResponse(
+            [stale, duplicate],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        api.setMockResponse(detail, for: Endpoint.getCheckin(id: id))
+        let store = CheckinStore(api: api)
+        await store.load()
+
+        await store.loadDetail(id)
+
+        XCTAssertEqual(store.checkins.filter { $0.id == id }, [detail])
+        XCTAssertEqual(store.selectedCheckin, detail)
+    }
+
+    func testStoreDelayedDetailCannotOverwriteNewerUpdate() async {
+        let api = MockAPIClient()
+        let today = Date(timeIntervalSince1970: 1_789_689_600)
+        let original = Checkin.fixture(date: today, energyLevel: 4)
+        let staleDetail = original.replacing(energyLevel: 5, notes: "Stale detail")
+        let updated = original.replacing(energyLevel: 9, notes: "Saved update")
+        api.setMockResponse(
+            [original],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        api.setMockResponse(staleDetail, for: Endpoint.getCheckin(id: original.id))
+        api.setMockResponse(
+            updated,
+            for: Endpoint.updateCheckin(id: original.id, .fixture)
+        )
+        let store = CheckinStore(api: api, now: { today })
+        await store.load()
+        let gate = CheckinAsyncGate()
+        let detailStarted = expectation(description: "Detail request started")
+        api.onRequest = { endpoint in
+            guard case .getCheckin = endpoint else { return }
+            detailStarted.fulfill()
+            await gate.wait()
+        }
+
+        let detailLoad = Task { await store.loadDetail(original.id) }
+        await fulfillment(of: [detailStarted], timeout: 2)
+        let result = await store.update(id: original.id, request: .fixture)
+        await gate.open()
+        _ = await detailLoad.value
+
+        XCTAssertEqual(result, updated)
+        XCTAssertEqual(store.checkins, [updated])
+        XCTAssertEqual(store.selectedCheckin, updated)
+    }
+
+    func testStoreDelayedDetailCannotOverwriteNewerList() async {
+        let api = MockAPIClient()
+        let original = Checkin.fixture(energyLevel: 4)
+        let staleDetail = original.replacing(energyLevel: 5, notes: "Stale detail")
+        let refreshed = original.replacing(energyLevel: 9, notes: "Newer list")
+        let listEndpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        api.setMockResponse([original], for: listEndpoint)
+        api.setMockResponse(staleDetail, for: Endpoint.getCheckin(id: original.id))
+        let store = CheckinStore(api: api)
+        await store.load()
+        let gate = CheckinAsyncGate()
+        let detailStarted = expectation(description: "Detail request started")
+        api.onRequest = { endpoint in
+            guard case .getCheckin = endpoint else { return }
+            detailStarted.fulfill()
+            await gate.wait()
+        }
+
+        let detailLoad = Task { await store.loadDetail(original.id) }
+        await fulfillment(of: [detailStarted], timeout: 2)
+        api.setMockResponse([refreshed], for: listEndpoint)
+        await store.load(force: true)
+        await gate.open()
+        _ = await detailLoad.value
+
+        XCTAssertEqual(store.checkins, [refreshed])
+        XCTAssertEqual(store.selectedCheckin, refreshed)
+    }
+
+    func testLogoutInvalidatesDelayedListResponse() async {
+        let dependencies = Dependencies.mock()
+        let api = try! XCTUnwrap(dependencies.api as? MockAPIClient)
+        let record = Checkin.fixture()
+        api.setMockResponse(
+            [record],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        let gate = CheckinAsyncGate()
+        let requestStarted = expectation(description: "List request started")
+        api.onRequest = { endpoint in
+            guard case .getCheckins = endpoint else { return }
+            requestStarted.fulfill()
+            await gate.wait()
+        }
+
+        let load = Task { await dependencies.checkinStore.load() }
+        await fulfillment(of: [requestStarted], timeout: 2)
+        dependencies.flow.logout()
+        await gate.open()
+        _ = await load.value
+
+        XCTAssertTrue(dependencies.checkinStore.checkins.isEmpty)
+        XCTAssertNil(dependencies.checkinStore.selectedCheckin)
+        XCTAssertFalse(dependencies.checkinStore.isLoading)
+    }
+
+    func testLogoutInvalidatesDelayedDetailResponse() async {
+        let dependencies = Dependencies.mock()
+        let api = try! XCTUnwrap(dependencies.api as? MockAPIClient)
+        let original = Checkin.fixture(energyLevel: 4)
+        let detail = original.replacing(energyLevel: 9, notes: "User A detail")
+        api.setMockResponse(
+            [original],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await dependencies.checkinStore.load()
+        api.setMockResponse(detail, for: Endpoint.getCheckin(id: original.id))
+        let gate = CheckinAsyncGate()
+        let requestStarted = expectation(description: "Detail request started")
+        api.onRequest = { endpoint in
+            guard case .getCheckin = endpoint else { return }
+            requestStarted.fulfill()
+            await gate.wait()
+        }
+
+        let load = Task { await dependencies.checkinStore.loadDetail(original.id) }
+        await fulfillment(of: [requestStarted], timeout: 2)
+        dependencies.flow.logout()
+        await gate.open()
+        _ = await load.value
+
+        XCTAssertTrue(dependencies.checkinStore.checkins.isEmpty)
+        XCTAssertNil(dependencies.checkinStore.selectedCheckin)
+    }
+
+    func testLogoutInvalidatesDelayedCreateResponse() async {
+        let dependencies = Dependencies.mock()
+        let api = try! XCTUnwrap(dependencies.api as? MockAPIClient)
+        let created = Checkin.fixture()
+        api.setMockResponse(created, for: Endpoint.createCheckin(.fixture))
+        let gate = CheckinAsyncGate()
+        let requestStarted = expectation(description: "Create request started")
+        api.onRequest = { endpoint in
+            guard case .createCheckin = endpoint else { return }
+            requestStarted.fulfill()
+            await gate.wait()
+        }
+
+        let create = Task { await dependencies.checkinStore.create(.fixture) }
+        await fulfillment(of: [requestStarted], timeout: 2)
+        dependencies.flow.logout()
+        await gate.open()
+        let result = await create.value
+
+        XCTAssertEqual(result, .failed)
+        XCTAssertTrue(dependencies.checkinStore.checkins.isEmpty)
+        XCTAssertEqual(dependencies.checkinStore.revision, 0)
+    }
+
+    func testLogoutInvalidatesDelayedUpdateResponse() async {
+        let dependencies = Dependencies.mock()
+        let api = try! XCTUnwrap(dependencies.api as? MockAPIClient)
+        let today = Date()
+        let original = Checkin.fixture(date: today, energyLevel: 4)
+        let updated = original.replacing(energyLevel: 9, notes: "User A update")
+        api.setMockResponse(
+            [original],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await dependencies.checkinStore.load()
+        let request = UpdateCheckinRequest.fixture(date: today)
+        api.setMockResponse(
+            updated,
+            for: Endpoint.updateCheckin(id: original.id, request)
+        )
+        let gate = CheckinAsyncGate()
+        let requestStarted = expectation(description: "Update request started")
+        api.onRequest = { endpoint in
+            guard case .updateCheckin = endpoint else { return }
+            requestStarted.fulfill()
+            await gate.wait()
+        }
+
+        let update = Task {
+            await dependencies.checkinStore.update(id: original.id, request: request)
+        }
+        await fulfillment(of: [requestStarted], timeout: 2)
+        dependencies.flow.logout()
+        await gate.open()
+        let result = await update.value
+
+        XCTAssertNil(result)
+        XCTAssertTrue(dependencies.checkinStore.checkins.isEmpty)
+        XCTAssertNil(dependencies.checkinStore.selectedCheckin)
+        XCTAssertEqual(dependencies.checkinStore.revision, 0)
     }
 
     func testStoreOffListDetailRetainsSelectionWithoutExceedingOneHundredRecords() async {
@@ -1071,6 +1339,89 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(fixture.model.historyRows.map(\.id), [row.id])
     }
 
+    func testDetailFailureDoesNotMasqueradeAsRefreshFailure() async {
+        let fixture = HubFixture()
+        let row = fixture.makeCheckin(daysAgo: 1)
+        fixture.api.setMockResponse(
+            [row],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await fixture.model.loadIfNeeded()
+        let missingID = UUID()
+        fixture.api.setMockError(.notFound, for: Endpoint.getCheckin(id: missingID))
+
+        await fixture.store.loadDetail(missingID)
+
+        XCTAssertNil(fixture.model.refreshErrorMessage)
+        XCTAssertEqual(
+            fixture.store.errorMessage,
+            "Check-in not found. Refresh your check-ins and try again."
+        )
+    }
+
+    func testMutationFailureDoesNotMasqueradeAsRefreshFailure() async {
+        let fixture = HubFixture()
+        let today = fixture.makeCheckin(energyLevel: 4)
+        fixture.api.setMockResponse(
+            [today],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await fixture.model.loadIfNeeded()
+        fixture.api.setMockError(
+            .serverError,
+            for: Endpoint.updateCheckin(id: today.id, .fixture)
+        )
+
+        _ = await fixture.store.update(id: today.id, request: .fixture)
+
+        XCTAssertNil(fixture.model.refreshErrorMessage)
+    }
+
+    func testRefreshErrorSurvivesSuccessfulDetailLoad() async {
+        let fixture = HubFixture()
+        let row = fixture.makeCheckin(daysAgo: 1)
+        let listEndpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        fixture.api.setMockResponse([row], for: listEndpoint)
+        await fixture.model.loadIfNeeded()
+        fixture.api.setMockError(.networkUnavailable, for: listEndpoint)
+        await fixture.model.refresh()
+        fixture.api.setMockResponse(row, for: Endpoint.getCheckin(id: row.id))
+
+        await fixture.store.loadDetail(row.id)
+
+        XCTAssertEqual(fixture.model.refreshErrorMessage, "No internet connection.")
+    }
+
+    func testMissingDetailUsesDedicatedActionableMessage() async {
+        let api = MockAPIClient()
+        let id = UUID()
+        api.setMockError(.notFound, for: Endpoint.getCheckin(id: id))
+        let store = CheckinStore(api: api)
+
+        let result = await store.loadDetail(id)
+
+        XCTAssertEqual(result, .notFound)
+        XCTAssertNil(store.checkin(id: id))
+        XCTAssertEqual(
+            store.errorMessage,
+            "Check-in not found. Refresh your check-ins and try again."
+        )
+    }
+
+    func testDetailNetworkFailureUsesNetworkMessageWithoutChangingListState() async {
+        let api = MockAPIClient()
+        let id = UUID()
+        api.setMockError(.networkUnavailable, for: Endpoint.getCheckin(id: id))
+        let store = CheckinStore(api: api)
+
+        let result = await store.loadDetail(id)
+
+        XCTAssertEqual(result, .failed)
+        XCTAssertTrue(store.checkins.isEmpty)
+        XCTAssertNil(store.checkin(id: id))
+        XCTAssertEqual(store.errorMessage, "No internet connection.")
+    }
+
     func testChangingPreferredUnitRecomputesHubWeight() async {
         let fixture = HubFixture()
         let today = fixture.makeCheckin(weightKg: 74.8)
@@ -1100,6 +1451,12 @@ final class CheckinViewModelTests: XCTestCase {
         XCTAssertEqual(fixture.model.state, .empty)
     }
 
+    func testHubUsesApprovedRootTitle() {
+        let fixture = HubFixture()
+
+        XCTAssertEqual(fixture.model.title, "Your check-ins")
+    }
+
     func testHubInitialLoadFailureProducesFailedState() async {
         let fixture = HubFixture()
         fixture.api.setMockError(
@@ -1111,6 +1468,36 @@ final class CheckinViewModelTests: XCTestCase {
 
         XCTAssertEqual(fixture.model.state, .failed("No internet connection."))
         XCTAssertNil(fixture.model.refreshErrorMessage)
+    }
+
+    func testHubRetryAfterInitialFailureClearsInitialErrorAndShowsEmpty() async {
+        let fixture = HubFixture()
+        let endpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        fixture.api.setMockError(.networkUnavailable, for: endpoint)
+        await fixture.model.loadIfNeeded()
+        XCTAssertEqual(fixture.model.state, .failed("No internet connection."))
+        fixture.api.mockErrors.removeValue(forKey: endpoint.requestID)
+        fixture.api.setMockResponse([Checkin](), for: endpoint)
+
+        await fixture.model.retry()
+
+        XCTAssertEqual(fixture.model.state, .empty)
+        XCTAssertNil(fixture.store.initialLoadErrorMessage)
+        XCTAssertNil(fixture.store.refreshErrorMessage)
+    }
+
+    func testHubFailedRetryRemainsAnInitialLoadFailure() async {
+        let fixture = HubFixture()
+        let endpoint = Endpoint.getCheckins(startDate: nil, endDate: nil)
+        fixture.api.setMockError(.networkUnavailable, for: endpoint)
+        await fixture.model.loadIfNeeded()
+        fixture.api.setMockError(.serverError, for: endpoint)
+
+        await fixture.model.retry()
+
+        XCTAssertEqual(fixture.model.state, .failed(APIError.serverError.userMessage))
+        XCTAssertEqual(fixture.store.initialLoadErrorMessage, APIError.serverError.userMessage)
+        XCTAssertNil(fixture.store.refreshErrorMessage)
     }
 
     func testHubReportsLoadingWhileInitialRequestIsInFlight() async {
@@ -1389,7 +1776,9 @@ private extension Checkin {
         fatigue: Int? = nil,
         headache: Int? = nil,
         giIssues: Int? = nil,
-        notes: String? = nil
+        notes: String? = nil,
+        createdAt: Date? = nil,
+        updatedAt: Date? = nil
     ) -> Checkin {
         Checkin(
             id: id,
@@ -1406,8 +1795,8 @@ private extension Checkin {
             headache: headache,
             giIssues: giIssues,
             notes: notes,
-            createdAt: nil,
-            updatedAt: nil
+            createdAt: createdAt,
+            updatedAt: updatedAt
         )
     }
 

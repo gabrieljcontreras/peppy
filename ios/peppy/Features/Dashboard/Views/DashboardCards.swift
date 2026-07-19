@@ -93,26 +93,26 @@ struct DashboardTodayCard: View {
             PepCard {
                 HStack(alignment: .top, spacing: 14) {
                     Image(systemName: isSaved ? "checkmark.circle.fill" : "plus.circle.fill")
-                        .font(.system(size: 28, weight: .semibold))
+                        .font(.title2.weight(.semibold))
                         .foregroundStyle(Color.pepPrimary)
                         .frame(width: 34, height: 34)
                         .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(preview?.title ?? (isSaved ? "Your check-in" : "How are you today?"))
-                            .font(.system(size: 17, weight: .semibold))
+                            .font(.headline)
                             .foregroundStyle(Color.pepTextPrimary)
                             .fixedSize(horizontal: false, vertical: true)
                         Text(preview?.subtitle ?? (isSaved
                             ? "Today's check-in is saved"
                             : "Log weight, energy, mood, and symptoms."))
-                            .font(.system(size: 13))
+                            .font(.subheadline)
                             .foregroundStyle(Color.pepTextSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                         if let preview {
                             ForEach(preview.highlights, id: \.self) { value in
                                 Text(value)
-                                    .font(.system(size: 13, weight: .medium))
+                                    .font(.subheadline.weight(.medium))
                                     .foregroundStyle(Color.pepTextPrimary)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
@@ -129,7 +129,13 @@ struct DashboardTodayCard: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(isSaved ? "View full check-in" : "Add today's check-in")
+        .accessibilityLabel(accessibilitySummary)
+    }
+
+    private var accessibilitySummary: String {
+        if let preview { return preview.accessibilitySummary }
+        if isSaved { return "View full check-in. Today's check-in is saved." }
+        return "Add today's check-in. Log weight, energy, mood, and symptoms."
     }
 }
 

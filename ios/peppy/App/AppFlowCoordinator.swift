@@ -27,17 +27,20 @@ final class AppFlowCoordinator {
     private let keychain: KeychainServiceProtocol
     private let appState: AppState
     private let onboardingStore: OnboardingStoreProtocol
+    private let resetSessionData: @MainActor () -> Void
 
     init(
         api: APIClientProtocol,
         keychain: KeychainServiceProtocol,
         appState: AppState,
-        onboardingStore: OnboardingStoreProtocol
+        onboardingStore: OnboardingStoreProtocol,
+        resetSessionData: @escaping @MainActor () -> Void = {}
     ) {
         self.api = api
         self.keychain = keychain
         self.appState = appState
         self.onboardingStore = onboardingStore
+        self.resetSessionData = resetSessionData
     }
 
     func resolveLaunch() async {
@@ -45,12 +48,14 @@ final class AppFlowCoordinator {
         authenticationBackStack = []
 
         guard keychain.get(KeychainKeys.accessToken) != nil else {
+            resetSessionData()
             resolveSignedOutRoute()
             return
         }
 
         do {
             let user: User = try await api.execute(.me)
+            resetForNewSession(ifNeeded: user.id)
             appState.login(user: user)
             onboardingStore.hasKnownAccount = true
             route = .dashboard
@@ -106,6 +111,7 @@ final class AppFlowCoordinator {
     }
 
     func didAuthenticate(user: User) async {
+        resetForNewSession(ifNeeded: user.id)
         hasProfileAttachFailure = false
         if let draft = onboardingStore.loadAnonymousDraft(), draft.isComplete {
             do {
@@ -126,6 +132,7 @@ final class AppFlowCoordinator {
     }
 
     func logout() {
+        resetSessionData()
         keychain.delete(KeychainKeys.accessToken)
         keychain.delete(KeychainKeys.refreshToken)
         appState.logout()
@@ -143,6 +150,7 @@ final class AppFlowCoordinator {
     }
 
     private func resolveFailedSessionRestoration() {
+        resetSessionData()
         keychain.delete(KeychainKeys.accessToken)
         keychain.delete(KeychainKeys.refreshToken)
         onboardingStore.hasKnownAccount = true
@@ -165,5 +173,10 @@ final class AppFlowCoordinator {
 
     private var hasCompletedAnonymousDraft: Bool {
         onboardingStore.loadAnonymousDraft()?.isComplete == true
+    }
+
+    private func resetForNewSession(ifNeeded userID: UUID) {
+        guard appState.currentUser?.id != userID else { return }
+        resetSessionData()
     }
 }

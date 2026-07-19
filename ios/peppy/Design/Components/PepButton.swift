@@ -45,10 +45,12 @@ struct PepButton: View {
                         .tint(style.foregroundColor)
                 }
                 Text(title)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.headline)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 50)
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, 13)
+            .frame(minHeight: 50)
             .foregroundColor(style.foregroundColor)
             .background(style.backgroundColor)
             .clipShape(Capsule())

@@ -49,6 +49,45 @@ final class DashboardViewModelTests: XCTestCase {
         XCTAssertEqual(fixture.model.checkinRoute, .detail(today.id))
     }
 
+    func testDashboardPreviewReflectsPostLoadKilogramSelection() async {
+        let fixture = DashboardCheckinFixture()
+        let today = Checkin.fixture(weightKg: 74.8, energyLevel: 7)
+        fixture.api.setMockResponse(
+            DashboardSummary.mockPendingStarter,
+            for: Endpoint.getDashboardSummary
+        )
+        fixture.api.setMockResponse(
+            [today],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await fixture.model.load()
+
+        fixture.preferences.select(.kilograms)
+
+        XCTAssertEqual(fixture.model.todayPreview?.highlights, ["74.8 kg", "Energy 7"])
+    }
+
+    func testSavedCheckinAccessibilitySummaryIncludesVisibleHighlights() async throws {
+        let fixture = DashboardCheckinFixture()
+        let today = Checkin.fixture(weightKg: 74.8, energyLevel: 7, mood: 8)
+        fixture.api.setMockResponse(
+            DashboardSummary.mockPendingStarter,
+            for: Endpoint.getDashboardSummary
+        )
+        fixture.api.setMockResponse(
+            [today],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await fixture.model.load()
+
+        let preview = try XCTUnwrap(fixture.model.todayPreview)
+
+        XCTAssertEqual(
+            preview.accessibilitySummary,
+            "View full check-in. Today's check-in is saved. 164.9 lb. Energy 7. Mood 8."
+        )
+    }
+
     func testDashboardPreviewFallsBackToSymptoms() async {
         let fixture = DashboardCheckinFixture()
         let symptoms = Checkin.fixture(nausea: 2, fatigue: 3)

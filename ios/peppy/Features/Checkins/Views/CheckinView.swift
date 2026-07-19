@@ -34,7 +34,7 @@ struct CheckinEditorView: View {
                 }
 
                 PepButton(
-                    title: "Save check-in",
+                    title: model.primaryActionTitle,
                     style: .primary,
                     isLoading: model.isSaving,
                     isDisabled: !model.canSave
@@ -54,13 +54,13 @@ struct CheckinEditorView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("How are you today?")
-                .font(.system(size: 28, weight: .bold))
+            Text(model.editorTitle)
+                .font(.title.bold())
                 .foregroundStyle(Color.pepTextPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("Log the signals Peppy needs to understand your protocol response.")
-                .font(.system(size: 14))
+            Text(model.supportingText)
+                .font(.subheadline)
                 .foregroundStyle(Color.pepTextSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -70,7 +70,7 @@ struct CheckinEditorView: View {
         PepCard {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 Text("Daily metrics")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.headline)
                     .foregroundStyle(Color.pepTextPrimary)
 
                 Picker("Weight unit", selection: Binding(
@@ -81,6 +81,10 @@ struct CheckinEditorView: View {
                     Text("kg").tag(WeightUnit.kilograms)
                 }
                 .pickerStyle(.segmented)
+                .accessibilityLabel("Weight unit")
+                .accessibilityValue(
+                    model.selectedWeightUnit == .pounds ? "Pounds" : "Kilograms"
+                )
 
                 PepTextFieldWithLabel(
                     label: "Weight (\(model.selectedWeightUnit.symbol))",
@@ -89,7 +93,9 @@ struct CheckinEditorView: View {
                         get: { model.weightText },
                         set: { model.weightText = $0 }
                     ),
-                    keyboardType: .decimalPad
+                    keyboardType: .decimalPad,
+                    errorMessage: model.weightErrorMessage,
+                    fieldAccessibilityLabel: model.weightFieldAccessibilityLabel
                 )
 
                 scoreStepper("Energy", value: Binding(
@@ -116,7 +122,7 @@ struct CheckinEditorView: View {
         PepCard {
             VStack(alignment: .leading, spacing: Spacing.md) {
                 Text("Symptoms")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.headline)
                     .foregroundStyle(Color.pepTextPrimary)
 
                 severitySlider("Nausea", value: Binding(
@@ -147,14 +153,14 @@ struct CheckinEditorView: View {
         PepCard {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 Text("Notes")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.headline)
                     .foregroundStyle(Color.pepTextPrimary)
 
                 TextEditor(text: Binding(
                     get: { model.notes },
                     set: { model.notes = $0 }
                 ))
-                .font(.system(size: 14))
+                .font(.body)
                 .foregroundStyle(Color.pepTextPrimary)
                 .frame(minHeight: 96)
                 .padding(Spacing.sm)
@@ -165,6 +171,8 @@ struct CheckinEditorView: View {
                     RoundedRectangle(cornerRadius: CornerRadius.sm)
                         .stroke(Color.pepBorder, lineWidth: 1)
                 )
+                .accessibilityLabel("Notes")
+                .accessibilityValue(model.notes.isEmpty ? "Not entered" : model.notes)
             }
         }
     }
@@ -173,11 +181,11 @@ struct CheckinEditorView: View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack {
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.pepTextPrimary)
                 Spacer()
                 Text(value.wrappedValue.map(String.init) ?? "Not set")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(Color.pepTextSecondary)
             }
 
@@ -187,6 +195,10 @@ struct CheckinEditorView: View {
             ), in: 1...10) {
                 EmptyView()
             }
+            .accessibilityLabel(title)
+            .accessibilityValue(
+                value.wrappedValue.map { "\($0) out of 10" } ?? "Not set"
+            )
         }
     }
 
@@ -194,11 +206,11 @@ struct CheckinEditorView: View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack {
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.pepTextPrimary)
                 Spacer()
                 Text(value.wrappedValue == 0 ? "None" : "\(value.wrappedValue)/10")
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.subheadline.weight(.medium))
                     .foregroundStyle(Color.pepTextSecondary)
             }
 
@@ -211,6 +223,10 @@ struct CheckinEditorView: View {
                 step: 1
             )
             .tint(.pepPrimary)
+            .accessibilityLabel(title)
+            .accessibilityValue(
+                value.wrappedValue == 0 ? "None" : "\(value.wrappedValue) out of 10"
+            )
         }
     }
 }

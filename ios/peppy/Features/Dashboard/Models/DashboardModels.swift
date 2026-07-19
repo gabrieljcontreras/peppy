@@ -42,6 +42,12 @@ struct DashboardCheckinPreview: Equatable {
     let title: String
     let subtitle: String
     let highlights: [String]
+
+    var accessibilitySummary: String {
+        (["View full check-in", subtitle] + highlights)
+            .map { "\($0)." }
+            .joined(separator: " ")
+    }
 }
 
 struct DashboardResponseSnapshot: Codable, Equatable {

@@ -80,6 +80,27 @@ final class ProtocolNavigationTests: XCTestCase {
         XCTAssertEqual(coordinator.checkinPath, [.create])
     }
 
+    func testShowCheckinHubReturnsFromMissingDetailToRoot() {
+        let coordinator = ProtocolNavigationCoordinator()
+        coordinator.checkinPath = [.detail(UUID())]
+
+        coordinator.showCheckinHub()
+
+        XCTAssertEqual(coordinator.selectedTab, .checkin)
+        XCTAssertTrue(coordinator.checkinPath.isEmpty)
+    }
+
+    func testSessionResetClearsCheckinPathAndReturnsCheckinTabToHome() {
+        let dependencies = Dependencies.mock()
+        dependencies.protocolNavigation.selectedTab = .checkin
+        dependencies.protocolNavigation.checkinPath = [.detail(UUID())]
+
+        dependencies.flow.logout()
+
+        XCTAssertTrue(dependencies.protocolNavigation.checkinPath.isEmpty)
+        XCTAssertEqual(dependencies.protocolNavigation.selectedTab, .home)
+    }
+
     // MARK: - Dashboard card routing
 
     func testDashboardCheckinRouteSwitchesToCheckinTab() {

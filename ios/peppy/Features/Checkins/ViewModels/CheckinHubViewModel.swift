@@ -13,10 +13,12 @@ final class CheckinHubViewModel {
         self.preferences = preferences
     }
 
+    var title: String { "Your check-ins" }
+
     var state: CheckinHubState {
         if store.isLoading && store.checkins.isEmpty { return .loading }
         if !store.checkins.isEmpty { return .loaded }
-        if didAttemptLoad, let error = store.errorMessage { return .failed(error) }
+        if didAttemptLoad, let error = store.initialLoadErrorMessage { return .failed(error) }
         return didAttemptLoad ? .empty : .idle
     }
 
@@ -27,7 +29,11 @@ final class CheckinHubViewModel {
     var createRoute: CheckinRoute { .create }
 
     var refreshErrorMessage: String? {
-        store.checkins.isEmpty ? nil : store.errorMessage
+        store.refreshErrorMessage
+    }
+
+    var detailErrorMessage: String? {
+        store.detailErrorMessage
     }
 
     var historyRows: [CheckinHistoryRowModel] {
@@ -45,6 +51,11 @@ final class CheckinHubViewModel {
     }
 
     func retry() async {
+        await refresh()
+    }
+
+    func recoverFromMissingDetail() async {
+        store.clearDetailError()
         await refresh()
     }
 

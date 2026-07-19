@@ -16,6 +16,7 @@ enum CheckinEditorOutcome: Equatable {
 final class CheckinViewModel {
     private let store: CheckinStore
     private let preferences: WeightUnitPreferences
+    private let mode: CheckinEditorMode
     private let editingID: UUID?
     let date: Date
 
@@ -40,6 +41,7 @@ final class CheckinViewModel {
     ) {
         self.store = store
         self.preferences = preferences
+        self.mode = mode
 
         switch mode {
         case .create(let date):
@@ -70,6 +72,37 @@ final class CheckinViewModel {
 
     var selectedWeightUnit: WeightUnit {
         preferences.unit
+    }
+
+    var editorTitle: String {
+        switch mode {
+        case .create: return "Add check-in"
+        case .edit: return "Update check-in"
+        }
+    }
+
+    var supportingText: String {
+        switch mode {
+        case .create:
+            return "Log today's signals so Peppy can understand your protocol response."
+        case .edit:
+            return "Review or change today's saved signals."
+        }
+    }
+
+    var primaryActionTitle: String {
+        switch mode {
+        case .create: return "Add check-in"
+        case .edit: return "Update check-in"
+        }
+    }
+
+    var weightErrorMessage: String? {
+        hasInvalidWeight ? "Enter a valid weight in \(selectedWeightUnit.symbol)." : nil
+    }
+
+    var weightFieldAccessibilityLabel: String {
+        selectedWeightUnit == .pounds ? "Weight in pounds" : "Weight in kilograms"
     }
 
     func changeWeightUnit(to newUnit: WeightUnit) {
@@ -103,7 +136,7 @@ final class CheckinViewModel {
 
         if let editingID {
             guard let updated = await store.update(id: editingID, request: updateRequest) else {
-                errorMessage = store.errorMessage
+                errorMessage = store.mutationErrorMessage
                 return nil
             }
             return .saved(updated.id)
@@ -115,7 +148,7 @@ final class CheckinViewModel {
         case .existing(let checkin):
             return .existing(checkin.id)
         case .failed:
-            errorMessage = store.errorMessage
+            errorMessage = store.mutationErrorMessage
             return nil
         }
     }

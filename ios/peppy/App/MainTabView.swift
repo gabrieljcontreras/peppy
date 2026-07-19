@@ -49,6 +49,18 @@ final class ProtocolNavigationCoordinator {
         selectedTab = .checkin
         checkinPath = [route]
     }
+
+    func showCheckinHub() {
+        selectedTab = .checkin
+        checkinPath = []
+    }
+
+    func resetCheckinNavigation() {
+        checkinPath = []
+        if selectedTab == .checkin {
+            selectedTab = .home
+        }
+    }
 }
 
 struct MainTabView: View {
