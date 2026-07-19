@@ -8,6 +8,7 @@ struct PepTextField: View {
     var isSecure: Bool = false
     var keyboardType: UIKeyboardType = .default
     var autocapitalization: TextInputAutocapitalization = .sentences
+    var accessibilityLabel: String? = nil
     @State private var showsSecureText = false
 
     var body: some View {
@@ -15,10 +16,12 @@ struct PepTextField: View {
             Group {
                 if isSecure && !showsSecureText {
                     SecureField(placeholder, text: $text)
+                        .accessibilityLabel(accessibilityLabel ?? placeholder)
                 } else {
                     TextField(placeholder, text: $text)
                         .keyboardType(keyboardType)
                         .textInputAutocapitalization(autocapitalization)
+                        .accessibilityLabel(accessibilityLabel ?? placeholder)
                 }
             }
 
@@ -37,10 +40,11 @@ struct PepTextField: View {
                 .accessibilityLabel(showsSecureText ? "Hide password" : "Show password")
             }
         }
-        .font(.system(size: 14))
+        .font(.body)
         .foregroundColor(.pepTextPrimary)
         .padding(.horizontal, Spacing.md)
-        .frame(height: 54)
+        .padding(.vertical, Spacing.sm)
+        .frame(minHeight: 54)
         .background(Color.clear)
         .cornerRadius(CornerRadius.sm)
         .overlay(
@@ -58,11 +62,12 @@ struct PepTextFieldWithLabel: View {
     var isSecure: Bool = false
     var keyboardType: UIKeyboardType = .default
     var errorMessage: String? = nil
+    var fieldAccessibilityLabel: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             Text(label)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.subheadline.weight(.semibold))
                 .foregroundColor(.pepTextPrimary)
 
             PepTextField(
@@ -70,13 +75,15 @@ struct PepTextFieldWithLabel: View {
                 text: $text,
                 isSecure: isSecure,
                 keyboardType: keyboardType,
-                autocapitalization: keyboardType == .emailAddress ? .never : .sentences
+                autocapitalization: keyboardType == .emailAddress ? .never : .sentences,
+                accessibilityLabel: fieldAccessibilityLabel ?? label
             )
 
             if let error = errorMessage {
                 Text(error)
                     .font(.caption)
                     .foregroundColor(.pepError)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

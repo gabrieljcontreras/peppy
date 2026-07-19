@@ -3,7 +3,6 @@ import SwiftUI
 struct DashboardView: View {
     @Environment(\.dependencies) private var deps
     @State private var model: DashboardViewModel?
-    @State private var showsCheckin = false
 
     var body: some View {
         NavigationStack {
@@ -20,8 +19,12 @@ struct DashboardView: View {
                             DashboardProtocolCard(summary: summary.protocol) {
                                 deps.protocolNavigation.show(summary.protocol.protocolRoute)
                             }
-                            DashboardTodayCard(today: summary.todayCheckin) {
-                                showsCheckin = true
+                            DashboardTodayCard(
+                                today: summary.todayCheckin,
+                                preview: model?.todayPreview
+                            ) {
+                                guard let model else { return }
+                                deps.protocolNavigation.showCheckin(model.checkinRoute)
                             }
                             responseSnapshot(summary.responseSnapshot)
                             insightCard(summary.insight)
@@ -42,16 +45,13 @@ struct DashboardView: View {
             }
             .background(Color.pepBackground.ignoresSafeArea())
             .navigationBarHidden(true)
-            .sheet(isPresented: $showsCheckin) {
-                CheckinView {
-                    Task { await model?.load() }
-                }
-            }
             .task {
                 if model == nil {
                     model = DashboardViewModel(
                         api: deps.api,
                         protocolStore: deps.protocolStore,
+                        checkinStore: deps.checkinStore,
+                        weightUnitPreferences: deps.weightUnitPreferences,
                         hasProfileAttachFailure: deps.flow.hasProfileAttachFailure
                     )
                 }
@@ -59,6 +59,9 @@ struct DashboardView: View {
             }
             .onChange(of: deps.protocolStore.revision) {
                 Task { await model?.refreshIfProtocolStateChanged() }
+            }
+            .onChange(of: deps.checkinStore.revision) {
+                Task { await model?.refreshIfCheckinStateChanged() }
             }
         }
     }

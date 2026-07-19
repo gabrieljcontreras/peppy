@@ -58,7 +58,68 @@ final class ProtocolNavigationTests: XCTestCase {
         XCTAssertEqual(coordinator.insightsPath, [])
     }
 
+    // MARK: - Check-in routing
+
+    func testShowCheckinSwitchesTabAndReplacesCheckinPath() {
+        let coordinator = ProtocolNavigationCoordinator()
+        let id = UUID()
+        coordinator.checkinPath = [.create]
+
+        coordinator.showCheckin(.detail(id))
+
+        XCTAssertEqual(coordinator.selectedTab, .checkin)
+        XCTAssertEqual(coordinator.checkinPath, [.detail(id)])
+    }
+
+    func testShowNewCheckinRoutesDirectlyToEditor() {
+        let coordinator = ProtocolNavigationCoordinator()
+
+        coordinator.showCheckin(.create)
+
+        XCTAssertEqual(coordinator.selectedTab, .checkin)
+        XCTAssertEqual(coordinator.checkinPath, [.create])
+    }
+
+    func testUncachedCheckinRoutesPreserveLoadingIntent() {
+        let id = UUID()
+
+        XCTAssertEqual(CheckinRoute.edit(id).loadingIntent, .edit)
+        XCTAssertEqual(CheckinRoute.detail(id).loadingIntent, .detail)
+        XCTAssertNil(CheckinRoute.create.loadingIntent)
+    }
+
+    func testShowCheckinHubReturnsFromMissingDetailToRoot() {
+        let coordinator = ProtocolNavigationCoordinator()
+        coordinator.checkinPath = [.detail(UUID())]
+
+        coordinator.showCheckinHub()
+
+        XCTAssertEqual(coordinator.selectedTab, .checkin)
+        XCTAssertTrue(coordinator.checkinPath.isEmpty)
+    }
+
+    func testSessionResetClearsCheckinPathAndReturnsCheckinTabToHome() {
+        let dependencies = Dependencies.mock()
+        dependencies.protocolNavigation.selectedTab = .checkin
+        dependencies.protocolNavigation.checkinPath = [.detail(UUID())]
+
+        dependencies.flow.logout()
+
+        XCTAssertTrue(dependencies.protocolNavigation.checkinPath.isEmpty)
+        XCTAssertEqual(dependencies.protocolNavigation.selectedTab, .home)
+    }
+
     // MARK: - Dashboard card routing
+
+    func testDashboardCheckinRouteSwitchesToCheckinTab() {
+        let coordinator = ProtocolNavigationCoordinator()
+        let id = UUID()
+
+        coordinator.showCheckin(.detail(id))
+
+        XCTAssertEqual(coordinator.selectedTab, .checkin)
+        XCTAssertEqual(coordinator.checkinPath, [.detail(id)])
+    }
 
     func testPendingSetupSummaryRoutesToStarterSetup() throws {
         let summary = DashboardSummary.mockPendingStarter.protocol

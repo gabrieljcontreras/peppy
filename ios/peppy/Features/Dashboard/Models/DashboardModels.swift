@@ -37,6 +37,19 @@ struct DashboardTodayCheckin: Codable, Equatable {
     }
 }
 
+struct DashboardCheckinPreview: Equatable {
+    let isSaved: Bool
+    let title: String
+    let subtitle: String
+    let highlights: [String]
+
+    var accessibilitySummary: String {
+        (["View full check-in", subtitle] + highlights)
+            .map { "\($0)." }
+            .joined(separator: " ")
+    }
+}
+
 struct DashboardResponseSnapshot: Codable, Equatable {
     let weightTrend: [DashboardWeightPoint]
     let latestEnergy: Int?

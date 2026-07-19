@@ -83,38 +83,59 @@ struct DashboardProtocolCard: View {
 
 struct DashboardTodayCard: View {
     let today: DashboardTodayCheckin
-    let logCheckin: () -> Void
+    let preview: DashboardCheckinPreview?
+    let openCheckin: () -> Void
+
+    private var isSaved: Bool { preview != nil || today.logged }
 
     var body: some View {
-        PepCard {
-            HStack(spacing: 14) {
-                Image(systemName: today.logged ? "checkmark.circle.fill" : "plus.circle.fill")
-                    .font(.system(size: 28, weight: .semibold))
-                    .foregroundStyle(Color.pepPrimary)
-                    .frame(width: 34, height: 34)
+        Button(action: openCheckin) {
+            PepCard {
+                HStack(alignment: .top, spacing: 14) {
+                    Image(systemName: isSaved ? "checkmark.circle.fill" : "plus.circle.fill")
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(Color.pepPrimary)
+                        .frame(width: 34, height: 34)
+                        .accessibilityHidden(true)
 
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(today.logged ? "Today's check-in is saved" : "How are you today?")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(Color.pepTextPrimary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(preview?.title ?? (isSaved ? "Your check-in" : "How are you today?"))
+                            .font(.headline)
+                            .foregroundStyle(Color.pepTextPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(preview?.subtitle ?? (isSaved
+                            ? "Today's check-in is saved"
+                            : "Log weight, energy, mood, and symptoms."))
+                            .font(.subheadline)
+                            .foregroundStyle(Color.pepTextSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if let preview {
+                            ForEach(preview.highlights, id: \.self) { value in
+                                Text(value)
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(Color.pepTextPrimary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                    }
 
-                    Text(today.logged ? "You can update it anytime." : "Log weight, energy, mood, and symptoms.")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color.pepTextSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                Spacer(minLength: Spacing.sm)
-
-                Button(action: logCheckin) {
+                    Spacer(minLength: Spacing.sm)
                     Image(systemName: "chevron.right")
                         .foregroundStyle(Color.pepTextTertiary)
-                        .frame(width: 44, height: 44)
+                        .frame(width: 24, height: 44)
+                        .accessibilityHidden(true)
                 }
-                .accessibilityLabel(today.logged ? "Update check-in" : "Log check-in")
             }
         }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilitySummary)
+    }
+
+    private var accessibilitySummary: String {
+        if let preview { return preview.accessibilitySummary }
+        if isSaved { return "View full check-in. Today's check-in is saved." }
+        return "Add today's check-in. Log weight, energy, mood, and symptoms."
     }
 }
 
@@ -122,7 +143,10 @@ struct DashboardTodayCard: View {
     ScrollView {
         VStack(spacing: Spacing.md) {
             DashboardProtocolCard(summary: DashboardSummary.mockPendingStarter.protocol) {}
-            DashboardTodayCard(today: DashboardSummary.mockPendingStarter.todayCheckin) {}
+            DashboardTodayCard(
+                today: DashboardSummary.mockPendingStarter.todayCheckin,
+                preview: nil
+            ) {}
         }
         .padding()
     }

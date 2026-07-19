@@ -199,6 +199,82 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertTrue(fixture.store.hasKnownAccount)
     }
 
+    func testLogoutClearsUserACheckinsAndNavigationBeforeUserBLoads() async {
+        let dependencies = Dependencies.mock()
+        let api = dependencies.api as! MockAPIClient
+        let userA = User(id: UUID(), email: "user-a@example.com", createdAt: Date())
+        let userB = User(id: UUID(), email: "user-b@example.com", createdAt: Date())
+        let userACheckin = makeCheckin(userID: userA.id, energyLevel: 4)
+        let userBCheckin = makeCheckin(userID: userB.id, energyLevel: 9)
+        dependencies.appState.login(user: userA)
+        api.setMockResponse(
+            [userACheckin],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await dependencies.checkinStore.load()
+        api.setMockResponse(
+            userACheckin,
+            for: Endpoint.getCheckin(id: userACheckin.id)
+        )
+        await dependencies.checkinStore.loadDetail(userACheckin.id)
+        dependencies.protocolNavigation.selectedTab = .checkin
+        dependencies.protocolNavigation.checkinPath = [.detail(userACheckin.id)]
+
+        dependencies.flow.logout()
+
+        XCTAssertTrue(dependencies.checkinStore.checkins.isEmpty)
+        XCTAssertNil(dependencies.checkinStore.selectedCheckin)
+        XCTAssertTrue(dependencies.protocolNavigation.checkinPath.isEmpty)
+        XCTAssertEqual(dependencies.protocolNavigation.selectedTab, .home)
+
+        await dependencies.flow.didAuthenticate(user: userB)
+        api.setMockResponse(
+            [userBCheckin],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await dependencies.checkinStore.load()
+
+        XCTAssertEqual(dependencies.checkinStore.checkins, [userBCheckin])
+        XCTAssertFalse(dependencies.checkinStore.checkins.contains(userACheckin))
+        XCTAssertEqual(
+            api.requestLog.filter { endpoint in
+                if case .getCheckins = endpoint { return true }
+                return false
+            }.count,
+            2
+        )
+    }
+
+    func testFailedSessionRestorationClearsCheckinsErrorsAndNavigation() async throws {
+        let dependencies = Dependencies.mock()
+        let api = dependencies.api as! MockAPIClient
+        let record = makeCheckin(userID: UUID(), energyLevel: 4)
+        api.setMockResponse(
+            [record],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await dependencies.checkinStore.load()
+        api.setMockError(
+            .networkUnavailable,
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+        await dependencies.checkinStore.load(force: true)
+        dependencies.protocolNavigation.selectedTab = .checkin
+        dependencies.protocolNavigation.checkinPath = [.detail(record.id)]
+        try dependencies.keychain.save("access", for: KeychainKeys.accessToken)
+        api.setMockError(.unauthorized, for: Endpoint.me)
+
+        await dependencies.flow.resolveLaunch()
+
+        XCTAssertEqual(dependencies.flow.route, .authentication(.signIn))
+        XCTAssertTrue(dependencies.checkinStore.checkins.isEmpty)
+        XCTAssertNil(dependencies.checkinStore.selectedCheckin)
+        XCTAssertNil(dependencies.checkinStore.errorMessage)
+        XCTAssertFalse(dependencies.checkinStore.isLoading)
+        XCTAssertTrue(dependencies.protocolNavigation.checkinPath.isEmpty)
+        XCTAssertEqual(dependencies.protocolNavigation.selectedTab, .home)
+    }
+
     func testAuthenticationBackRouteReturnsCompletedDraftToReadySummary() {
         let fixture = Fixture()
         var draft = OnboardingDraft()
@@ -329,6 +405,27 @@ final class AppFlowCoordinatorTests: XCTestCase {
         func executeVoid(_ endpoint: Endpoint) async throws {
             throw error
         }
+    }
+
+    private func makeCheckin(userID: UUID, energyLevel: Int) -> Checkin {
+        Checkin(
+            id: UUID(),
+            userId: userID,
+            date: Date(),
+            weightKg: nil,
+            energyLevel: energyLevel,
+            sleepQuality: nil,
+            appetiteLevel: nil,
+            mood: nil,
+            nausea: nil,
+            injectionSiteReaction: nil,
+            fatigue: nil,
+            headache: nil,
+            giIssues: nil,
+            notes: nil,
+            createdAt: nil,
+            updatedAt: nil
+        )
     }
 
     private struct Fixture {

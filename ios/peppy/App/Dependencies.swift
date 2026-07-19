@@ -53,11 +53,17 @@ final class Dependencies {
         let onboardingStore = UserDefaultsOnboardingStore()
         let healthKit = HealthKitService()
         let notifications = NotificationPermissionService()
+        let protocolNavigation = ProtocolNavigationCoordinator()
+        let checkinStore = CheckinStore(api: api)
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
             appState: appState,
-            onboardingStore: onboardingStore
+            onboardingStore: onboardingStore,
+            resetSessionData: { [weak checkinStore, weak protocolNavigation] in
+                checkinStore?.resetSession()
+                protocolNavigation?.resetCheckinNavigation()
+            }
         )
         let onboardingViewModel = OnboardingViewModel(
             store: onboardingStore,
@@ -66,7 +72,6 @@ final class Dependencies {
         )
         let protocolStore = ProtocolStore(api: api)
         let insightsStore = InsightsStore(api: api)
-        let checkinStore = CheckinStore(api: api)
         let weightUnitPreferences = WeightUnitPreferences {
             if let userID = appState.currentUser?.id,
                let draft = onboardingStore.loadDraft(for: userID) {
@@ -85,7 +90,7 @@ final class Dependencies {
             flow: flow,
             onboardingViewModel: onboardingViewModel,
             protocolStore: protocolStore,
-            protocolNavigation: ProtocolNavigationCoordinator(),
+            protocolNavigation: protocolNavigation,
             insightsStore: insightsStore,
             checkinStore: checkinStore,
             weightUnitPreferences: weightUnitPreferences
@@ -99,11 +104,17 @@ final class Dependencies {
         let onboardingStore = InMemoryOnboardingStore()
         let healthKit = MockHealthKitService(outcome: .requested)
         let notifications = MockNotificationPermissionService(outcome: .authorized)
+        let protocolNavigation = ProtocolNavigationCoordinator()
+        let checkinStore = CheckinStore(api: api)
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
             appState: appState,
-            onboardingStore: onboardingStore
+            onboardingStore: onboardingStore,
+            resetSessionData: { [weak checkinStore, weak protocolNavigation] in
+                checkinStore?.resetSession()
+                protocolNavigation?.resetCheckinNavigation()
+            }
         )
         let onboardingViewModel = OnboardingViewModel(
             store: onboardingStore,
@@ -112,7 +123,6 @@ final class Dependencies {
         )
         let protocolStore = ProtocolStore(api: api)
         let insightsStore = InsightsStore(api: api)
-        let checkinStore = CheckinStore(api: api)
         let weightUnitPreferences = WeightUnitPreferences {
             if let userID = appState.currentUser?.id,
                let draft = onboardingStore.loadDraft(for: userID) {
@@ -131,7 +141,7 @@ final class Dependencies {
             flow: flow,
             onboardingViewModel: onboardingViewModel,
             protocolStore: protocolStore,
-            protocolNavigation: ProtocolNavigationCoordinator(),
+            protocolNavigation: protocolNavigation,
             insightsStore: insightsStore,
             checkinStore: checkinStore,
             weightUnitPreferences: weightUnitPreferences
