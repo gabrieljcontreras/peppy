@@ -82,6 +82,16 @@ final class ProtocolNavigationTests: XCTestCase {
 
     // MARK: - Dashboard card routing
 
+    func testDashboardCheckinRouteSwitchesToCheckinTab() {
+        let coordinator = ProtocolNavigationCoordinator()
+        let id = UUID()
+
+        coordinator.showCheckin(.detail(id))
+
+        XCTAssertEqual(coordinator.selectedTab, .checkin)
+        XCTAssertEqual(coordinator.checkinPath, [.detail(id)])
+    }
+
     func testPendingSetupSummaryRoutesToStarterSetup() throws {
         let summary = DashboardSummary.mockPendingStarter.protocol
         let protocolID = try XCTUnwrap(summary.id)

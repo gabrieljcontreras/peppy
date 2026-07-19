@@ -37,6 +37,13 @@ struct DashboardTodayCheckin: Codable, Equatable {
     }
 }
 
+struct DashboardCheckinPreview: Equatable {
+    let isSaved: Bool
+    let title: String
+    let subtitle: String
+    let highlights: [String]
+}
+
 struct DashboardResponseSnapshot: Codable, Equatable {
     let weightTrend: [DashboardWeightPoint]
     let latestEnergy: Int?
