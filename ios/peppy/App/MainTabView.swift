@@ -18,16 +18,17 @@ enum Tab: String, CaseIterable {
     }
 }
 
-/// Shared navigation intent for the Protocols and Insights stacks. The
-/// Dashboard (and any other tab) routes into them through `show`/`showInsight`,
-/// which switch the selected tab before replacing the stack so the route lands
-/// on a visible screen.
+/// Shared cross-tab navigation intent for the Check-in, Protocols, and
+/// Insights stacks. The Dashboard (and any other tab) routes into them through
+/// `showCheckin`/`show`/`showInsight`, which switch the selected tab before
+/// replacing the stack so the route lands on a visible screen.
 @MainActor
 @Observable
 final class ProtocolNavigationCoordinator {
     var selectedTab: Tab = .home
     var path: [ProtocolRoute] = []
     var insightsPath: [InsightRoute] = []
+    var checkinPath: [CheckinRoute] = []
 
     func show(_ route: ProtocolRoute) {
         selectedTab = .protocols
@@ -42,6 +43,11 @@ final class ProtocolNavigationCoordinator {
     func showInsightsTab() {
         selectedTab = .insights
         insightsPath = []
+    }
+
+    func showCheckin(_ route: CheckinRoute) {
+        selectedTab = .checkin
+        checkinPath = [route]
     }
 }
 
@@ -95,8 +101,14 @@ struct HomeTab: View {
 }
 
 struct CheckinTab: View {
+    @Environment(\.dependencies) private var deps
+
     var body: some View {
-        CheckinView()
+        CheckinHubView(
+            store: deps.checkinStore,
+            preferences: deps.weightUnitPreferences,
+            navigation: deps.protocolNavigation
+        )
     }
 }
 
@@ -147,6 +159,32 @@ struct PlaceholderView: View {
 }
 
 #Preview {
-    MainTabView()
-        .withDependencies(.mock())
+    let dependencies = Dependencies.mock()
+    if let api = dependencies.api as? MockAPIClient {
+        api.setMockResponse(
+            [
+                Checkin(
+                    id: UUID(),
+                    userId: nil,
+                    date: Date(),
+                    weightKg: 74.8,
+                    energyLevel: 7,
+                    sleepQuality: 6,
+                    appetiteLevel: 4,
+                    mood: 6,
+                    nausea: 0,
+                    injectionSiteReaction: 2,
+                    fatigue: 0,
+                    headache: 0,
+                    giIssues: 4,
+                    notes: "Felt good overall.",
+                    createdAt: nil,
+                    updatedAt: nil
+                ),
+            ],
+            for: Endpoint.getCheckins(startDate: nil, endDate: nil)
+        )
+    }
+    return MainTabView()
+        .withDependencies(dependencies)
 }

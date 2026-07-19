@@ -58,6 +58,28 @@ final class ProtocolNavigationTests: XCTestCase {
         XCTAssertEqual(coordinator.insightsPath, [])
     }
 
+    // MARK: - Check-in routing
+
+    func testShowCheckinSwitchesTabAndReplacesCheckinPath() {
+        let coordinator = ProtocolNavigationCoordinator()
+        let id = UUID()
+        coordinator.checkinPath = [.create]
+
+        coordinator.showCheckin(.detail(id))
+
+        XCTAssertEqual(coordinator.selectedTab, .checkin)
+        XCTAssertEqual(coordinator.checkinPath, [.detail(id)])
+    }
+
+    func testShowNewCheckinRoutesDirectlyToEditor() {
+        let coordinator = ProtocolNavigationCoordinator()
+
+        coordinator.showCheckin(.create)
+
+        XCTAssertEqual(coordinator.selectedTab, .checkin)
+        XCTAssertEqual(coordinator.checkinPath, [.create])
+    }
+
     // MARK: - Dashboard card routing
 
     func testPendingSetupSummaryRoutesToStarterSetup() throws {
