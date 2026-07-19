@@ -91,6 +91,37 @@ final class DashboardViewModelTests: XCTestCase {
         XCTAssertEqual(fixture.dashboardLoadCount, 2)
     }
 
+    func testCheckinRefreshFailurePreservesPreviouslyLoadedSummaryAndRoute() async {
+        let fixture = DashboardCheckinFixture()
+        let checkinID = UUID()
+        let summary = DashboardSummary(
+            generatedAt: DashboardSummary.mockPendingStarter.generatedAt,
+            profileStatus: DashboardSummary.mockPendingStarter.profileStatus,
+            protocol: DashboardSummary.mockPendingStarter.protocol,
+            todayCheckin: DashboardTodayCheckin(logged: true, checkinId: checkinID),
+            responseSnapshot: DashboardSummary.mockPendingStarter.responseSnapshot,
+            insight: DashboardSummary.mockPendingStarter.insight,
+            connectedContext: DashboardSummary.mockPendingStarter.connectedContext
+        )
+        fixture.api.setMockResponse(summary, for: Endpoint.getDashboardSummary)
+        fixture.api.setMockResponse([Checkin](), for: Endpoint.getCheckins(startDate: nil, endDate: nil))
+        await fixture.model.load()
+        XCTAssertEqual(fixture.model.checkinRoute, .detail(checkinID))
+
+        let historical = Checkin.fixture(date: fixture.now.addingTimeInterval(-86_400))
+        fixture.api.setMockResponse(historical, for: Endpoint.createCheckin(.fixture))
+        let created = await fixture.store.create(.fixture)
+        XCTAssertNotNil(created)
+        XCTAssertNil(fixture.store.today)
+        fixture.api.setMockError(.serverError, for: Endpoint.getDashboardSummary)
+
+        await fixture.model.refreshIfCheckinStateChanged()
+
+        XCTAssertEqual(fixture.model.state.summary, summary)
+        XCTAssertEqual(fixture.model.checkinRoute, .detail(checkinID))
+        XCTAssertEqual(fixture.model.state.errorMessage, APIError.serverError.userMessage)
+    }
+
     func testDashboardFailureUsesActiveProtocolFromStore() async {
         let api = MockAPIClient()
         api.setMockError(.serverError, for: Endpoint.getDashboardSummary)
