@@ -1,7 +1,18 @@
-from sqlalchemy import Boolean, CheckConstraint, Column, DateTime, Float, ForeignKey, Integer, JSON, String
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.orm import relationship
 
-from app.models.base import Base, GUID, TimestampMixin, UUIDMixin
+from app.models.base import GUID, Base, TimestampMixin, UUIDMixin
 
 
 class OnboardingProfile(Base, UUIDMixin, TimestampMixin):
@@ -45,6 +56,10 @@ class OnboardingProfile(Base, UUIDMixin, TimestampMixin):
     workout_days_per_week = Column(Integer, nullable=True)
     goals = Column(JSON, default=list, nullable=False)
     custom_goal = Column(String(200), nullable=True)
+    baseline_date = Column(Date, nullable=True)
+    primary_goal = Column(String(100), nullable=True)
+    secondary_goal = Column(String(100), nullable=True)
+    focus_area = Column(String(100), nullable=True)
 
     healthkit_requested = Column(Boolean, nullable=True)
     healthkit_last_sync_at = Column(DateTime(timezone=True), nullable=True)

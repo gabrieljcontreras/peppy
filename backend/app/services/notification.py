@@ -1,12 +1,14 @@
 from datetime import datetime, time
 from typing import Any
 from uuid import UUID
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
-from app.models.notification import DeviceToken, DevicePlatform, NotificationPreference
-from app.models.insight import InsightSeverity
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.integrations.push import PushAdapter
+from app.models.insight import InsightSeverity
+from app.models.notification import DevicePlatform, DeviceToken, NotificationPreference
 
 
 class NotificationService:
@@ -27,9 +29,7 @@ class NotificationService:
         await self.db.commit()
 
     async def list_devices(self, user_id: UUID) -> list[DeviceToken]:
-        result = await self.db.execute(
-            select(DeviceToken).where(DeviceToken.user_id == user_id)
-        )
+        result = await self.db.execute(select(DeviceToken).where(DeviceToken.user_id == user_id))
         return list(result.scalars().all())
 
     async def get_device_by_token(self, user_id: UUID, token: str) -> DeviceToken | None:
@@ -41,14 +41,19 @@ class NotificationService:
         )
         return result.scalar_one_or_none()
 
+    async def _get_device_by_token_globally(self, token: str) -> DeviceToken | None:
+        result = await self.db.execute(select(DeviceToken).where(DeviceToken.token == token))
+        return result.scalar_one_or_none()
+
     async def register_device(
         self,
         user_id: UUID,
         token: str,
         platform: DevicePlatform,
     ) -> DeviceToken:
-        existing = await self.get_device_by_token(user_id, token)
+        existing = await self._get_device_by_token_globally(token)
         if existing:
+            existing.user_id = user_id
             existing.platform = platform
             await self.db.commit()
             await self.db.refresh(existing)
@@ -60,7 +65,18 @@ class NotificationService:
             platform=platform,
         )
         self.db.add(device)
-        await self.db.commit()
+        try:
+            await self.db.commit()
+        except IntegrityError:
+            await self.db.rollback()
+            existing = await self._get_device_by_token_globally(token)
+            if existing is None:
+                raise
+            existing.user_id = user_id
+            existing.platform = platform
+            await self.db.commit()
+            await self.db.refresh(existing)
+            return existing
         await self.db.refresh(device)
         return device
 
