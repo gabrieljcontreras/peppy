@@ -1,13 +1,16 @@
 from typing import Annotated, Optional
 from uuid import UUID
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
-from app.services.user import UserService
-from app.services.auth import create_access_token, create_refresh_token, decode_token
 from app.api.deps import CurrentUser
+from app.database import get_db
+from app.services.account import AccountService
+from app.services.auth import create_access_token, create_refresh_token, decode_token
+from app.services.user import UserService
 
 router = APIRouter()
 
@@ -33,10 +36,24 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
+class PasswordChangeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    current_password: str = Field(min_length=8)
+    new_password: str = Field(min_length=8)
+
+
+class AccountDeletionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    current_password: str
+
+
 class UserResponse(BaseModel):
     id: UUID
     email: EmailStr
     display_name: Optional[str]
+    timezone: str
     is_verified: bool
 
     class Config:
@@ -45,6 +62,32 @@ class UserResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class UserUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    display_name: str | None = Field(default=None, max_length=100)
+    timezone: str | None = Field(default=None, max_length=50)
+
+    @field_validator("display_name")
+    @classmethod
+    def normalize_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        return value or None
+
+    @field_validator("timezone")
+    @classmethod
+    def valid_timezone(cls, value: str | None) -> str:
+        if value is None:
+            raise ValueError("timezone cannot be null")
+        try:
+            ZoneInfo(value)
+        except ZoneInfoNotFoundError as exc:
+            raise ValueError("timezone must be a valid IANA timezone") from exc
+        return value
 
 
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
@@ -74,8 +117,9 @@ async def register(
         display_name=user_data.display_name,
     )
 
-    access_token = create_access_token(data={"sub": str(user.id)})
-    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    claims = {"sub": str(user.id), "ver": user.auth_version}
+    access_token = create_access_token(data=claims)
+    refresh_token = create_refresh_token(data=claims)
 
     return Token(
         access_token=access_token,
@@ -104,8 +148,9 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(data={"sub": str(user.id)})
-    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    claims = {"sub": str(user.id), "ver": user.auth_version}
+    access_token = create_access_token(data=claims)
+    refresh_token = create_refresh_token(data=claims)
 
     return Token(
         access_token=access_token,
@@ -157,8 +202,16 @@ async def refresh_tokens(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(data={"sub": str(user.id)})
-    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    if payload.get("ver", 1) != user.auth_version:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session has been revoked",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    claims = {"sub": str(user.id), "ver": user.auth_version}
+    access_token = create_access_token(data=claims)
+    refresh_token = create_refresh_token(data=claims)
 
     return Token(
         access_token=access_token,
@@ -174,6 +227,55 @@ async def get_current_user_info(current_user: CurrentUser):
     Requires a valid access token in the Authorization header.
     """
     return current_user
+
+
+@router.patch("/me", response_model=UserResponse)
+async def update_current_user_info(
+    updates: UserUpdate,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Update the authenticated user's editable account fields."""
+    return await UserService(db).update(
+        current_user,
+        **updates.model_dump(exclude_unset=True),
+    )
+
+
+@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+async def change_password(
+    request: PasswordChangeRequest,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Change the password and revoke every existing account token."""
+    try:
+        await UserService(db).change_password(
+            current_user,
+            request.current_password,
+            request.new_password,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@router.delete("/account", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_account(
+    request: AccountDeletionRequest,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Permanently delete the authenticated account and its owned data."""
+    try:
+        await AccountService(db).delete_account(current_user, request.current_password)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
 
 
 @router.post("/logout", response_model=MessageResponse)

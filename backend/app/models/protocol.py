@@ -1,6 +1,7 @@
 from sqlalchemy import Boolean, Column, Date, Float, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
-from app.models.base import Base, UUIDMixin, TimestampMixin, GUID
+
+from app.models.base import GUID, Base, TimestampMixin, UUIDMixin
 
 
 class Protocol(Base, UUIDMixin, TimestampMixin):
@@ -35,3 +36,6 @@ class Compound(Base, UUIDMixin, TimestampMixin):
     # Relationships
     protocol = relationship("Protocol", back_populates="compounds")
     dose_logs = relationship("DoseLog", back_populates="compound", cascade="all, delete")
+    reminder_settings = relationship(
+        "DoseReminderSetting", back_populates="compound", cascade="all, delete-orphan"
+    )

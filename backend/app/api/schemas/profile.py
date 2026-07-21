@@ -1,8 +1,21 @@
-from datetime import datetime
+from datetime import date, datetime
+from enum import Enum
 from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+class OnboardingGoal(str, Enum):
+    TRACK_PROTOCOLS = "track_protocols"
+    UNDERSTAND_BODY = "understand_body"
+    BUILD_HABITS = "build_habits"
+    SEE_WHAT_WORKS = "see_what_works"
+    OPTIMIZE_RECOVERY = "optimize_recovery"
+    FEEL_IN_CONTROL = "feel_in_control"
+
+
+PROFILE_GOAL_VALUES = frozenset(goal.value for goal in OnboardingGoal)
 
 
 def validate_schema_version(value: int) -> int:
@@ -21,6 +34,8 @@ class NotificationsPayload(BaseModel):
 
 
 class OnboardingProfilePayload(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
     schema_version: int = Field(default=1)
     age: int | None = Field(default=None, ge=13, le=120)
     height_cm: float | None = Field(default=None, ge=100, le=250)
@@ -33,6 +48,10 @@ class OnboardingProfilePayload(BaseModel):
     workout_days_per_week: int | None = Field(default=None, ge=0, le=7)
     goals: list[str] | None = None
     custom_goal: str | None = Field(default=None, max_length=200)
+    baseline_date: date | None = None
+    primary_goal: OnboardingGoal | None = None
+    secondary_goal: OnboardingGoal | None = None
+    focus_area: OnboardingGoal | None = None
     healthkit: HealthKitPayload | None = None
     notifications: NotificationsPayload | None = None
 
@@ -40,6 +59,20 @@ class OnboardingProfilePayload(BaseModel):
     @classmethod
     def schema_version_is_supported(cls, value: int) -> int:
         return validate_schema_version(value)
+
+    @field_validator("primary_goal")
+    @classmethod
+    def primary_goal_cannot_be_null(cls, value: OnboardingGoal | None) -> OnboardingGoal:
+        if value is None:
+            raise ValueError("primary_goal cannot be null")
+        return value
+
+    @field_validator("baseline_date")
+    @classmethod
+    def baseline_date_cannot_be_in_future(cls, value: date | None) -> date | None:
+        if value is not None and value > date.today():
+            raise ValueError("baseline_date cannot be in the future")
+        return value
 
     @field_validator("peptides", "custom_peptides", "goals")
     @classmethod
@@ -102,6 +135,10 @@ class OnboardingProfileResponse(BaseModel):
     workout_days_per_week: int | None
     goals: list[str]
     custom_goal: str | None
+    baseline_date: date | None
+    primary_goal: OnboardingGoal | None
+    secondary_goal: OnboardingGoal | None
+    focus_area: OnboardingGoal | None
     healthkit: HealthKitPayload | None
     notifications: NotificationsPayload | None
     source_draft_id: str | None

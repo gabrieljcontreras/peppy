@@ -1,13 +1,14 @@
 from typing import Annotated
 from uuid import UUID
+
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.models.user import User
 from app.services.auth import decode_token
 from app.services.user import UserService
-from app.models.user import User
 
 security = HTTPBearer()
 
@@ -55,6 +56,13 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User account is deactivated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if payload.get("ver", 1) != user.auth_version:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session has been revoked",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
