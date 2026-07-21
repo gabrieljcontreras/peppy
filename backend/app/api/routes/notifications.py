@@ -1,18 +1,19 @@
 from typing import Annotated
 from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
 from app.api.deps import CurrentUser
-from app.services.notification import NotificationService
-from app.models.notification import DevicePlatform as DevicePlatformModel
 from app.api.schemas.notification import (
     DeviceTokenCreate,
     DeviceTokenResponse,
     NotificationPreferenceResponse,
     NotificationPreferenceUpdate,
 )
+from app.database import get_db
+from app.models.notification import DevicePlatform as DevicePlatformModel
+from app.services.notification import NotificationService
 
 router = APIRouter()
 
@@ -79,10 +80,13 @@ async def update_preferences(
 ):
     """Update notification preferences for the current user."""
     service = NotificationService(db)
-    return await service.update_preferences(
-        user_id=current_user.id,
-        insights_enabled=updates.insights_enabled,
-        alert_severity_only=updates.alert_severity_only,
-        quiet_hours_start=updates.quiet_hours_start,
-        quiet_hours_end=updates.quiet_hours_end,
-    )
+    try:
+        return await service.update_preferences(
+            current_user,
+            updates.model_dump(exclude_unset=True),
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
