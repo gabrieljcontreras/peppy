@@ -1,13 +1,15 @@
 from typing import Annotated, Optional
 from uuid import UUID
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
-from app.services.user import UserService
-from app.services.auth import create_access_token, create_refresh_token, decode_token
 from app.api.deps import CurrentUser
+from app.database import get_db
+from app.services.auth import create_access_token, create_refresh_token, decode_token
+from app.services.user import UserService
 
 router = APIRouter()
 
@@ -37,6 +39,7 @@ class UserResponse(BaseModel):
     id: UUID
     email: EmailStr
     display_name: Optional[str]
+    timezone: str
     is_verified: bool
 
     class Config:
@@ -45,6 +48,32 @@ class UserResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class UserUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    display_name: str | None = Field(default=None, max_length=100)
+    timezone: str | None = Field(default=None, max_length=50)
+
+    @field_validator("display_name")
+    @classmethod
+    def normalize_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        return value or None
+
+    @field_validator("timezone")
+    @classmethod
+    def valid_timezone(cls, value: str | None) -> str:
+        if value is None:
+            raise ValueError("timezone cannot be null")
+        try:
+            ZoneInfo(value)
+        except ZoneInfoNotFoundError as exc:
+            raise ValueError("timezone must be a valid IANA timezone") from exc
+        return value
 
 
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
@@ -174,6 +203,19 @@ async def get_current_user_info(current_user: CurrentUser):
     Requires a valid access token in the Authorization header.
     """
     return current_user
+
+
+@router.patch("/me", response_model=UserResponse)
+async def update_current_user_info(
+    updates: UserUpdate,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Update the authenticated user's editable account fields."""
+    return await UserService(db).update(
+        current_user,
+        **updates.model_dump(exclude_unset=True),
+    )
 
 
 @router.post("/logout", response_model=MessageResponse)

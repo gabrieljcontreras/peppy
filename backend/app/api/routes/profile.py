@@ -37,7 +37,13 @@ async def put_onboarding_profile(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = OnboardingProfileService(db)
-    profile = await service.put_profile(current_user.id, payload)
+    try:
+        profile = await service.put_profile(current_user.id, payload)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
     return service.to_payload(profile)
 
 
@@ -48,7 +54,13 @@ async def patch_onboarding_profile(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = OnboardingProfileService(db)
-    profile = await service.patch_profile(current_user.id, patch)
+    try:
+        profile = await service.patch_profile(current_user.id, patch)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
     return service.to_payload(profile)
 
 
@@ -63,13 +75,19 @@ async def attach_onboarding_profile(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     service = OnboardingProfileService(db)
-    profile = await service.attach_profile(
-        user_id=current_user.id,
-        draft_id=request.draft_id,
-        draft_created_at=request.draft_created_at,
-        draft_updated_at=request.draft_updated_at,
-        is_complete=request.is_complete,
-        current_step=request.current_step,
-        profile_payload=request.profile,
-    )
+    try:
+        profile = await service.attach_profile(
+            user_id=current_user.id,
+            draft_id=request.draft_id,
+            draft_created_at=request.draft_created_at,
+            draft_updated_at=request.draft_updated_at,
+            is_complete=request.is_complete,
+            current_step=request.current_step,
+            profile_payload=request.profile,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
     return service.to_payload(profile)
