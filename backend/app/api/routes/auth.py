@@ -35,6 +35,13 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
+class PasswordChangeRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    current_password: str = Field(min_length=8)
+    new_password: str = Field(min_length=8)
+
+
 class UserResponse(BaseModel):
     id: UUID
     email: EmailStr
@@ -103,8 +110,9 @@ async def register(
         display_name=user_data.display_name,
     )
 
-    access_token = create_access_token(data={"sub": str(user.id)})
-    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    claims = {"sub": str(user.id), "ver": user.auth_version}
+    access_token = create_access_token(data=claims)
+    refresh_token = create_refresh_token(data=claims)
 
     return Token(
         access_token=access_token,
@@ -133,8 +141,9 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(data={"sub": str(user.id)})
-    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    claims = {"sub": str(user.id), "ver": user.auth_version}
+    access_token = create_access_token(data=claims)
+    refresh_token = create_refresh_token(data=claims)
 
     return Token(
         access_token=access_token,
@@ -186,8 +195,16 @@ async def refresh_tokens(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(data={"sub": str(user.id)})
-    refresh_token = create_refresh_token(data={"sub": str(user.id)})
+    if payload.get("ver", 1) != user.auth_version:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session has been revoked",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    claims = {"sub": str(user.id), "ver": user.auth_version}
+    access_token = create_access_token(data=claims)
+    refresh_token = create_refresh_token(data=claims)
 
     return Token(
         access_token=access_token,
@@ -216,6 +233,26 @@ async def update_current_user_info(
         current_user,
         **updates.model_dump(exclude_unset=True),
     )
+
+
+@router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
+async def change_password(
+    request: PasswordChangeRequest,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Change the password and revoke every existing account token."""
+    try:
+        await UserService(db).change_password(
+            current_user,
+            request.current_password,
+            request.new_password,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
 
 
 @router.post("/logout", response_model=MessageResponse)

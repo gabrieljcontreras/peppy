@@ -1,5 +1,6 @@
-from uuid import UUID
 from typing import Optional
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -47,6 +48,21 @@ class UserService:
         await self.db.commit()
         await self.db.refresh(user)
         return user
+
+    async def change_password(
+        self,
+        user: User,
+        current_password: str,
+        new_password: str,
+    ) -> None:
+        if not verify_password(current_password, user.hashed_password):
+            raise ValueError("Current password is incorrect")
+        if verify_password(new_password, user.hashed_password):
+            raise ValueError("New password must be different")
+
+        user.hashed_password = hash_password(new_password)
+        user.auth_version += 1
+        await self.db.commit()
 
     async def deactivate(self, user: User) -> User:
         user.is_active = False
