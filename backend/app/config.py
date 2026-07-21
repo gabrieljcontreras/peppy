@@ -52,6 +52,13 @@ class Settings(BaseSettings):
     insight_narrative_model: str = "claude-haiku-4-5"
     summary_narrative_model: str = "claude-sonnet-5"
 
+    # Apple Push Notification service
+    apns_key: str = ""
+    apns_key_id: str = ""
+    apns_team_id: str = ""
+    apns_topic: str = ""
+    apns_use_sandbox: bool = False
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

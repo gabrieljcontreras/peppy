@@ -208,6 +208,7 @@ class NotificationService:
 
         sent = 0
         failed = 0
+        invalid_devices = []
 
         for device in devices:
             adapter = None
@@ -218,13 +219,20 @@ class NotificationService:
 
             if adapter:
                 try:
-                    success = await adapter.send(device.token, title, body, data)
-                    if success:
+                    result = await adapter.send(device.token, title, body, data)
+                    if result.success:
                         sent += 1
                     else:
                         failed += 1
+                        if result.invalid_token:
+                            invalid_devices.append(device)
                 except Exception:
                     failed += 1
+
+        if invalid_devices:
+            for device in invalid_devices:
+                await self.db.delete(device)
+            await self.db.commit()
 
         return {"sent": sent, "failed": failed}
 

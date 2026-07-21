@@ -10,7 +10,9 @@ from weakref import WeakValueDictionary
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.database import async_session_maker
+from app.integrations.push import APNsAdapter
 from app.ml.insights_engine import InsightsEngine
 from app.ml.narrator import Narrator
 from app.ml.snapshot import build_longitudinal_snapshot
@@ -130,6 +132,13 @@ async def _run_generation(
     user.last_insight_run_at = datetime.now(timezone.utc)
     await db.commit()
 
+    ios_adapter = None
+    if alerts:
+        try:
+            ios_adapter = APNsAdapter.from_settings(get_settings())
+        except Exception:
+            logger.warning("APNs adapter unavailable after generation commit")
+
     notification_service = NotificationService(db)
     for insight_id, candidate, description in alerts:
         try:
@@ -139,6 +148,7 @@ async def _run_generation(
                 title=candidate.title,
                 body=description,
                 severity=candidate.severity,
+                ios_adapter=ios_adapter,
             )
         except Exception:
             logger.warning(

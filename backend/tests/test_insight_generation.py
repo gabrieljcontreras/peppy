@@ -236,6 +236,35 @@ async def test_run_generation_sends_alert_notification_for_persisted_description
         "send_insight_notification",
         send_notification,
     )
+    commit = AsyncMock(wraps=db_session.commit)
+    monkeypatch.setattr(db_session, "commit", commit)
+    configured_adapter = object()
+    settings = Settings(
+        debug=True,
+        apns_key="key-body",
+        apns_key_id="key-id",
+        apns_team_id="team-id",
+        apns_topic="com.example.peppy",
+    )
+
+    def build_adapter(received_settings):
+        assert commit.await_count == 1
+        assert received_settings is settings
+        return configured_adapter
+
+    adapter_factory = Mock(side_effect=build_adapter)
+    monkeypatch.setattr(
+        generation_service,
+        "APNsAdapter",
+        SimpleNamespace(from_settings=adapter_factory),
+        raising=False,
+    )
+    monkeypatch.setattr(
+        generation_service,
+        "get_settings",
+        Mock(return_value=settings),
+        raising=False,
+    )
 
     result = await run_generation(
         db_session,
@@ -253,7 +282,9 @@ async def test_run_generation_sends_alert_notification_for_persisted_description
         title="Alert title",
         body="Template alert body",
         severity=InsightSeverity.ALERT,
+        ios_adapter=configured_adapter,
     )
+    adapter_factory.assert_called_once_with(settings)
 
 
 @pytest.mark.asyncio
@@ -504,6 +535,59 @@ async def test_notification_failure_does_not_undo_persisted_generation(
     assert len(await InsightService(db_session).list_for_user(user.id)) == 1
     await db_session.refresh(user)
     assert user.last_insight_run_at is not None
+
+
+@pytest.mark.asyncio
+async def test_apns_setup_failure_is_isolated_without_logging_signing_key(
+    db_session,
+    monkeypatch,
+    caplog,
+):
+    user = User(email="generation-apns-setup-failure@example.com", hashed_password="x")
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    candidate = GeneratedInsight(
+        type=InsightType.ANOMALY,
+        severity=InsightSeverity.ALERT,
+        title="Alert title",
+        description="Template alert body",
+        explanation="Deterministic explanation",
+        confidence=0.9,
+        source_data_refs='{"rule":"apns-setup-failure"}',
+    )
+    monkeypatch.setattr(
+        InsightsEngine,
+        "analyze_user_data",
+        AsyncMock(return_value=[candidate]),
+    )
+    signing_key = "sensitive-signing-key"
+    settings = Settings(
+        debug=True,
+        apns_key=signing_key,
+        apns_key_id="key-id",
+        apns_team_id="team-id",
+        apns_topic="com.example.peppy",
+    )
+    monkeypatch.setattr(generation_service, "get_settings", Mock(return_value=settings))
+    monkeypatch.setattr(
+        generation_service.APNsAdapter,
+        "from_settings",
+        Mock(side_effect=RuntimeError(signing_key)),
+    )
+
+    result = await run_generation(
+        db_session,
+        user.id,
+        start_date=START,
+        end_date=END,
+        narrator=Narrator(settings=Settings(anthropic_api_key="", debug=True)),
+    )
+
+    assert result["insights_generated"] == 1
+    assert len(await InsightService(db_session).list_for_user(user.id)) == 1
+    assert "APNs adapter unavailable after generation commit" in caplog.text
+    assert signing_key not in caplog.text
 
 
 @pytest.mark.asyncio
