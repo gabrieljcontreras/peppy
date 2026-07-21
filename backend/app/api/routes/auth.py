@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import CurrentUser
 from app.database import get_db
+from app.services.account import AccountService
 from app.services.auth import create_access_token, create_refresh_token, decode_token
 from app.services.user import UserService
 
@@ -40,6 +41,12 @@ class PasswordChangeRequest(BaseModel):
 
     current_password: str = Field(min_length=8)
     new_password: str = Field(min_length=8)
+
+
+class AccountDeletionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    current_password: str
 
 
 class UserResponse(BaseModel):
@@ -248,6 +255,22 @@ async def change_password(
             request.current_password,
             request.new_password,
         )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
+
+@router.delete("/account", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_account(
+    request: AccountDeletionRequest,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    """Permanently delete the authenticated account and its owned data."""
+    try:
+        await AccountService(db).delete_account(current_user, request.current_password)
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
