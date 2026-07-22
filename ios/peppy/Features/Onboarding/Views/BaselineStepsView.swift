@@ -123,7 +123,7 @@ struct HeightStepView: View {
     }
 
     static func centimeters(feet: Int, inches: Int) -> Double {
-        OnboardingDraft.centimeters(feet: feet, inches: inches)
+        HeightUnit.feetAndInches.centimeters(feet: feet, inches: inches)
     }
 
     static func imperialParts(from centimeters: Double?) -> (feet: Int, inches: Int) {
@@ -131,9 +131,9 @@ struct HeightStepView: View {
             return (defaultFeet, defaultInches)
         }
 
-        let totalInches = max(0, Int((centimeters / 2.54).rounded()))
-        let feet = min(max(totalInches / 12, minimumFeet), maximumFeet)
-        let inches = min(max(totalInches % 12, 0), 11)
+        let parts = HeightUnit.feetAndInches.imperialParts(centimeters: centimeters)
+        let feet = min(max(parts.feet, minimumFeet), maximumFeet)
+        let inches = min(max(parts.inches, 0), 11)
 
         return (feet, inches)
     }

@@ -100,6 +100,14 @@ struct OnboardingDraft: Codable, Equatable {
 }
 
 extension HeightUnit {
+    nonisolated init?(serverValue: String) {
+        switch serverValue {
+        case "ft_in": self = .feetAndInches
+        case "cm": self = .centimeters
+        default: return nil
+        }
+    }
+
     var serverValue: String {
         switch self {
         case .feetAndInches: "ft_in"
@@ -109,6 +117,14 @@ extension HeightUnit {
 }
 
 extension WeightUnit {
+    nonisolated init?(serverValue: String) {
+        switch serverValue {
+        case "lb": self = .pounds
+        case "kg": self = .kilograms
+        default: return nil
+        }
+    }
+
     var serverValue: String {
         switch self {
         case .pounds: "lb"
@@ -118,6 +134,13 @@ extension WeightUnit {
 }
 
 extension OnboardingGoal {
+    nonisolated init?(serverValue: String) {
+        guard let goal = Self.allCases.first(where: { $0.serverValue == serverValue }) else {
+            return nil
+        }
+        self = goal
+    }
+
     var serverValue: String {
         switch self {
         case .trackProtocols: "track_protocols"

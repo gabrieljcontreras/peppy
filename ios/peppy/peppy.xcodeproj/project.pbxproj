@@ -31,6 +31,10 @@
 		A2C600082607220000000008 /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600072607220000000007 /* SettingsStore.swift */; };
 		A2C6000A260722000000000A /* SettingsComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600092607220000000009 /* SettingsComponents.swift */; };
 		A2C6000C260722000000000C /* SettingsRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C6000B260722000000000B /* SettingsRootView.swift */; };
+		A2C700022607220000000002 /* ProfileSettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C700012607220000000001 /* ProfileSettingsViewModelTests.swift */; };
+		A2C700042607220000000004 /* ProfileSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C700032607220000000003 /* ProfileSettingsViewModel.swift */; };
+		A2C700062607220000000006 /* ProfileSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C700052607220000000005 /* ProfileSettingsView.swift */; };
+		A2C700082607220000000008 /* ProfileEditorSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C700072607220000000007 /* ProfileEditorSheets.swift */; };
 		49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364822FD4DE4B00C1F5DE /* PepBadge.swift */; };
 		49C364A02FD4DE7E00C1F5DE /* PepButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364832FD4DE4B00C1F5DE /* PepButton.swift */; };
 		49C364A12FD4DE7E00C1F5DE /* PepCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364842FD4DE4B00C1F5DE /* PepCard.swift */; };
@@ -164,6 +168,10 @@
 		A2C600072607220000000007 /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
 		A2C600092607220000000009 /* SettingsComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsComponents.swift; sourceTree = "<group>"; };
 		A2C6000B260722000000000B /* SettingsRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRootView.swift; sourceTree = "<group>"; };
+		A2C700012607220000000001 /* ProfileSettingsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsViewModelTests.swift; sourceTree = "<group>"; };
+		A2C700032607220000000003 /* ProfileSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsViewModel.swift; sourceTree = "<group>"; };
+		A2C700052607220000000005 /* ProfileSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsView.swift; sourceTree = "<group>"; };
+		A2C700072607220000000007 /* ProfileEditorSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditorSheets.swift; sourceTree = "<group>"; };
 		49C364822FD4DE4B00C1F5DE /* PepBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepBadge.swift; sourceTree = "<group>"; };
 		49C364832FD4DE4B00C1F5DE /* PepButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepButton.swift; sourceTree = "<group>"; };
 		49C364842FD4DE4B00C1F5DE /* PepCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepCard.swift; sourceTree = "<group>"; };
@@ -417,6 +425,7 @@
 			children = (
 				A2C6000E260722000000000E /* Models */,
 				A2C6000F260722000000000F /* Stores */,
+				A2C700092607220000000009 /* ViewModels */,
 				A2C600102607220000000010 /* Views */,
 			);
 			path = Settings;
@@ -438,9 +447,19 @@
 			path = Stores;
 			sourceTree = "<group>";
 		};
+		A2C700092607220000000009 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				A2C700032607220000000003 /* ProfileSettingsViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		A2C600102607220000000010 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A2C700072607220000000007 /* ProfileEditorSheets.swift */,
+				A2C700052607220000000005 /* ProfileSettingsView.swift */,
 				A2C600092607220000000009 /* SettingsComponents.swift */,
 				A2C6000B260722000000000B /* SettingsRootView.swift */,
 			);
@@ -475,6 +494,7 @@
 				A2C500032607210000000003 /* SettingsAPIContractTests.swift */,
 				A2C600032607220000000003 /* SettingsNavigationTests.swift */,
 				A2C600012607220000000001 /* SettingsStoreTests.swift */,
+				A2C700012607220000000001 /* ProfileSettingsViewModelTests.swift */,
 				49C365112FF000500C1F5DE /* StarterProtocolViewModelTests.swift */,
 				49C3658E2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift */,
 			);
@@ -893,6 +913,9 @@
 				A2C600082607220000000008 /* SettingsStore.swift in Sources */,
 				A2C6000A260722000000000A /* SettingsComponents.swift in Sources */,
 				A2C6000C260722000000000C /* SettingsRootView.swift in Sources */,
+				A2C700042607220000000004 /* ProfileSettingsViewModel.swift in Sources */,
+				A2C700062607220000000006 /* ProfileSettingsView.swift in Sources */,
+				A2C700082607220000000008 /* ProfileEditorSheets.swift in Sources */,
 				49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */,
 				A2C200022607170000000002 /* WeightUnitPreferenceStore.swift in Sources */,
 				49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */,
@@ -959,6 +982,7 @@
 				A2C500042607210000000004 /* SettingsAPIContractTests.swift in Sources */,
 				A2C600042607220000000004 /* SettingsNavigationTests.swift in Sources */,
 				A2C600022607220000000002 /* SettingsStoreTests.swift in Sources */,
+				A2C700022607220000000002 /* ProfileSettingsViewModelTests.swift in Sources */,
 				49C3658D2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift in Sources */,
 				49C365632FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift in Sources */,
 				49C3654B2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift in Sources */,
