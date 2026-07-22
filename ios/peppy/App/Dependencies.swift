@@ -59,22 +59,32 @@ final class Dependencies {
         let protocolNavigation = ProtocolNavigationCoordinator()
         let checkinStore = CheckinStore(api: api)
         let settingsStore = SettingsStore(api: api)
+        let weightUnitPreferences = WeightUnitPreferences {
+            if let userID = appState.currentUser?.id,
+               let draft = onboardingStore.loadDraft(for: userID) {
+                return draft.preferredWeightUnit
+            }
+            return onboardingStore.loadAnonymousDraft()?.preferredWeightUnit
+        }
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
             appState: appState,
             onboardingStore: onboardingStore,
-            prepareSessionData: { [weak settingsStore] user in
+            prepareSessionData: { [weak settingsStore, weak weightUnitPreferences] user in
                 settingsStore?.beginSession(user: user)
+                weightUnitPreferences?.activate(userID: user.id, serverUnit: nil)
             },
             resetSessionData: { [
                 weak checkinStore,
                 weak protocolNavigation,
-                weak settingsStore
+                weak settingsStore,
+                weak weightUnitPreferences
             ] in
                 checkinStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
                 settingsStore?.resetSession()
+                weightUnitPreferences?.resetSession()
             }
         )
         let onboardingViewModel = OnboardingViewModel(
@@ -84,14 +94,6 @@ final class Dependencies {
         )
         let protocolStore = ProtocolStore(api: api)
         let insightsStore = InsightsStore(api: api)
-        let weightUnitPreferences = WeightUnitPreferences {
-            if let userID = appState.currentUser?.id,
-               let draft = onboardingStore.loadDraft(for: userID) {
-                return draft.preferredWeightUnit
-            }
-            return onboardingStore.loadAnonymousDraft()?.preferredWeightUnit
-        }
-
         return Dependencies(
             api: api,
             keychain: keychain,
@@ -128,14 +130,14 @@ final class Dependencies {
         let previewProfile = AccountProfile(
             id: previewUser.id,
             schemaVersion: 1,
-            heightCm: 180,
-            preferredHeightUnit: "cm",
-            weightKg: 82,
-            preferredWeightUnit: "kg",
-            baselineDate: APIDateOnly.date(from: "2026-07-20"),
+            heightCm: 177.8,
+            preferredHeightUnit: "ft_in",
+            weightKg: 84.55,
+            preferredWeightUnit: "lb",
+            baselineDate: APIDateOnly.date(from: "2025-05-01"),
             primaryGoal: "track_protocols",
-            secondaryGoal: nil,
-            focusArea: nil
+            secondaryGoal: "build_habits",
+            focusArea: "understand_body"
         )
         let previewPreferences = NotificationPreferences(
             id: UUID(uuidString: "7BCE24BB-54D5-4EC4-A157-C46B05D3043A")!,
@@ -151,6 +153,13 @@ final class Dependencies {
         )
         api.setMockResponse(previewProfile, for: .getProfile)
         api.setMockResponse(previewPreferences, for: .getNotificationPreferences)
+        let weightUnitPreferences = WeightUnitPreferences {
+            if let userID = appState.currentUser?.id,
+               let draft = onboardingStore.loadDraft(for: userID) {
+                return draft.preferredWeightUnit
+            }
+            return onboardingStore.loadAnonymousDraft()?.preferredWeightUnit
+        }
         let settingsStore = SettingsStore(
             api: api,
             initialUser: previewUser,
@@ -162,17 +171,20 @@ final class Dependencies {
             keychain: keychain,
             appState: appState,
             onboardingStore: onboardingStore,
-            prepareSessionData: { [weak settingsStore] user in
+            prepareSessionData: { [weak settingsStore, weak weightUnitPreferences] user in
                 settingsStore?.beginSession(user: user)
+                weightUnitPreferences?.activate(userID: user.id, serverUnit: nil)
             },
             resetSessionData: { [
                 weak checkinStore,
                 weak protocolNavigation,
-                weak settingsStore
+                weak settingsStore,
+                weak weightUnitPreferences
             ] in
                 checkinStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
                 settingsStore?.resetSession()
+                weightUnitPreferences?.resetSession()
             }
         )
         let onboardingViewModel = OnboardingViewModel(
@@ -182,14 +194,6 @@ final class Dependencies {
         )
         let protocolStore = ProtocolStore(api: api)
         let insightsStore = InsightsStore(api: api)
-        let weightUnitPreferences = WeightUnitPreferences {
-            if let userID = appState.currentUser?.id,
-               let draft = onboardingStore.loadDraft(for: userID) {
-                return draft.preferredWeightUnit
-            }
-            return onboardingStore.loadAnonymousDraft()?.preferredWeightUnit
-        }
-
         return Dependencies(
             api: api,
             keychain: keychain,

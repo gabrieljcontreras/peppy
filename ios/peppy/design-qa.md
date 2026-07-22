@@ -77,3 +77,39 @@ final result: automated build and tests passed; manual visual and end-to-end QA 
 6. Compare each screenshot against the corresponding Figma frame for spacing, card density, button hierarchy, visual tone, and text wrapping.
 
 final result: Task 10 automated backend and iOS verification passed; manual dashboard screenshot comparison remains pending until a QA launch path or UI test harness exists for the required authenticated states
+
+---
+
+# iOS Settings Task 10 — Profile Design QA
+
+- Source visual truth: `/Users/gabri/Downloads/Peppy IOS (2).fig`
+- Extracted Profile frame: `/tmp/peppy-profile-fig.zkzfyW/images/d3b52eb20b079d591deb8f8fbefce8a1ed8804fa`
+- Implementation screenshot: `/tmp/peppy-profile-task10-final.png`
+- Same-viewport comparison: `/tmp/peppy-profile-task10-final-comparison.png`
+- Verification device: iPhone 17, iOS 26.5, light appearance, deterministic 9:41 status bar
+- Intended state: authenticated Profile settings with a staged change so the primary action matches the enabled Figma state
+
+## Evidence
+
+- The reference and implementation were normalized to the same 853 × 1844 viewport and inspected together.
+- The comparison covers the full page: header, account, preferences, baseline information, onboarding goals, save action, security footer, and bottom navigation.
+- The custom bottom navigation matches the compact Figma bar while retaining the existing Insights unread badge behavior and 44-point touch targets.
+- The full header is visible on the iPhone 17 and scrolls with the page; it is not clipped by the page-style tab container.
+
+## Findings
+
+- **No P0 or P1 visual issues remain.** Section positions, card dimensions, corner radii, dividers, typography hierarchy, control states, and bottom navigation closely track the source frame.
+- **Intentional — email is read-only.** The source frame shows an Email Edit button, but Task 10 explicitly requires accessible read-only email, so that action is omitted.
+- **Intentional — goal values use canonical product data.** The implementation uses the shared onboarding goal vocabulary rather than the example values embedded in the design frame.
+- **Intentional — current-device status chrome differs.** The iPhone 17 Dynamic Island is taller than the status area represented in the source frame, so the top control row sits below it while retaining the Figma alignment for the page content below.
+- **P2 — platform glyph variation.** The closest SF Symbols are used for the Figma icons, following the existing Peppy design system; a few glyph silhouettes vary slightly from the source artwork.
+
+## Functional Fidelity
+
+- Full name, baseline date, baseline weight, baseline height, and all goal rows open their editors.
+- Weight and height segmented controls update the displayed units without changing canonical stored values.
+- Save is disabled for unchanged/invalid drafts, calls both account endpoints on success, then updates the account-scoped unit preference.
+- Failed saves retain the draft and expose a retryable error; Back prompts before discarding unsaved changes.
+- Email exposes a read-only accessibility value and no edit action.
+
+final result: passed

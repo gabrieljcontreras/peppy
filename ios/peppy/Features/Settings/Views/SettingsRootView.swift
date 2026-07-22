@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsRootView: View {
+    @Environment(\.dependencies) private var dependencies
     @Bindable var store: SettingsStore
     let version: SettingsAppVersion
     let logout: () -> Void
@@ -58,7 +59,7 @@ struct SettingsRootView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: SettingsRoute.self) { route in
-                SettingsDestinationScaffold(route: route)
+                destination(for: route)
             }
         }
         .confirmationDialog(
@@ -70,6 +71,19 @@ struct SettingsRootView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("You’ll need to sign in again to access your account.")
+        }
+    }
+
+    @ViewBuilder
+    private func destination(for route: SettingsRoute) -> some View {
+        switch route {
+        case .profile:
+            ProfileSettingsView(
+                store: store,
+                weightUnitPreferences: dependencies.weightUnitPreferences
+            )
+        default:
+            SettingsDestinationScaffold(route: route)
         }
     }
 
@@ -99,8 +113,8 @@ struct SettingsRootView: View {
     }
 }
 
-/// Task 9 establishes every navigation boundary. The destination views are
-/// replaced by their complete Figma-backed implementations in Tasks 10–15.
+/// Task 9 established every navigation boundary. Remaining destinations are
+/// replaced by their complete Figma-backed implementations in Tasks 11–15.
 private struct SettingsDestinationScaffold: View {
     let route: SettingsRoute
 

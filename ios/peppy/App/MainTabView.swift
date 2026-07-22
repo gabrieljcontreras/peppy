@@ -18,6 +18,29 @@ enum Tab: String, CaseIterable {
     }
 }
 
+/// Compact bottom navigation measured from the approved 853 × 1844 Settings
+/// frames. Its 29-point content region plus the iPhone home-indicator inset
+/// produces the 63-point visible bar in the reference.
+enum PeppyTabBarFigmaLayout {
+    static let visibleHeight: CGFloat = 63
+    static let contentHeight: CGFloat = 29
+    static let minimumTapTarget: CGFloat = 44
+    static let iconSize: CGFloat = 15
+    static let labelSize: CGFloat = 7
+}
+
+enum PeppyTabBarPresentation {
+    static func badgeText(for unreadCount: Int) -> String? {
+        guard unreadCount > 0 else { return nil }
+        return unreadCount > 99 ? "99+" : String(unreadCount)
+    }
+
+    static func accessibilityLabel(for tab: Tab, unreadInsightsCount: Int) -> String {
+        guard tab == .insights, unreadInsightsCount > 0 else { return tab.rawValue }
+        return "Insights, \(unreadInsightsCount) unread"
+    }
+}
+
 /// Shared cross-tab navigation intent for the Check-in, Protocols, and
 /// Insights stacks. The Dashboard (and any other tab) routes into them through
 /// `showCheckin`/`show`/`showInsight`, which switch the selected tab before
@@ -91,7 +114,6 @@ struct MainTabView: View {
                 .tabItem {
                     Label(Tab.insights.rawValue, systemImage: Tab.insights.icon)
                 }
-                .badge(deps.insightsStore.unreadCount)
                 .tag(Tab.insights)
 
             ProfileTab()
@@ -101,6 +123,73 @@ struct MainTabView: View {
                 .tag(Tab.profile)
         }
         .tint(.pepPrimary)
+        .toolbar(.hidden, for: .tabBar)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            PeppyTabBar(
+                selection: $navigation.selectedTab,
+                unreadInsightsCount: deps.insightsStore.unreadCount
+            )
+        }
+    }
+}
+
+struct PeppyTabBar: View {
+    @Binding var selection: Tab
+    var unreadInsightsCount = 0
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(Tab.allCases, id: \.self) { tab in
+                Button {
+                    selection = tab
+                } label: {
+                    VStack(spacing: 1) {
+                        ZStack(alignment: .topTrailing) {
+                            Image(systemName: tab.icon)
+                                .font(.system(size: PeppyTabBarFigmaLayout.iconSize, weight: .regular))
+                                .frame(width: 20, height: 17)
+
+                            if tab == .insights,
+                               let badgeText = PeppyTabBarPresentation.badgeText(
+                                   for: unreadInsightsCount
+                               ) {
+                                Text(badgeText)
+                                    .font(.system(size: 6, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 3)
+                                    .frame(minWidth: 11, minHeight: 11)
+                                    .background(Color.pepPrimary)
+                                    .clipShape(Capsule())
+                                    .offset(x: 6, y: -4)
+                            }
+                        }
+
+                        Text(tab.rawValue)
+                            .font(.system(size: PeppyTabBarFigmaLayout.labelSize, weight: .medium))
+                            .lineLimit(1)
+                    }
+                    .foregroundStyle(selection == tab ? Color.pepPrimary : Color.pepTextPrimary)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: PeppyTabBarFigmaLayout.minimumTapTarget)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(
+                    PeppyTabBarPresentation.accessibilityLabel(
+                        for: tab,
+                        unreadInsightsCount: unreadInsightsCount
+                    )
+                )
+                .accessibilityAddTraits(selection == tab ? .isSelected : [])
+            }
+        }
+        .frame(height: PeppyTabBarFigmaLayout.contentHeight)
+        .background(Color.pepSurface.ignoresSafeArea(edges: .bottom))
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(Color.pepBorderLight)
+                .frame(height: 1)
+        }
     }
 }
 
