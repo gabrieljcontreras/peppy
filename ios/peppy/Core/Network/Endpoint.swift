@@ -14,9 +14,15 @@ enum Endpoint {
     case refreshToken(refreshToken: String)
     case logout
     case me
+    case updateCurrentUser(UpdateCurrentUserRequest)
+    case changePassword(ChangePasswordRequest)
+    case deleteAccount(DeleteAccountRequest)
 
     // MARK: - Profile
     case attachOnboardingProfile(OnboardingProfileAttachRequest)
+    case getProfile
+    case updateProfile(ProfileUpdateRequest)
+    case createDataExport(DataExportRequest)
 
     // MARK: - Dashboard
     case getDashboardSummary
@@ -68,7 +74,7 @@ enum Endpoint {
     case getDevices
     case deleteDevice(id: UUID)
     case getNotificationPreferences
-    case updateNotificationPreferences(UpdatePreferencesRequest)
+    case updateNotificationPreferences(UpdateNotificationPreferencesRequest)
 
     var path: String {
         switch self {
@@ -77,11 +83,17 @@ enum Endpoint {
         case .login: return "/auth/login"
         case .refreshToken: return "/auth/refresh"
         case .logout: return "/auth/logout"
-        case .me: return "/auth/me"
+        case .me, .updateCurrentUser: return "/auth/me"
+        case .changePassword: return "/auth/change-password"
+        case .deleteAccount: return "/auth/account"
 
         // Profile
         case .attachOnboardingProfile:
             return "/profile/onboarding/attach"
+        case .getProfile, .updateProfile:
+            return "/profile/onboarding"
+        case .createDataExport:
+            return "/profile/export"
 
         // Dashboard
         case .getDashboardSummary:
@@ -133,8 +145,9 @@ enum Endpoint {
 
     var method: HTTPMethod {
         switch self {
-        case .register, .login, .refreshToken, .logout,
+        case .register, .login, .refreshToken, .logout, .changePassword,
              .attachOnboardingProfile,
+             .createDataExport,
              .createProtocol, .activateProtocol, .activateStarterProtocol, .deactivateProtocol,
              .addCompound, .createDoseLog,
              .createCheckin,
@@ -143,9 +156,11 @@ enum Endpoint {
              .connectWearable, .syncWearable,
              .registerDevice:
             return .post
-        case .updateProtocol, .updateCompound, .updateCheckin, .updateNotificationPreferences:
+        case .updateCurrentUser, .updateProfile,
+             .updateProtocol, .updateCompound, .updateCheckin, .updateNotificationPreferences:
             return .patch
-        case .deleteProtocol, .removeCompound, .disconnectWearable, .deleteDevice:
+        case .deleteAccount,
+             .deleteProtocol, .removeCompound, .disconnectWearable, .deleteDevice:
             return .delete
         default:
             return .get
@@ -160,7 +175,17 @@ enum Endpoint {
             return ["email": email, "password": password]
         case .refreshToken(let token):
             return ["refresh_token": token]
+        case .updateCurrentUser(let request):
+            return request
+        case .changePassword(let request):
+            return request
+        case .deleteAccount(let request):
+            return request
         case .attachOnboardingProfile(let request):
+            return request
+        case .updateProfile(let request):
+            return request
+        case .createDataExport(let request):
             return request
         case .createProtocol(let request):
             return request

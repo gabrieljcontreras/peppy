@@ -3,6 +3,7 @@ import Foundation
 protocol APIClientProtocol {
     func execute<T: Decodable>(_ endpoint: Endpoint) async throws -> T
     func executeVoid(_ endpoint: Endpoint) async throws
+    func download(_ endpoint: Endpoint) async throws -> DownloadedFile
 }
 
 actor APIClient: APIClientProtocol {
@@ -41,6 +42,54 @@ actor APIClient: APIClientProtocol {
 
     func executeVoid(_ endpoint: Endpoint) async throws {
         _ = try await performRequest(endpoint)
+    }
+
+    func download(_ endpoint: Endpoint) async throws -> DownloadedFile {
+        try await performDownload(endpoint)
+    }
+
+    private func performDownload(
+        _ endpoint: Endpoint,
+        isRetry: Bool = false
+    ) async throws -> DownloadedFile {
+        var request = try buildRequest(for: endpoint)
+
+        if endpoint.requiresAuth {
+            guard let token = keychain.get(KeychainKeys.accessToken) else {
+                throw APIError.unauthorized
+            }
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        let (temporaryURL, response) = try await session.download(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.unknown("Invalid response")
+        }
+
+        switch httpResponse.statusCode {
+        case 200...299:
+            return DownloadedFile(
+                url: temporaryURL,
+                suggestedFilename: suggestedFilename(from: httpResponse)
+            )
+        case 401:
+            if isRetry || !endpoint.requiresAuth {
+                throw APIError.unauthorized
+            }
+            _ = try await refreshTokenOnce()
+            return try await performDownload(endpoint, isRetry: true)
+        case 403:
+            throw APIError.forbidden
+        case 404:
+            throw APIError.notFound
+        case 422:
+            throw APIError.validationFailed(["Validation failed"])
+        case 500...599:
+            throw APIError.serverError
+        default:
+            throw APIError.unknown("HTTP \(httpResponse.statusCode)")
+        }
     }
 
     private func performRequest(_ endpoint: Endpoint, isRetry: Bool = false) async throws -> Data {
@@ -160,6 +209,66 @@ actor APIClient: APIClientProtocol {
         }
 
         return request
+    }
+
+    private func suggestedFilename(from response: HTTPURLResponse) -> String {
+        if let disposition = response.value(forHTTPHeaderField: "Content-Disposition") {
+            let parameters = disposition.split(separator: ";", omittingEmptySubsequences: true)
+
+            if let encoded = parameters.first(where: {
+                $0.trimmingCharacters(in: .whitespaces).lowercased().hasPrefix("filename*=")
+            }) {
+                let value = encoded.split(separator: "=", maxSplits: 1).last.map(String.init) ?? ""
+                if let decoded = decodeRFC5987Filename(value),
+                   let safe = safeFilename(decoded) {
+                    return safe
+                }
+                return "peppy-export"
+            }
+
+            if let plain = parameters.first(where: {
+                $0.trimmingCharacters(in: .whitespaces).lowercased().hasPrefix("filename=")
+            }) {
+                let value = plain.split(separator: "=", maxSplits: 1).last.map(String.init) ?? ""
+                let unquoted = value.trimmingCharacters(in: CharacterSet(charactersIn: " \t\""))
+                if let safe = safeFilename(unquoted) {
+                    return safe
+                }
+                return "peppy-export"
+            }
+        }
+
+        return safeFilename(response.suggestedFilename ?? "") ?? "peppy-export"
+    }
+
+    private func decodeRFC5987Filename(_ value: String) -> String? {
+        let unquoted = value.trimmingCharacters(in: CharacterSet(charactersIn: " \t\""))
+        let components = unquoted.split(
+            separator: "'",
+            maxSplits: 2,
+            omittingEmptySubsequences: false
+        )
+        guard components.count == 3,
+              components[0].caseInsensitiveCompare("UTF-8") == .orderedSame else {
+            return nil
+        }
+        return String(components[2]).removingPercentEncoding
+    }
+
+    private func safeFilename(_ value: String) -> String? {
+        let filename = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        let prohibitedCharacters = CharacterSet.controlCharacters.union(
+            CharacterSet(charactersIn: "/\\")
+        )
+
+        guard !filename.isEmpty,
+              filename != ".",
+              filename != "..",
+              filename.utf8.count <= 255,
+              filename.rangeOfCharacter(from: prohibitedCharacters) == nil else {
+            return nil
+        }
+        return filename
     }
 }
 

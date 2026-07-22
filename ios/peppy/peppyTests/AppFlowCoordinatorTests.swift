@@ -405,6 +405,10 @@ final class AppFlowCoordinatorTests: XCTestCase {
         func executeVoid(_ endpoint: Endpoint) async throws {
             throw error
         }
+
+        func download(_ endpoint: Endpoint) async throws -> DownloadedFile {
+            throw error
+        }
     }
 
     private func makeCheckin(userID: UUID, energyLevel: Int) -> Checkin {

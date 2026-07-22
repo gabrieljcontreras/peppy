@@ -23,6 +23,8 @@
 		A2C400022607170000000002 /* CheckinModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C400012607170000000001 /* CheckinModels.swift */; };
 		A2C400052607170000000005 /* CheckinHubViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C400042607170000000004 /* CheckinHubViewModel.swift */; };
 		A2C400072607170000000007 /* CheckinHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C400062607170000000006 /* CheckinHubView.swift */; };
+		A2C500042607210000000004 /* SettingsAPIContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500032607210000000003 /* SettingsAPIContractTests.swift */; };
+		A2C500022607210000000002 /* SettingsAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500012607210000000001 /* SettingsAPIModels.swift */; };
 		49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364822FD4DE4B00C1F5DE /* PepBadge.swift */; };
 		49C364A02FD4DE7E00C1F5DE /* PepButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364832FD4DE4B00C1F5DE /* PepButton.swift */; };
 		49C364A12FD4DE7E00C1F5DE /* PepCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364842FD4DE4B00C1F5DE /* PepCard.swift */; };
@@ -148,6 +150,8 @@
 		A2C400012607170000000001 /* CheckinModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinModels.swift; sourceTree = "<group>"; };
 		A2C400042607170000000004 /* CheckinHubViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinHubViewModel.swift; sourceTree = "<group>"; };
 		A2C400062607170000000006 /* CheckinHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinHubView.swift; sourceTree = "<group>"; };
+		A2C500032607210000000003 /* SettingsAPIContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAPIContractTests.swift; sourceTree = "<group>"; };
+		A2C500012607210000000001 /* SettingsAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAPIModels.swift; sourceTree = "<group>"; };
 		49C364822FD4DE4B00C1F5DE /* PepBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepBadge.swift; sourceTree = "<group>"; };
 		49C364832FD4DE4B00C1F5DE /* PepButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepButton.swift; sourceTree = "<group>"; };
 		49C364842FD4DE4B00C1F5DE /* PepCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepCard.swift; sourceTree = "<group>"; };
@@ -309,6 +313,7 @@
 				49C3647B2FD4DE4B00C1F5DE /* APIModels.swift */,
 				49C3647C2FD4DE4B00C1F5DE /* Endpoint.swift */,
 				49C3647D2FD4DE4B00C1F5DE /* MockAPIClient.swift */,
+				A2C500012607210000000001 /* SettingsAPIModels.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -419,6 +424,7 @@
 				49C365522FF000D00C1F5DE /* ProtocolListViewModelTests.swift */,
 				49C3656C2FF001200C1F5DE /* ProtocolNavigationTests.swift */,
 				49C365412FF000900C1F5DE /* ProtocolStoreTests.swift */,
+				A2C500032607210000000003 /* SettingsAPIContractTests.swift */,
 				49C365112FF000500C1F5DE /* StarterProtocolViewModelTests.swift */,
 				49C3658E2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift */,
 			);
@@ -832,6 +838,7 @@
 				A2C400052607170000000005 /* CheckinHubViewModel.swift in Sources */,
 				A2C400072607170000000007 /* CheckinHubView.swift in Sources */,
 				49C3649D2FD4DE7E00C1F5DE /* MockAPIClient.swift in Sources */,
+				A2C500022607210000000002 /* SettingsAPIModels.swift in Sources */,
 				49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */,
 				A2C200022607170000000002 /* WeightUnitPreferenceStore.swift in Sources */,
 				49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */,
@@ -895,6 +902,7 @@
 				49C365722FF001400C1F5DE /* InsightsStoreTests.swift in Sources */,
 				49C365812FF001700C1F5DE /* InsightsListViewModelTests.swift in Sources */,
 				49C3658C2FF001800C1F5DE /* InsightDetailViewModelTests.swift in Sources */,
+				A2C500042607210000000004 /* SettingsAPIContractTests.swift in Sources */,
 				49C3658D2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift in Sources */,
 				49C365632FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift in Sources */,
 				49C3654B2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift in Sources */,

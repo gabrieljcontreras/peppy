@@ -1077,31 +1077,3 @@ struct DeviceToken: Codable, Identifiable {
         case createdAt = "created_at"
     }
 }
-
-struct NotificationPreferences: Codable {
-    let insightsEnabled: Bool
-    let alertSeverityOnly: Bool
-    let quietHoursStart: String?
-    let quietHoursEnd: String?
-
-    enum CodingKeys: String, CodingKey {
-        case insightsEnabled = "insights_enabled"
-        case alertSeverityOnly = "alert_severity_only"
-        case quietHoursStart = "quiet_hours_start"
-        case quietHoursEnd = "quiet_hours_end"
-    }
-}
-
-struct UpdatePreferencesRequest: Encodable {
-    let insightsEnabled: Bool?
-    let alertSeverityOnly: Bool?
-    let quietHoursStart: String?
-    let quietHoursEnd: String?
-
-    enum CodingKeys: String, CodingKey {
-        case insightsEnabled = "insights_enabled"
-        case alertSeverityOnly = "alert_severity_only"
-        case quietHoursStart = "quiet_hours_start"
-        case quietHoursEnd = "quiet_hours_end"
-    }
-}
