@@ -27,6 +27,7 @@ final class AppFlowCoordinator {
     private let keychain: KeychainServiceProtocol
     private let appState: AppState
     private let onboardingStore: OnboardingStoreProtocol
+    private let prepareSessionData: @MainActor (User) -> Void
     private let resetSessionData: @MainActor () -> Void
 
     init(
@@ -34,12 +35,14 @@ final class AppFlowCoordinator {
         keychain: KeychainServiceProtocol,
         appState: AppState,
         onboardingStore: OnboardingStoreProtocol,
+        prepareSessionData: @escaping @MainActor (User) -> Void = { _ in },
         resetSessionData: @escaping @MainActor () -> Void = {}
     ) {
         self.api = api
         self.keychain = keychain
         self.appState = appState
         self.onboardingStore = onboardingStore
+        self.prepareSessionData = prepareSessionData
         self.resetSessionData = resetSessionData
     }
 
@@ -56,6 +59,7 @@ final class AppFlowCoordinator {
         do {
             let user: User = try await api.execute(.me)
             resetForNewSession(ifNeeded: user.id)
+            prepareSessionData(user)
             appState.login(user: user)
             onboardingStore.hasKnownAccount = true
             route = .dashboard
@@ -126,6 +130,7 @@ final class AppFlowCoordinator {
         } else {
             onboardingStore.associateAnonymousDraft(with: user.id)
         }
+        prepareSessionData(user)
         appState.login(user: user)
         authenticationBackStack = []
         route = .dashboard
