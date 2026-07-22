@@ -7,6 +7,8 @@ protocol APIClientProtocol {
 }
 
 actor APIClient: APIClientProtocol {
+    static let defaultBaseURL = URL(string: "http://localhost:8001/api/v1")!
+
     private let baseURL: URL
     private let session: URLSession
     private let keychain: KeychainServiceProtocol
@@ -16,7 +18,7 @@ actor APIClient: APIClientProtocol {
     private var refreshTask: Task<String, Error>?
 
     init(
-        baseURL: URL = URL(string: "http://localhost:8000/api/v1")!,
+        baseURL: URL = APIClient.defaultBaseURL,
         session: URLSession = .shared,
         keychain: KeychainServiceProtocol
     ) {
