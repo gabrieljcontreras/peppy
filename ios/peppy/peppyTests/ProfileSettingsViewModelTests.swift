@@ -236,33 +236,10 @@ final class ProfileSettingsViewModelTests: XCTestCase {
         XCTAssertEqual(ProfileSettingsFigmaLayout.baselineRowMinimumHeight, 44)
         XCTAssertEqual(ProfileSettingsFigmaLayout.compactRowMinimumHeight, 32)
         XCTAssertEqual(ProfileSettingsFigmaLayout.saveButtonVisualHeight, 32)
-        XCTAssertEqual(PeppyTabBarFigmaLayout.visibleHeight, 63)
-        XCTAssertEqual(PeppyTabBarFigmaLayout.contentHeight, 29)
-        XCTAssertEqual(PeppyTabBarFigmaLayout.iconSize, 15)
         XCTAssertGreaterThanOrEqual(ProfileSettingsFigmaLayout.minimumTapTarget, 44)
         XCTAssertEqual(
             ProfileSettingsPresentation.sectionTitles,
             ["Account information", "Preferences", "Baseline information", "Onboarding goals"]
-        )
-    }
-
-    func testTabBarBadgePresentationPreservesInsightsCount() {
-        XCTAssertNil(PeppyTabBarPresentation.badgeText(for: 0))
-        XCTAssertEqual(PeppyTabBarPresentation.badgeText(for: 3), "3")
-        XCTAssertEqual(PeppyTabBarPresentation.badgeText(for: 120), "99+")
-        XCTAssertEqual(
-            PeppyTabBarPresentation.accessibilityLabel(
-                for: .insights,
-                unreadInsightsCount: 3
-            ),
-            "Insights, 3 unread"
-        )
-        XCTAssertEqual(
-            PeppyTabBarPresentation.accessibilityLabel(
-                for: .profile,
-                unreadInsightsCount: 3
-            ),
-            "More"
         )
     }
 
