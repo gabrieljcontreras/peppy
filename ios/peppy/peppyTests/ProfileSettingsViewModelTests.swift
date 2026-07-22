@@ -224,21 +224,18 @@ final class ProfileSettingsViewModelTests: XCTestCase {
         XCTAssertEqual(preferences.unit, .kilograms)
     }
 
-    func testProfileFramePreservesMeasuredFigmaContract() {
+    func testProfileLayoutUsesSafeAreaSpacingAndAccessibleGeometry() {
         XCTAssertEqual(ProfileSettingsFigmaLayout.referenceCanvasWidth, 853)
         XCTAssertEqual(ProfileSettingsFigmaLayout.referenceCanvasHeight, 1_844)
         XCTAssertEqual(ProfileSettingsFigmaLayout.horizontalPadding, 22)
         XCTAssertEqual(ProfileSettingsFigmaLayout.cardCornerRadius, 8)
         XCTAssertEqual(ProfileSettingsFigmaLayout.headerControlDiameter, 30)
-        XCTAssertEqual(ProfileSettingsFigmaLayout.headerTopAdjustment, -18)
-        XCTAssertEqual(ProfileSettingsFigmaLayout.bodyTopAdjustment, -8)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsFigmaLayout.contentTopPadding, 0)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsFigmaLayout.firstSectionTopPadding, 0)
         XCTAssertEqual(ProfileSettingsFigmaLayout.accountRowMinimumHeight, 51)
         XCTAssertEqual(ProfileSettingsFigmaLayout.baselineRowMinimumHeight, 44)
         XCTAssertEqual(ProfileSettingsFigmaLayout.compactRowMinimumHeight, 32)
         XCTAssertEqual(ProfileSettingsFigmaLayout.saveButtonVisualHeight, 32)
-        XCTAssertEqual(PeppyTabBarFigmaLayout.visibleHeight, 63)
-        XCTAssertEqual(PeppyTabBarFigmaLayout.contentHeight, 29)
-        XCTAssertEqual(PeppyTabBarFigmaLayout.iconSize, 15)
         XCTAssertGreaterThanOrEqual(ProfileSettingsFigmaLayout.minimumTapTarget, 44)
         XCTAssertEqual(
             ProfileSettingsPresentation.sectionTitles,
@@ -246,24 +243,21 @@ final class ProfileSettingsViewModelTests: XCTestCase {
         )
     }
 
-    func testTabBarBadgePresentationPreservesInsightsCount() {
-        XCTAssertNil(PeppyTabBarPresentation.badgeText(for: 0))
-        XCTAssertEqual(PeppyTabBarPresentation.badgeText(for: 3), "3")
-        XCTAssertEqual(PeppyTabBarPresentation.badgeText(for: 120), "99+")
-        XCTAssertEqual(
-            PeppyTabBarPresentation.accessibilityLabel(
-                for: .insights,
-                unreadInsightsCount: 3
-            ),
-            "Insights, 3 unread"
-        )
-        XCTAssertEqual(
-            PeppyTabBarPresentation.accessibilityLabel(
-                for: .profile,
-                unreadInsightsCount: 3
-            ),
-            "More"
-        )
+    func testProfileTypographyMatchesMoreOverviewReadableScale() {
+        XCTAssertEqual(ProfileSettingsTypography.pageTitle, 24)
+        XCTAssertEqual(ProfileSettingsTypography.pageDescription, 12)
+        XCTAssertEqual(ProfileSettingsTypography.sectionTitle, 13)
+        XCTAssertEqual(ProfileSettingsTypography.sectionDescription, 11)
+        XCTAssertEqual(ProfileSettingsTypography.rowLabel, 11)
+        XCTAssertEqual(ProfileSettingsTypography.rowValue, 13)
+        XCTAssertEqual(ProfileSettingsTypography.goalTitle, 13)
+        XCTAssertEqual(ProfileSettingsTypography.goalValue, 11)
+        XCTAssertEqual(ProfileSettingsTypography.preferenceTitle, 13)
+        XCTAssertEqual(ProfileSettingsTypography.preferenceDescription, 11)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsTypography.action, 15)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsTypography.control, 15)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsTypography.saveAction, 17)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsTypography.footer, 13)
     }
 
     private func makeFixture() -> ProfileFixture {

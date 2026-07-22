@@ -68,10 +68,6 @@ private struct ProfileSettingsVisualQAHost: View {
             }
         }
         .tint(.pepPrimary)
-        .toolbar(.hidden, for: .tabBar)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            PeppyTabBar(selection: .constant(.profile))
-        }
     }
 }
 #endif

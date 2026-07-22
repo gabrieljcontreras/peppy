@@ -8,8 +8,8 @@ enum ProfileSettingsFigmaLayout {
     static let horizontalPadding: CGFloat = 22
     static let minimumTapTarget: CGFloat = 44
     static let headerControlDiameter: CGFloat = 30
-    static let headerTopAdjustment: CGFloat = -18
-    static let bodyTopAdjustment: CGFloat = -8
+    static let contentTopPadding: CGFloat = Spacing.sm
+    static let firstSectionTopPadding: CGFloat = 0
     static let headerLogoHeight: CGFloat = 24
     static let rowIconSize: CGFloat = 30
     static let cardCornerRadius: CGFloat = 8
@@ -18,6 +18,23 @@ enum ProfileSettingsFigmaLayout {
     static let baselineRowMinimumHeight: CGFloat = 44
     static let compactRowMinimumHeight: CGFloat = 32
     static let saveButtonVisualHeight: CGFloat = 32
+}
+
+enum ProfileSettingsTypography {
+    static let pageTitle: CGFloat = 24
+    static let pageDescription: CGFloat = 12
+    static let sectionTitle: CGFloat = 13
+    static let sectionDescription: CGFloat = 11
+    static let rowLabel: CGFloat = 11
+    static let rowValue: CGFloat = 13
+    static let goalTitle: CGFloat = 13
+    static let goalValue: CGFloat = 11
+    static let preferenceTitle: CGFloat = 13
+    static let preferenceDescription: CGFloat = 11
+    static let action: CGFloat = 15
+    static let control: CGFloat = 15
+    static let saveAction: CGFloat = 17
+    static let footer: CGFloat = 13
 }
 
 enum ProfileSettingsPresentation {
@@ -47,6 +64,14 @@ struct ProfileSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var model: ProfileSettingsViewModel
     @State private var editor: ProfileEditor?
+    @ScaledMetric(relativeTo: .title) private var pageTitleFontSize =
+        ProfileSettingsTypography.pageTitle
+    @ScaledMetric(relativeTo: .body) private var pageDescriptionFontSize =
+        ProfileSettingsTypography.pageDescription
+    @ScaledMetric(relativeTo: .body) private var saveActionFontSize =
+        ProfileSettingsTypography.saveAction
+    @ScaledMetric(relativeTo: .footnote) private var footerFontSize =
+        ProfileSettingsTypography.footer
 
     init(
         store: SettingsStore,
@@ -85,32 +110,25 @@ struct ProfileSettingsView: View {
         @Bindable var model = model
 
         ScrollView {
-            ZStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 12) {
-                    header
-
-                    if let errorMessage = model.errorMessage {
-                        ProfileInlineError(message: errorMessage)
-                    }
-
-                    accountSection
-                        .padding(.top, ProfileSettingsFigmaLayout.bodyTopAdjustment)
-                    preferencesSection
-                        .padding(.top, 6)
-                    baselineSection
-                        .padding(.top, 3)
-                    goalsSection
-                    saveSection
-                }
-                .padding(.horizontal, ProfileSettingsFigmaLayout.horizontalPadding)
-                .padding(.top, ProfileSettingsFigmaLayout.headerTopAdjustment)
-                .padding(.bottom, Spacing.xs)
-
+            VStack(alignment: .leading, spacing: Spacing.md) {
                 headerControls
-                    .padding(.horizontal, ProfileSettingsFigmaLayout.horizontalPadding)
+                header
+
+                if let errorMessage = model.errorMessage {
+                    ProfileInlineError(message: errorMessage)
+                }
+
+                accountSection
+                    .padding(.top, ProfileSettingsFigmaLayout.firstSectionTopPadding)
+                preferencesSection
+                baselineSection
+                goalsSection
+                saveSection
             }
+            .padding(.horizontal, ProfileSettingsFigmaLayout.horizontalPadding)
+            .padding(.top, ProfileSettingsFigmaLayout.contentTopPadding)
+            .padding(.bottom, Spacing.lg)
         }
-        .scrollClipDisabled()
         .background(Color.pepBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $editor) { editor in
@@ -139,16 +157,20 @@ struct ProfileSettingsView: View {
 
     private var header: some View {
         VStack(spacing: 2) {
-            headerControls
-                .hidden()
-                .accessibilityHidden(true)
-
             Text("Profile")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(
+                    .system(
+                        size: pageTitleFontSize,
+                        weight: .bold,
+                        design: .rounded
+                    )
+                )
                 .foregroundStyle(Color.pepTextPrimary)
 
             Text("Manage your account, preferences, and health information.")
-                .font(.system(size: 10, design: .rounded))
+                .font(
+                    .system(size: pageDescriptionFontSize, design: .rounded)
+                )
                 .foregroundStyle(Color.pepTextSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -391,11 +413,17 @@ struct ProfileSettingsView: View {
                             .tint(.white)
                     }
                     Text("Save changes")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(
+                            .system(
+                                size: saveActionFontSize,
+                                weight: .semibold,
+                                design: .rounded
+                            )
+                        )
                 }
                 .foregroundStyle(Color.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: ProfileSettingsFigmaLayout.saveButtonVisualHeight)
+                .frame(minHeight: ProfileSettingsFigmaLayout.saveButtonVisualHeight)
                 .background(Color.pepPrimary)
                 .clipShape(
                     RoundedRectangle(cornerRadius: ProfileSettingsFigmaLayout.cardCornerRadius)
@@ -407,7 +435,7 @@ struct ProfileSettingsView: View {
             .accessibilityIdentifier("profile-save-changes")
 
             Text("Changes are saved to your account securely.")
-                .font(.system(size: 10, design: .rounded))
+                .font(.system(size: footerFontSize, design: .rounded))
                 .foregroundStyle(Color.pepTextSecondary)
                 .frame(maxWidth: .infinity)
         }
@@ -434,6 +462,10 @@ private struct ProfileSection<Content: View>: View {
     let subtitle: String
     var subtitleSystemImage: String?
     @ViewBuilder let content: Content
+    @ScaledMetric(relativeTo: .headline) private var titleFontSize =
+        ProfileSettingsTypography.sectionTitle
+    @ScaledMetric(relativeTo: .subheadline) private var descriptionFontSize =
+        ProfileSettingsTypography.sectionDescription
 
     init(
         title: String,
@@ -451,7 +483,13 @@ private struct ProfileSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 6) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .font(
+                        .system(
+                            size: titleFontSize,
+                            weight: .semibold,
+                            design: .rounded
+                        )
+                    )
                     .foregroundStyle(Color.pepTextPrimary)
 
                 HStack(spacing: 4) {
@@ -462,7 +500,9 @@ private struct ProfileSection<Content: View>: View {
                     }
                     Text(subtitle)
                 }
-                .font(.system(size: 8, design: .rounded))
+                .font(
+                    .system(size: descriptionFontSize, design: .rounded)
+                )
                 .foregroundStyle(Color.pepTextSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             }
@@ -503,6 +543,16 @@ private struct ProfileValueRow: View {
     var isGoal = false
     var minimumHeight = ProfileSettingsFigmaLayout.rowMinimumHeight
     var action: (() -> Void)?
+    @ScaledMetric(relativeTo: .subheadline) private var rowLabelFontSize =
+        ProfileSettingsTypography.rowLabel
+    @ScaledMetric(relativeTo: .body) private var rowValueFontSize =
+        ProfileSettingsTypography.rowValue
+    @ScaledMetric(relativeTo: .body) private var goalTitleFontSize =
+        ProfileSettingsTypography.goalTitle
+    @ScaledMetric(relativeTo: .subheadline) private var goalValueFontSize =
+        ProfileSettingsTypography.goalValue
+    @ScaledMetric(relativeTo: .subheadline) private var actionFontSize =
+        ProfileSettingsTypography.action
 
     var body: some View {
         Group {
@@ -531,7 +581,9 @@ private struct ProfileValueRow: View {
                 Text(title)
                     .font(
                         .system(
-                            size: isGoal ? 9 : 8,
+                            size: isGoal
+                                ? goalTitleFontSize
+                                : rowLabelFontSize,
                             weight: isGoal ? .medium : .regular,
                             design: .rounded
                         )
@@ -540,7 +592,9 @@ private struct ProfileValueRow: View {
                 Text(value)
                     .font(
                         .system(
-                            size: isGoal ? 9 : 10,
+                            size: isGoal
+                                ? goalValueFontSize
+                                : rowValueFontSize,
                             weight: isGoal ? .regular : .medium,
                             design: .rounded
                         )
@@ -553,9 +607,16 @@ private struct ProfileValueRow: View {
 
             if let actionTitle {
                 Text(actionTitle)
-                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                    .font(
+                        .system(
+                            size: actionFontSize,
+                            weight: .medium,
+                            design: .rounded
+                        )
+                    )
                     .foregroundStyle(Color.pepPrimary)
-                    .frame(width: 36, height: 24)
+                    .padding(.horizontal, Spacing.sm)
+                    .frame(minWidth: 44, minHeight: 32)
                     .overlay {
                         RoundedRectangle(cornerRadius: 6)
                             .stroke(Color.pepPrimaryLight, lineWidth: 1)
@@ -592,6 +653,10 @@ private struct ProfilePreferenceRow<Control: View>: View {
     let title: String
     let subtitle: String
     @ViewBuilder let control: Control
+    @ScaledMetric(relativeTo: .body) private var titleFontSize =
+        ProfileSettingsTypography.preferenceTitle
+    @ScaledMetric(relativeTo: .subheadline) private var descriptionFontSize =
+        ProfileSettingsTypography.preferenceDescription
 
     init(
         systemImage: String,
@@ -611,10 +676,21 @@ private struct ProfilePreferenceRow<Control: View>: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                    .font(
+                        .system(
+                            size: titleFontSize,
+                            weight: .medium,
+                            design: .rounded
+                        )
+                    )
                     .foregroundStyle(Color.pepTextPrimary)
                 Text(subtitle)
-                    .font(.system(size: 8, design: .rounded))
+                    .font(
+                        .system(
+                            size: descriptionFontSize,
+                            design: .rounded
+                        )
+                    )
                     .foregroundStyle(Color.pepTextSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -632,6 +708,8 @@ private struct ProfileUnitControl: View {
     let options: [(label: String, value: String)]
     let selection: String
     let onSelect: (String) -> Void
+    @ScaledMetric(relativeTo: .subheadline) private var controlFontSize =
+        ProfileSettingsTypography.control
 
     var body: some View {
         HStack(spacing: 0) {
@@ -640,12 +718,19 @@ private struct ProfileUnitControl: View {
                     onSelect(option.value)
                 } label: {
                     Text(option.label)
-                        .font(.system(size: 8, weight: .medium, design: .rounded))
+                        .font(
+                            .system(
+                                size: controlFontSize,
+                                weight: .medium,
+                                design: .rounded
+                            )
+                        )
                         .foregroundStyle(
                             selection == option.value ? Color.pepPrimary : Color.pepTextPrimary
                         )
                         .frame(minWidth: 45)
-                        .frame(height: 24)
+                        .padding(.vertical, 5)
+                        .frame(minHeight: ProfileSettingsFigmaLayout.minimumTapTarget)
                         .background(
                             selection == option.value ? Color.pepPrimaryMuted : Color.pepSurface
                         )
@@ -656,7 +741,8 @@ private struct ProfileUnitControl: View {
                 if index < options.count - 1 {
                     Rectangle()
                         .fill(Color.pepBorder)
-                        .frame(width: 1, height: 24)
+                        .frame(width: 1)
+                        .frame(minHeight: ProfileSettingsFigmaLayout.minimumTapTarget)
                 }
             }
         }
