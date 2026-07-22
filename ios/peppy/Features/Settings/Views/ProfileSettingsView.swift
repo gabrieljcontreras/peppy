@@ -8,8 +8,8 @@ enum ProfileSettingsFigmaLayout {
     static let horizontalPadding: CGFloat = 22
     static let minimumTapTarget: CGFloat = 44
     static let headerControlDiameter: CGFloat = 30
-    static let headerTopAdjustment: CGFloat = -18
-    static let bodyTopAdjustment: CGFloat = -8
+    static let contentTopPadding: CGFloat = Spacing.sm
+    static let firstSectionTopPadding: CGFloat = 0
     static let headerLogoHeight: CGFloat = 24
     static let rowIconSize: CGFloat = 30
     static let cardCornerRadius: CGFloat = 8
@@ -18,6 +18,23 @@ enum ProfileSettingsFigmaLayout {
     static let baselineRowMinimumHeight: CGFloat = 44
     static let compactRowMinimumHeight: CGFloat = 32
     static let saveButtonVisualHeight: CGFloat = 32
+}
+
+enum ProfileSettingsTypography {
+    static let pageTitle: CGFloat = 20
+    static let pageDescription: CGFloat = 10
+    static let sectionTitle: CGFloat = 10
+    static let sectionDescription: CGFloat = 8
+    static let rowLabel: CGFloat = 8
+    static let rowValue: CGFloat = 10
+    static let goalTitle: CGFloat = 9
+    static let goalValue: CGFloat = 9
+    static let preferenceTitle: CGFloat = 9
+    static let preferenceDescription: CGFloat = 8
+    static let action: CGFloat = 9
+    static let control: CGFloat = 8
+    static let saveAction: CGFloat = 12
+    static let footer: CGFloat = 10
 }
 
 enum ProfileSettingsPresentation {
@@ -85,32 +102,25 @@ struct ProfileSettingsView: View {
         @Bindable var model = model
 
         ScrollView {
-            ZStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 12) {
-                    header
-
-                    if let errorMessage = model.errorMessage {
-                        ProfileInlineError(message: errorMessage)
-                    }
-
-                    accountSection
-                        .padding(.top, ProfileSettingsFigmaLayout.bodyTopAdjustment)
-                    preferencesSection
-                        .padding(.top, 6)
-                    baselineSection
-                        .padding(.top, 3)
-                    goalsSection
-                    saveSection
-                }
-                .padding(.horizontal, ProfileSettingsFigmaLayout.horizontalPadding)
-                .padding(.top, ProfileSettingsFigmaLayout.headerTopAdjustment)
-                .padding(.bottom, Spacing.xs)
-
+            VStack(alignment: .leading, spacing: Spacing.md) {
                 headerControls
-                    .padding(.horizontal, ProfileSettingsFigmaLayout.horizontalPadding)
+                header
+
+                if let errorMessage = model.errorMessage {
+                    ProfileInlineError(message: errorMessage)
+                }
+
+                accountSection
+                    .padding(.top, ProfileSettingsFigmaLayout.firstSectionTopPadding)
+                preferencesSection
+                baselineSection
+                goalsSection
+                saveSection
             }
+            .padding(.horizontal, ProfileSettingsFigmaLayout.horizontalPadding)
+            .padding(.top, ProfileSettingsFigmaLayout.contentTopPadding)
+            .padding(.bottom, Spacing.lg)
         }
-        .scrollClipDisabled()
         .background(Color.pepBackground.ignoresSafeArea())
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $editor) { editor in
@@ -139,16 +149,20 @@ struct ProfileSettingsView: View {
 
     private var header: some View {
         VStack(spacing: 2) {
-            headerControls
-                .hidden()
-                .accessibilityHidden(true)
-
             Text("Profile")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(
+                    .system(
+                        size: ProfileSettingsTypography.pageTitle,
+                        weight: .bold,
+                        design: .rounded
+                    )
+                )
                 .foregroundStyle(Color.pepTextPrimary)
 
             Text("Manage your account, preferences, and health information.")
-                .font(.system(size: 10, design: .rounded))
+                .font(
+                    .system(size: ProfileSettingsTypography.pageDescription, design: .rounded)
+                )
                 .foregroundStyle(Color.pepTextSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -391,7 +405,13 @@ struct ProfileSettingsView: View {
                             .tint(.white)
                     }
                     Text("Save changes")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(
+                            .system(
+                                size: ProfileSettingsTypography.saveAction,
+                                weight: .semibold,
+                                design: .rounded
+                            )
+                        )
                 }
                 .foregroundStyle(Color.white)
                 .frame(maxWidth: .infinity)
@@ -407,7 +427,7 @@ struct ProfileSettingsView: View {
             .accessibilityIdentifier("profile-save-changes")
 
             Text("Changes are saved to your account securely.")
-                .font(.system(size: 10, design: .rounded))
+                .font(.system(size: ProfileSettingsTypography.footer, design: .rounded))
                 .foregroundStyle(Color.pepTextSecondary)
                 .frame(maxWidth: .infinity)
         }
@@ -451,7 +471,13 @@ private struct ProfileSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 6) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .font(
+                        .system(
+                            size: ProfileSettingsTypography.sectionTitle,
+                            weight: .semibold,
+                            design: .rounded
+                        )
+                    )
                     .foregroundStyle(Color.pepTextPrimary)
 
                 HStack(spacing: 4) {
@@ -462,7 +488,9 @@ private struct ProfileSection<Content: View>: View {
                     }
                     Text(subtitle)
                 }
-                .font(.system(size: 8, design: .rounded))
+                .font(
+                    .system(size: ProfileSettingsTypography.sectionDescription, design: .rounded)
+                )
                 .foregroundStyle(Color.pepTextSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             }
@@ -531,7 +559,9 @@ private struct ProfileValueRow: View {
                 Text(title)
                     .font(
                         .system(
-                            size: isGoal ? 9 : 8,
+                            size: isGoal
+                                ? ProfileSettingsTypography.goalTitle
+                                : ProfileSettingsTypography.rowLabel,
                             weight: isGoal ? .medium : .regular,
                             design: .rounded
                         )
@@ -540,7 +570,9 @@ private struct ProfileValueRow: View {
                 Text(value)
                     .font(
                         .system(
-                            size: isGoal ? 9 : 10,
+                            size: isGoal
+                                ? ProfileSettingsTypography.goalValue
+                                : ProfileSettingsTypography.rowValue,
                             weight: isGoal ? .regular : .medium,
                             design: .rounded
                         )
@@ -553,7 +585,13 @@ private struct ProfileValueRow: View {
 
             if let actionTitle {
                 Text(actionTitle)
-                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                    .font(
+                        .system(
+                            size: ProfileSettingsTypography.action,
+                            weight: .medium,
+                            design: .rounded
+                        )
+                    )
                     .foregroundStyle(Color.pepPrimary)
                     .frame(width: 36, height: 24)
                     .overlay {
@@ -611,10 +649,21 @@ private struct ProfilePreferenceRow<Control: View>: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                    .font(
+                        .system(
+                            size: ProfileSettingsTypography.preferenceTitle,
+                            weight: .medium,
+                            design: .rounded
+                        )
+                    )
                     .foregroundStyle(Color.pepTextPrimary)
                 Text(subtitle)
-                    .font(.system(size: 8, design: .rounded))
+                    .font(
+                        .system(
+                            size: ProfileSettingsTypography.preferenceDescription,
+                            design: .rounded
+                        )
+                    )
                     .foregroundStyle(Color.pepTextSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -640,7 +689,13 @@ private struct ProfileUnitControl: View {
                     onSelect(option.value)
                 } label: {
                     Text(option.label)
-                        .font(.system(size: 8, weight: .medium, design: .rounded))
+                        .font(
+                            .system(
+                                size: ProfileSettingsTypography.control,
+                                weight: .medium,
+                                design: .rounded
+                            )
+                        )
                         .foregroundStyle(
                             selection == option.value ? Color.pepPrimary : Color.pepTextPrimary
                         )

@@ -224,14 +224,14 @@ final class ProfileSettingsViewModelTests: XCTestCase {
         XCTAssertEqual(preferences.unit, .kilograms)
     }
 
-    func testProfileFramePreservesMeasuredFigmaContract() {
+    func testProfileLayoutUsesSafeAreaSpacingAndAccessibleGeometry() {
         XCTAssertEqual(ProfileSettingsFigmaLayout.referenceCanvasWidth, 853)
         XCTAssertEqual(ProfileSettingsFigmaLayout.referenceCanvasHeight, 1_844)
         XCTAssertEqual(ProfileSettingsFigmaLayout.horizontalPadding, 22)
         XCTAssertEqual(ProfileSettingsFigmaLayout.cardCornerRadius, 8)
         XCTAssertEqual(ProfileSettingsFigmaLayout.headerControlDiameter, 30)
-        XCTAssertEqual(ProfileSettingsFigmaLayout.headerTopAdjustment, -18)
-        XCTAssertEqual(ProfileSettingsFigmaLayout.bodyTopAdjustment, -8)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsFigmaLayout.contentTopPadding, 0)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsFigmaLayout.firstSectionTopPadding, 0)
         XCTAssertEqual(ProfileSettingsFigmaLayout.accountRowMinimumHeight, 51)
         XCTAssertEqual(ProfileSettingsFigmaLayout.baselineRowMinimumHeight, 44)
         XCTAssertEqual(ProfileSettingsFigmaLayout.compactRowMinimumHeight, 32)
