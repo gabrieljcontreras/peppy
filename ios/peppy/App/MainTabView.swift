@@ -104,7 +104,7 @@ struct MainTabView: View {
     }
 }
 
-// MARK: - Placeholder Tab Views
+// MARK: - Tab Views
 
 struct HomeTab: View {
     var body: some View {
@@ -141,32 +141,12 @@ struct InsightsTab: View {
 }
 
 struct ProfileTab: View {
-    var body: some View {
-        NavigationStack {
-            PlaceholderView(title: "Settings", icon: "ellipsis.circle")
-                .navigationTitle("More")
-        }
-    }
-}
-
-struct PlaceholderView: View {
-    let title: String
-    let icon: String
+    @Environment(\.dependencies) private var deps
 
     var body: some View {
-        VStack(spacing: Spacing.lg) {
-            Image(systemName: icon)
-                .font(.system(size: 64))
-                .foregroundColor(.pepPrimary)
-
-            Text(title)
-                .pepTitle2()
-
-            Text("Coming soon...")
-                .pepSubheadline()
+        SettingsRootView(store: deps.settingsStore) {
+            deps.flow.logout()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.pepBackground)
     }
 }
 

@@ -1,18 +1,47 @@
+from collections.abc import Iterator
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import CurrentUser
+from app.api.schemas.export import DataExportRequest
 from app.api.schemas.profile import (
     OnboardingProfileAttachRequest,
     OnboardingProfilePayload,
     OnboardingProfileResponse,
 )
 from app.database import get_db
+from app.services.export import ExportService
 from app.services.profile import OnboardingProfileService
 
 router = APIRouter()
+
+
+@router.post("/export")
+async def export_profile_data(
+    request: DataExportRequest,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+) -> StreamingResponse:
+    generated = await ExportService(db).generate(current_user, request)
+
+    def stream_chunks() -> Iterator[bytes]:
+        try:
+            while chunk := generated.stream.read(64 * 1024):
+                yield chunk
+        finally:
+            generated.stream.close()
+
+    return StreamingResponse(
+        stream_chunks(),
+        media_type=generated.media_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{generated.filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
 
 
 @router.get("/onboarding", response_model=OnboardingProfileResponse)

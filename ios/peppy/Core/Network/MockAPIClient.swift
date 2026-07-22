@@ -3,6 +3,7 @@ import Foundation
 final class MockAPIClient: APIClientProtocol {
     var mockResponses: [String: Any] = [:]
     var mockErrors: [String: APIError] = [:]
+    var mockDownloads: [String: DownloadedFile] = [:]
     var requestLog: [Endpoint] = []
     var onRequest: ((Endpoint) async -> Void)?
 
@@ -30,6 +31,21 @@ final class MockAPIClient: APIClientProtocol {
         }
     }
 
+    func download(_ endpoint: Endpoint) async throws -> DownloadedFile {
+        requestLog.append(endpoint)
+        await onRequest?(endpoint)
+
+        if let error = mockError(for: endpoint) {
+            throw error
+        }
+
+        guard let file = mockDownloads[endpoint.requestID] else {
+            throw APIError.notFound
+        }
+
+        return file
+    }
+
     func setMockResponse<T>(_ response: T, for path: String) {
         mockResponses[path] = response
     }
@@ -46,9 +62,14 @@ final class MockAPIClient: APIClientProtocol {
         mockErrors[endpoint.requestID] = error
     }
 
+    func setMockDownload(_ file: DownloadedFile, for endpoint: Endpoint) {
+        mockDownloads[endpoint.requestID] = file
+    }
+
     func clearMocks() {
         mockResponses.removeAll()
         mockErrors.removeAll()
+        mockDownloads.removeAll()
         requestLog.removeAll()
         onRequest = nil
     }

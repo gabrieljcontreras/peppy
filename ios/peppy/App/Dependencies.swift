@@ -14,6 +14,7 @@ final class Dependencies {
     let protocolNavigation: ProtocolNavigationCoordinator
     let insightsStore: InsightsStore
     let checkinStore: CheckinStore
+    let settingsStore: SettingsStore
     let weightUnitPreferences: WeightUnitPreferences
 
     init(
@@ -29,6 +30,7 @@ final class Dependencies {
         protocolNavigation: ProtocolNavigationCoordinator,
         insightsStore: InsightsStore,
         checkinStore: CheckinStore,
+        settingsStore: SettingsStore,
         weightUnitPreferences: WeightUnitPreferences
     ) {
         self.api = api
@@ -43,6 +45,7 @@ final class Dependencies {
         self.protocolNavigation = protocolNavigation
         self.insightsStore = insightsStore
         self.checkinStore = checkinStore
+        self.settingsStore = settingsStore
         self.weightUnitPreferences = weightUnitPreferences
     }
 
@@ -55,14 +58,23 @@ final class Dependencies {
         let notifications = NotificationPermissionService()
         let protocolNavigation = ProtocolNavigationCoordinator()
         let checkinStore = CheckinStore(api: api)
+        let settingsStore = SettingsStore(api: api)
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
             appState: appState,
             onboardingStore: onboardingStore,
-            resetSessionData: { [weak checkinStore, weak protocolNavigation] in
+            prepareSessionData: { [weak settingsStore] user in
+                settingsStore?.beginSession(user: user)
+            },
+            resetSessionData: { [
+                weak checkinStore,
+                weak protocolNavigation,
+                weak settingsStore
+            ] in
                 checkinStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
+                settingsStore?.resetSession()
             }
         )
         let onboardingViewModel = OnboardingViewModel(
@@ -93,6 +105,7 @@ final class Dependencies {
             protocolNavigation: protocolNavigation,
             insightsStore: insightsStore,
             checkinStore: checkinStore,
+            settingsStore: settingsStore,
             weightUnitPreferences: weightUnitPreferences
         )
     }
@@ -106,14 +119,60 @@ final class Dependencies {
         let notifications = MockNotificationPermissionService(outcome: .authorized)
         let protocolNavigation = ProtocolNavigationCoordinator()
         let checkinStore = CheckinStore(api: api)
+        let previewUser = User(
+            id: UUID(uuidString: "B95BB392-4761-496D-9C0E-FF80B358C7C7")!,
+            email: "alex.morgan@example.com",
+            displayName: "Alex Morgan",
+            isVerified: true
+        )
+        let previewProfile = AccountProfile(
+            id: previewUser.id,
+            schemaVersion: 1,
+            heightCm: 180,
+            preferredHeightUnit: "cm",
+            weightKg: 82,
+            preferredWeightUnit: "kg",
+            baselineDate: APIDateOnly.date(from: "2026-07-20"),
+            primaryGoal: "track_protocols",
+            secondaryGoal: nil,
+            focusArea: nil
+        )
+        let previewPreferences = NotificationPreferences(
+            id: UUID(uuidString: "7BCE24BB-54D5-4EC4-A157-C46B05D3043A")!,
+            insightsEnabled: true,
+            alertSeverityOnly: false,
+            doseRemindersEnabled: false,
+            dailyCheckinRemindersEnabled: false,
+            dailyCheckinTime: nil,
+            detailedPreviewsEnabled: false,
+            quietHoursStart: nil,
+            quietHoursEnd: nil,
+            doseReminders: []
+        )
+        api.setMockResponse(previewProfile, for: .getProfile)
+        api.setMockResponse(previewPreferences, for: .getNotificationPreferences)
+        let settingsStore = SettingsStore(
+            api: api,
+            initialUser: previewUser,
+            cachedProfile: previewProfile,
+            cachedNotificationPreferences: previewPreferences
+        )
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
             appState: appState,
             onboardingStore: onboardingStore,
-            resetSessionData: { [weak checkinStore, weak protocolNavigation] in
+            prepareSessionData: { [weak settingsStore] user in
+                settingsStore?.beginSession(user: user)
+            },
+            resetSessionData: { [
+                weak checkinStore,
+                weak protocolNavigation,
+                weak settingsStore
+            ] in
                 checkinStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
+                settingsStore?.resetSession()
             }
         )
         let onboardingViewModel = OnboardingViewModel(
@@ -144,6 +203,7 @@ final class Dependencies {
             protocolNavigation: protocolNavigation,
             insightsStore: insightsStore,
             checkinStore: checkinStore,
+            settingsStore: settingsStore,
             weightUnitPreferences: weightUnitPreferences
         )
     }
