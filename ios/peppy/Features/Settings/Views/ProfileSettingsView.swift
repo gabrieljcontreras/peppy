@@ -21,20 +21,20 @@ enum ProfileSettingsFigmaLayout {
 }
 
 enum ProfileSettingsTypography {
-    static let pageTitle: CGFloat = 20
-    static let pageDescription: CGFloat = 10
-    static let sectionTitle: CGFloat = 10
-    static let sectionDescription: CGFloat = 8
-    static let rowLabel: CGFloat = 8
-    static let rowValue: CGFloat = 10
-    static let goalTitle: CGFloat = 9
-    static let goalValue: CGFloat = 9
-    static let preferenceTitle: CGFloat = 9
-    static let preferenceDescription: CGFloat = 8
-    static let action: CGFloat = 9
-    static let control: CGFloat = 8
-    static let saveAction: CGFloat = 12
-    static let footer: CGFloat = 10
+    static let pageTitle: CGFloat = 24
+    static let pageDescription: CGFloat = 12
+    static let sectionTitle: CGFloat = 13
+    static let sectionDescription: CGFloat = 11
+    static let rowLabel: CGFloat = 11
+    static let rowValue: CGFloat = 13
+    static let goalTitle: CGFloat = 13
+    static let goalValue: CGFloat = 11
+    static let preferenceTitle: CGFloat = 13
+    static let preferenceDescription: CGFloat = 11
+    static let action: CGFloat = 15
+    static let control: CGFloat = 15
+    static let saveAction: CGFloat = 17
+    static let footer: CGFloat = 13
 }
 
 enum ProfileSettingsPresentation {
@@ -64,6 +64,14 @@ struct ProfileSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var model: ProfileSettingsViewModel
     @State private var editor: ProfileEditor?
+    @ScaledMetric(relativeTo: .title) private var pageTitleFontSize =
+        ProfileSettingsTypography.pageTitle
+    @ScaledMetric(relativeTo: .body) private var pageDescriptionFontSize =
+        ProfileSettingsTypography.pageDescription
+    @ScaledMetric(relativeTo: .body) private var saveActionFontSize =
+        ProfileSettingsTypography.saveAction
+    @ScaledMetric(relativeTo: .footnote) private var footerFontSize =
+        ProfileSettingsTypography.footer
 
     init(
         store: SettingsStore,
@@ -152,7 +160,7 @@ struct ProfileSettingsView: View {
             Text("Profile")
                 .font(
                     .system(
-                        size: ProfileSettingsTypography.pageTitle,
+                        size: pageTitleFontSize,
                         weight: .bold,
                         design: .rounded
                     )
@@ -161,7 +169,7 @@ struct ProfileSettingsView: View {
 
             Text("Manage your account, preferences, and health information.")
                 .font(
-                    .system(size: ProfileSettingsTypography.pageDescription, design: .rounded)
+                    .system(size: pageDescriptionFontSize, design: .rounded)
                 )
                 .foregroundStyle(Color.pepTextSecondary)
                 .multilineTextAlignment(.center)
@@ -407,7 +415,7 @@ struct ProfileSettingsView: View {
                     Text("Save changes")
                         .font(
                             .system(
-                                size: ProfileSettingsTypography.saveAction,
+                                size: saveActionFontSize,
                                 weight: .semibold,
                                 design: .rounded
                             )
@@ -415,7 +423,7 @@ struct ProfileSettingsView: View {
                 }
                 .foregroundStyle(Color.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: ProfileSettingsFigmaLayout.saveButtonVisualHeight)
+                .frame(minHeight: ProfileSettingsFigmaLayout.saveButtonVisualHeight)
                 .background(Color.pepPrimary)
                 .clipShape(
                     RoundedRectangle(cornerRadius: ProfileSettingsFigmaLayout.cardCornerRadius)
@@ -427,7 +435,7 @@ struct ProfileSettingsView: View {
             .accessibilityIdentifier("profile-save-changes")
 
             Text("Changes are saved to your account securely.")
-                .font(.system(size: ProfileSettingsTypography.footer, design: .rounded))
+                .font(.system(size: footerFontSize, design: .rounded))
                 .foregroundStyle(Color.pepTextSecondary)
                 .frame(maxWidth: .infinity)
         }
@@ -454,6 +462,10 @@ private struct ProfileSection<Content: View>: View {
     let subtitle: String
     var subtitleSystemImage: String?
     @ViewBuilder let content: Content
+    @ScaledMetric(relativeTo: .headline) private var titleFontSize =
+        ProfileSettingsTypography.sectionTitle
+    @ScaledMetric(relativeTo: .subheadline) private var descriptionFontSize =
+        ProfileSettingsTypography.sectionDescription
 
     init(
         title: String,
@@ -473,7 +485,7 @@ private struct ProfileSection<Content: View>: View {
                 Text(title)
                     .font(
                         .system(
-                            size: ProfileSettingsTypography.sectionTitle,
+                            size: titleFontSize,
                             weight: .semibold,
                             design: .rounded
                         )
@@ -489,7 +501,7 @@ private struct ProfileSection<Content: View>: View {
                     Text(subtitle)
                 }
                 .font(
-                    .system(size: ProfileSettingsTypography.sectionDescription, design: .rounded)
+                    .system(size: descriptionFontSize, design: .rounded)
                 )
                 .foregroundStyle(Color.pepTextSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -531,6 +543,16 @@ private struct ProfileValueRow: View {
     var isGoal = false
     var minimumHeight = ProfileSettingsFigmaLayout.rowMinimumHeight
     var action: (() -> Void)?
+    @ScaledMetric(relativeTo: .subheadline) private var rowLabelFontSize =
+        ProfileSettingsTypography.rowLabel
+    @ScaledMetric(relativeTo: .body) private var rowValueFontSize =
+        ProfileSettingsTypography.rowValue
+    @ScaledMetric(relativeTo: .body) private var goalTitleFontSize =
+        ProfileSettingsTypography.goalTitle
+    @ScaledMetric(relativeTo: .subheadline) private var goalValueFontSize =
+        ProfileSettingsTypography.goalValue
+    @ScaledMetric(relativeTo: .subheadline) private var actionFontSize =
+        ProfileSettingsTypography.action
 
     var body: some View {
         Group {
@@ -560,8 +582,8 @@ private struct ProfileValueRow: View {
                     .font(
                         .system(
                             size: isGoal
-                                ? ProfileSettingsTypography.goalTitle
-                                : ProfileSettingsTypography.rowLabel,
+                                ? goalTitleFontSize
+                                : rowLabelFontSize,
                             weight: isGoal ? .medium : .regular,
                             design: .rounded
                         )
@@ -571,8 +593,8 @@ private struct ProfileValueRow: View {
                     .font(
                         .system(
                             size: isGoal
-                                ? ProfileSettingsTypography.goalValue
-                                : ProfileSettingsTypography.rowValue,
+                                ? goalValueFontSize
+                                : rowValueFontSize,
                             weight: isGoal ? .regular : .medium,
                             design: .rounded
                         )
@@ -587,13 +609,14 @@ private struct ProfileValueRow: View {
                 Text(actionTitle)
                     .font(
                         .system(
-                            size: ProfileSettingsTypography.action,
+                            size: actionFontSize,
                             weight: .medium,
                             design: .rounded
                         )
                     )
                     .foregroundStyle(Color.pepPrimary)
-                    .frame(width: 36, height: 24)
+                    .padding(.horizontal, Spacing.sm)
+                    .frame(minWidth: 44, minHeight: 32)
                     .overlay {
                         RoundedRectangle(cornerRadius: 6)
                             .stroke(Color.pepPrimaryLight, lineWidth: 1)
@@ -630,6 +653,10 @@ private struct ProfilePreferenceRow<Control: View>: View {
     let title: String
     let subtitle: String
     @ViewBuilder let control: Control
+    @ScaledMetric(relativeTo: .body) private var titleFontSize =
+        ProfileSettingsTypography.preferenceTitle
+    @ScaledMetric(relativeTo: .subheadline) private var descriptionFontSize =
+        ProfileSettingsTypography.preferenceDescription
 
     init(
         systemImage: String,
@@ -651,7 +678,7 @@ private struct ProfilePreferenceRow<Control: View>: View {
                 Text(title)
                     .font(
                         .system(
-                            size: ProfileSettingsTypography.preferenceTitle,
+                            size: titleFontSize,
                             weight: .medium,
                             design: .rounded
                         )
@@ -660,7 +687,7 @@ private struct ProfilePreferenceRow<Control: View>: View {
                 Text(subtitle)
                     .font(
                         .system(
-                            size: ProfileSettingsTypography.preferenceDescription,
+                            size: descriptionFontSize,
                             design: .rounded
                         )
                     )
@@ -681,6 +708,8 @@ private struct ProfileUnitControl: View {
     let options: [(label: String, value: String)]
     let selection: String
     let onSelect: (String) -> Void
+    @ScaledMetric(relativeTo: .subheadline) private var controlFontSize =
+        ProfileSettingsTypography.control
 
     var body: some View {
         HStack(spacing: 0) {
@@ -691,7 +720,7 @@ private struct ProfileUnitControl: View {
                     Text(option.label)
                         .font(
                             .system(
-                                size: ProfileSettingsTypography.control,
+                                size: controlFontSize,
                                 weight: .medium,
                                 design: .rounded
                             )
@@ -700,7 +729,8 @@ private struct ProfileUnitControl: View {
                             selection == option.value ? Color.pepPrimary : Color.pepTextPrimary
                         )
                         .frame(minWidth: 45)
-                        .frame(height: 24)
+                        .padding(.vertical, 5)
+                        .frame(minHeight: ProfileSettingsFigmaLayout.minimumTapTarget)
                         .background(
                             selection == option.value ? Color.pepPrimaryMuted : Color.pepSurface
                         )
@@ -711,7 +741,8 @@ private struct ProfileUnitControl: View {
                 if index < options.count - 1 {
                     Rectangle()
                         .fill(Color.pepBorder)
-                        .frame(width: 1, height: 24)
+                        .frame(width: 1)
+                        .frame(minHeight: ProfileSettingsFigmaLayout.minimumTapTarget)
                 }
             }
         }

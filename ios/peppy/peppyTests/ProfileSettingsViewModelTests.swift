@@ -243,6 +243,23 @@ final class ProfileSettingsViewModelTests: XCTestCase {
         )
     }
 
+    func testProfileTypographyMatchesMoreOverviewReadableScale() {
+        XCTAssertEqual(ProfileSettingsTypography.pageTitle, 24)
+        XCTAssertEqual(ProfileSettingsTypography.pageDescription, 12)
+        XCTAssertEqual(ProfileSettingsTypography.sectionTitle, 13)
+        XCTAssertEqual(ProfileSettingsTypography.sectionDescription, 11)
+        XCTAssertEqual(ProfileSettingsTypography.rowLabel, 11)
+        XCTAssertEqual(ProfileSettingsTypography.rowValue, 13)
+        XCTAssertEqual(ProfileSettingsTypography.goalTitle, 13)
+        XCTAssertEqual(ProfileSettingsTypography.goalValue, 11)
+        XCTAssertEqual(ProfileSettingsTypography.preferenceTitle, 13)
+        XCTAssertEqual(ProfileSettingsTypography.preferenceDescription, 11)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsTypography.action, 15)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsTypography.control, 15)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsTypography.saveAction, 17)
+        XCTAssertGreaterThanOrEqual(ProfileSettingsTypography.footer, 13)
+    }
+
     private func makeFixture() -> ProfileFixture {
         ProfileFixture(
             user: makeUser(),
