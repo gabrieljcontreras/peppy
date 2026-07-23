@@ -3,6 +3,13 @@ import XCTest
 @testable import peppy
 
 final class SettingsAPIContractTests: XCTestCase {
+    func testLiveAPIClientUsesTheBackendDevelopmentPort() {
+        XCTAssertEqual(
+            APIClient.defaultBaseURL,
+            URL(string: "http://localhost:8001/api/v1")
+        )
+    }
+
     func testSettingsEndpointsUseApprovedContracts() {
         XCTAssertEqual(Endpoint.getProfile.path, "/profile/onboarding")
         XCTAssertEqual(Endpoint.getProfile.method, .get)
