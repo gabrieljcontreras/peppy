@@ -20,6 +20,7 @@ final class Dependencies {
     let remoteNotificationRegistrar: RemoteNotificationRegistering
     let pushRegistrationCoordinator: PushRegistrationCoordinator
     let notificationReconciliation: NotificationReconciliationCoordinator
+    let appLock: AppLockCoordinator
 
     init(
         api: APIClientProtocol,
@@ -39,7 +40,8 @@ final class Dependencies {
         localNotificationScheduler: LocalNotificationScheduling,
         remoteNotificationRegistrar: RemoteNotificationRegistering,
         pushRegistrationCoordinator: PushRegistrationCoordinator,
-        notificationReconciliation: NotificationReconciliationCoordinator
+        notificationReconciliation: NotificationReconciliationCoordinator,
+        appLock: AppLockCoordinator
     ) {
         self.api = api
         self.keychain = keychain
@@ -59,6 +61,7 @@ final class Dependencies {
         self.remoteNotificationRegistrar = remoteNotificationRegistrar
         self.pushRegistrationCoordinator = pushRegistrationCoordinator
         self.notificationReconciliation = notificationReconciliation
+        self.appLock = appLock
     }
 
     static func live() -> Dependencies {
@@ -93,12 +96,21 @@ final class Dependencies {
             }
             return onboardingStore.loadAnonymousDraft()?.preferredWeightUnit
         }
+        weak var flowReference: AppFlowCoordinator?
+        let appLock = AppLockCoordinator(
+            authenticator: LocalAuthenticationAppLockService(),
+            preferences: UserDefaultsAppLockPreferences(),
+            logout: {
+                Task { await flowReference?.logoutAndWait() }
+            }
+        )
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
             appState: appState,
             onboardingStore: onboardingStore,
             prepareSessionData: { [weak settingsStore, weak weightUnitPreferences] user in
+                appLock.prepareForAuthenticatedSession(userID: user.id)
                 settingsStore?.beginSession(user: user)
                 weightUnitPreferences?.activate(userID: user.id, serverUnit: nil)
             },
@@ -107,13 +119,15 @@ final class Dependencies {
                 weak protocolNavigation,
                 weak protocolStore,
                 weak settingsStore,
-                weak weightUnitPreferences
+                weak weightUnitPreferences,
+                weak appLock
             ] in
                 checkinStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
                 protocolStore?.resetSession()
                 settingsStore?.resetSession()
                 weightUnitPreferences?.resetSession()
+                appLock?.resetSession()
             },
             cleanupAuthenticatedSessionData: { [
                 weak notificationReconciliation
@@ -121,6 +135,7 @@ final class Dependencies {
                 await notificationReconciliation?.resetSession()
             }
         )
+        flowReference = flow
         let onboardingViewModel = OnboardingViewModel(
             store: onboardingStore,
             healthKit: healthKit,
@@ -145,7 +160,8 @@ final class Dependencies {
             localNotificationScheduler: localNotificationScheduler,
             remoteNotificationRegistrar: remoteNotificationRegistrar,
             pushRegistrationCoordinator: pushRegistrationCoordinator,
-            notificationReconciliation: notificationReconciliation
+            notificationReconciliation: notificationReconciliation,
+            appLock: appLock
         )
     }
 
@@ -218,12 +234,21 @@ final class Dependencies {
             permissionService: notifications,
             remoteNotificationRegistrar: remoteNotificationRegistrar
         )
+        weak var flowReference: AppFlowCoordinator?
+        let appLock = AppLockCoordinator(
+            authenticator: LocalAuthenticationAppLockService(),
+            preferences: UserDefaultsAppLockPreferences(),
+            logout: {
+                Task { await flowReference?.logoutAndWait() }
+            }
+        )
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
             appState: appState,
             onboardingStore: onboardingStore,
             prepareSessionData: { [weak settingsStore, weak weightUnitPreferences] user in
+                appLock.prepareForAuthenticatedSession(userID: user.id)
                 settingsStore?.beginSession(user: user)
                 weightUnitPreferences?.activate(userID: user.id, serverUnit: nil)
             },
@@ -232,13 +257,15 @@ final class Dependencies {
                 weak protocolNavigation,
                 weak protocolStore,
                 weak settingsStore,
-                weak weightUnitPreferences
+                weak weightUnitPreferences,
+                weak appLock
             ] in
                 checkinStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
                 protocolStore?.resetSession()
                 settingsStore?.resetSession()
                 weightUnitPreferences?.resetSession()
+                appLock?.resetSession()
             },
             cleanupAuthenticatedSessionData: { [
                 weak notificationReconciliation
@@ -246,6 +273,7 @@ final class Dependencies {
                 await notificationReconciliation?.resetSession()
             }
         )
+        flowReference = flow
         let onboardingViewModel = OnboardingViewModel(
             store: onboardingStore,
             healthKit: healthKit,
@@ -270,7 +298,8 @@ final class Dependencies {
             localNotificationScheduler: localNotificationScheduler,
             remoteNotificationRegistrar: remoteNotificationRegistrar,
             pushRegistrationCoordinator: pushRegistrationCoordinator,
-            notificationReconciliation: notificationReconciliation
+            notificationReconciliation: notificationReconciliation,
+            appLock: appLock
         )
     }
 }

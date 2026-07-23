@@ -59,12 +59,15 @@ struct PeppyApp: App {
                     await dependencies.notificationReconciliation.startSession()
                 }
                 .onChange(of: scenePhase) { _, phase in
-                    guard phase == .active,
-                          dependencies.appState.isAuthenticated else {
+                    guard dependencies.appState.isAuthenticated else {
                         return
                     }
+                    dependencies.appLock.scenePhaseWillChange(phase)
                     Task {
-                        await dependencies.notificationReconciliation.reconcile()
+                        await dependencies.appLock.scenePhaseChanged(phase)
+                        if phase == .active {
+                            await dependencies.notificationReconciliation.reconcile()
+                        }
                     }
                 }
                 .onChange(of: dependencies.protocolStore.revision) {
