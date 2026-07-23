@@ -21,6 +21,7 @@ final class Dependencies {
     let pushRegistrationCoordinator: PushRegistrationCoordinator
     let notificationReconciliation: NotificationReconciliationCoordinator
     let appLock: AppLockCoordinator
+    let exportFileService: ExportFileServicing
 
     init(
         api: APIClientProtocol,
@@ -41,7 +42,8 @@ final class Dependencies {
         remoteNotificationRegistrar: RemoteNotificationRegistering,
         pushRegistrationCoordinator: PushRegistrationCoordinator,
         notificationReconciliation: NotificationReconciliationCoordinator,
-        appLock: AppLockCoordinator
+        appLock: AppLockCoordinator,
+        exportFileService: ExportFileServicing
     ) {
         self.api = api
         self.keychain = keychain
@@ -62,12 +64,15 @@ final class Dependencies {
         self.pushRegistrationCoordinator = pushRegistrationCoordinator
         self.notificationReconciliation = notificationReconciliation
         self.appLock = appLock
+        self.exportFileService = exportFileService
     }
 
     static func live() -> Dependencies {
         let keychain = KeychainService()
         let appState = AppState()
         let api = APIClient(keychain: keychain)
+        let exportFileService = ExportFileService()
+        try? exportFileService.removeStaleFiles()
         let onboardingStore = UserDefaultsOnboardingStore()
         let healthKit = HealthKitService()
         let notifications = NotificationPermissionService()
@@ -161,7 +166,8 @@ final class Dependencies {
             remoteNotificationRegistrar: remoteNotificationRegistrar,
             pushRegistrationCoordinator: pushRegistrationCoordinator,
             notificationReconciliation: notificationReconciliation,
-            appLock: appLock
+            appLock: appLock,
+            exportFileService: exportFileService
         )
     }
 
@@ -169,6 +175,14 @@ final class Dependencies {
         let keychain = MockKeychainService()
         let appState = AppState()
         let api = MockAPIClient()
+        let exportFileService = ExportFileService(
+            rootDirectory: FileManager.default.temporaryDirectory
+                .appendingPathComponent(
+                    "peppy-preview-exports",
+                    isDirectory: true
+                )
+        )
+        try? exportFileService.removeStaleFiles()
         let onboardingStore = InMemoryOnboardingStore()
         let healthKit = MockHealthKitService(outcome: .requested)
         let notifications = MockNotificationPermissionService(outcome: .authorized)
@@ -299,7 +313,8 @@ final class Dependencies {
             remoteNotificationRegistrar: remoteNotificationRegistrar,
             pushRegistrationCoordinator: pushRegistrationCoordinator,
             notificationReconciliation: notificationReconciliation,
-            appLock: appLock
+            appLock: appLock,
+            exportFileService: exportFileService
         )
     }
 }

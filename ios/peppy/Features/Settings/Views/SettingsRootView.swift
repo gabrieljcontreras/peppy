@@ -96,6 +96,11 @@ struct SettingsRootView: View {
                     dependencies.protocolNavigation.showProtocolsTab()
                 }
             )
+        case .dataExport:
+            DataExportView(
+                api: dependencies.api,
+                fileService: dependencies.exportFileService
+            )
         default:
             SettingsDestinationScaffold(route: route)
         }
