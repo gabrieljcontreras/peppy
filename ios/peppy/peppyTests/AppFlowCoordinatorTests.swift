@@ -77,6 +77,34 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertNil(fixture.keychain.get(KeychainKeys.refreshToken))
     }
 
+    func testFailedSessionRestorationCleansAuthenticatedDataBeforeDeletingCredentials() async throws {
+        let api = MockAPIClient()
+        let keychain = MockKeychainService()
+        let appState = AppState()
+        let store = InMemoryOnboardingStore()
+        var cleanupCallCount = 0
+        var tokenWasAvailableDuringCleanup = false
+        let coordinator = AppFlowCoordinator(
+            api: api,
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: store,
+            cleanupAuthenticatedSessionData: {
+                cleanupCallCount += 1
+                tokenWasAvailableDuringCleanup =
+                    keychain.get(KeychainKeys.accessToken) != nil
+            }
+        )
+        try keychain.save("access", for: KeychainKeys.accessToken)
+        api.setMockError(.unauthorized, for: "/auth/me")
+
+        await coordinator.resolveLaunch()
+
+        XCTAssertEqual(cleanupCallCount, 1)
+        XCTAssertTrue(tokenWasAvailableDuringCleanup)
+        XCTAssertNil(keychain.get(KeychainKeys.accessToken))
+    }
+
     func testNetworkFailureDuringSessionRestoreRoutesReturningUserToSignIn() async throws {
         let fixture = Fixture()
         try fixture.keychain.save("access", for: KeychainKeys.accessToken)
@@ -173,14 +201,14 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertNotNil(fixture.store.loadAnonymousDraft())
     }
 
-    func testLogoutClearsCredentialsAndRoutesToSignIn() throws {
+    func testLogoutClearsCredentialsAndRoutesToSignIn() async throws {
         let fixture = Fixture()
         let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
         fixture.appState.login(user: user)
         try fixture.keychain.save("access", for: KeychainKeys.accessToken)
         try fixture.keychain.save("refresh", for: KeychainKeys.refreshToken)
 
-        fixture.coordinator.logout()
+        await fixture.coordinator.logout()
 
         XCTAssertEqual(fixture.coordinator.route, .authentication(.signIn))
         XCTAssertFalse(fixture.appState.isAuthenticated)
@@ -193,7 +221,7 @@ final class AppFlowCoordinatorTests: XCTestCase {
         let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
 
         await fixture.coordinator.didAuthenticate(user: user)
-        fixture.coordinator.logout()
+        await fixture.coordinator.logout()
 
         XCTAssertEqual(fixture.coordinator.route, .authentication(.signIn))
         XCTAssertTrue(fixture.store.hasKnownAccount)
@@ -220,7 +248,7 @@ final class AppFlowCoordinatorTests: XCTestCase {
         dependencies.protocolNavigation.selectedTab = .checkin
         dependencies.protocolNavigation.checkinPath = [.detail(userACheckin.id)]
 
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
 
         XCTAssertTrue(dependencies.checkinStore.checkins.isEmpty)
         XCTAssertNil(dependencies.checkinStore.selectedCheckin)

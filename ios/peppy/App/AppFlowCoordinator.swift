@@ -29,6 +29,7 @@ final class AppFlowCoordinator {
     private let onboardingStore: OnboardingStoreProtocol
     private let prepareSessionData: @MainActor (User) -> Void
     private let resetSessionData: @MainActor () -> Void
+    private let cleanupAuthenticatedSessionData: @MainActor () async -> Void
 
     init(
         api: APIClientProtocol,
@@ -36,7 +37,8 @@ final class AppFlowCoordinator {
         appState: AppState,
         onboardingStore: OnboardingStoreProtocol,
         prepareSessionData: @escaping @MainActor (User) -> Void = { _ in },
-        resetSessionData: @escaping @MainActor () -> Void = {}
+        resetSessionData: @escaping @MainActor () -> Void = {},
+        cleanupAuthenticatedSessionData: @escaping @MainActor () async -> Void = {}
     ) {
         self.api = api
         self.keychain = keychain
@@ -44,6 +46,7 @@ final class AppFlowCoordinator {
         self.onboardingStore = onboardingStore
         self.prepareSessionData = prepareSessionData
         self.resetSessionData = resetSessionData
+        self.cleanupAuthenticatedSessionData = cleanupAuthenticatedSessionData
     }
 
     func resolveLaunch() async {
@@ -51,6 +54,7 @@ final class AppFlowCoordinator {
         authenticationBackStack = []
 
         guard keychain.get(KeychainKeys.accessToken) != nil else {
+            await cleanupAuthenticatedSessionData()
             resetSessionData()
             resolveSignedOutRoute()
             return
@@ -58,13 +62,13 @@ final class AppFlowCoordinator {
 
         do {
             let user: User = try await api.execute(.me)
-            resetForNewSession(ifNeeded: user.id)
+            await resetForNewSession(ifNeeded: user.id)
             prepareSessionData(user)
             appState.login(user: user)
             onboardingStore.hasKnownAccount = true
             route = .dashboard
         } catch {
-            resolveFailedSessionRestoration()
+            await resolveFailedSessionRestoration()
         }
     }
 
@@ -115,7 +119,7 @@ final class AppFlowCoordinator {
     }
 
     func didAuthenticate(user: User) async {
-        resetForNewSession(ifNeeded: user.id)
+        await resetForNewSession(ifNeeded: user.id)
         hasProfileAttachFailure = false
         if let draft = onboardingStore.loadAnonymousDraft(), draft.isComplete {
             do {
@@ -136,13 +140,24 @@ final class AppFlowCoordinator {
         route = .dashboard
     }
 
-    func logout() {
+    func logout() async {
+        await cleanupAuthenticatedSessionData()
+        finishLogout()
+    }
+
+    private func finishLogout() {
         resetSessionData()
         keychain.delete(KeychainKeys.accessToken)
         keychain.delete(KeychainKeys.refreshToken)
         appState.logout()
         authenticationBackStack = []
         route = .authentication(.signIn)
+    }
+
+    /// The app-facing logout path. Authenticated cleanup runs before credentials
+    /// are deleted so APNs can unregister the exact server device record.
+    func logoutAndWait() async {
+        await logout()
     }
 
     var shouldShowAuthenticationBackButton: Bool {
@@ -154,7 +169,8 @@ final class AppFlowCoordinator {
         route = previousRoute
     }
 
-    private func resolveFailedSessionRestoration() {
+    private func resolveFailedSessionRestoration() async {
+        await cleanupAuthenticatedSessionData()
         resetSessionData()
         keychain.delete(KeychainKeys.accessToken)
         keychain.delete(KeychainKeys.refreshToken)
@@ -180,8 +196,11 @@ final class AppFlowCoordinator {
         onboardingStore.loadAnonymousDraft()?.isComplete == true
     }
 
-    private func resetForNewSession(ifNeeded userID: UUID) {
+    private func resetForNewSession(ifNeeded userID: UUID) async {
         guard appState.currentUser?.id != userID else { return }
+        if appState.currentUser != nil {
+            await cleanupAuthenticatedSessionData()
+        }
         resetSessionData()
     }
 }

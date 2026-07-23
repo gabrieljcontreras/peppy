@@ -1,39 +1,32 @@
-# Design QA — iOS Settings Task 9
+# Task 11 Notifications Design QA
 
-## Source
-
-- Figma export: `/Users/gabri/Downloads/Peppy IOS (2).fig`
-- Approved frame: More
-- Extracted frame raster: `38236a38867f03d49a3f73ee20e45156833af197`
-- Reference size: 853 × 1844
-- Implementation capture: iPhone 17 Pro simulator, light appearance, confirmed mock account
-- Implementation capture SHA-256: `cb25788aa09749c2bad828d0b9834d5435cd774da231ae3b0a44d415e5e09282`
-- Normalized comparison SHA-256: `d048590cc9ad79466638d67981b13c1679cf17ea0753ff14006649a13735e1ba`
+- Reference: `/tmp/peppy-fig-task11.4xctE2/images/98028331c7e48cc14370a68479e7a5f309b13720`
+- Implementation capture: `/tmp/peppy-task11-notifications.png`
+- Combined comparison: `/tmp/peppy-task11-comparison.png`
+- Reference raster: 853 × 1844 px
+- Simulator viewport: iPhone 17 Pro, 402 × 874 pt (1206 × 2622 px)
+- State: dose reminders, daily check-ins, and insights enabled; alert-only insights disabled; quiet hours set to 10:00 PM–7:00 AM; detailed dose preview shown
 
 ## Comparison
 
-The implementation and source raster were normalized to the same 853 × 1844
-canvas and inspected side by side. The implementation preserves the reference
-hierarchy, horizontal alignment, card construction, icon tones, row copy,
-profile identity, version placement, logout treatment, and bottom-tab context.
+The full screen was compared side-by-side at a normalized height. Focused checks covered the header, grouped setting cards, switch states, quiet-hours controls, notification preview, bottom navigation, and overall density.
 
-The following differences are intentional:
+## Findings
 
-- Labs, Connected data, and Timeline are omitted by the approved release scope;
-  the remaining My data rows close without empty placeholders.
-- The simulator uses the current native Dynamic Island status area and floating
-  system tab bar, while the supplied raster shows an older system chrome style.
-- The live version and build are read from the app bundle instead of hard-coded
-  Figma values.
+- P0: none
+- P1: none
+- P2: none
+- P3: the implementation uses the centered title and larger native type treatment established by Peppy's current More/Profile screens instead of the Figma raster's leading title.
+- P3: iOS 26's taller floating tab bar leaves the save action below the initial viewport, while the screen remains vertically scrollable.
+- P3: supporting copy reflects implemented behavior and live settings state rather than copying every Figma sentence verbatim.
 
-## Accessibility checks
+## Iteration history
 
-- Interactive rows and logout expose at least 44-point tap targets.
-- Labels combine row title and supporting copy for VoiceOver.
-- Text uses native SwiftUI rendering and may reflow at larger Dynamic Type sizes.
-- The root remains scrollable and keeps the tab bar available.
+1. Grounded the implementation in the Notifications Figma raster and the existing More/Profile SwiftUI components and spacing.
+2. Captured the deterministic visual-QA state in the iPhone 17 Pro simulator.
+3. Compared the reference and implementation in one normalized side-by-side image.
+4. Accepted the remaining P3 differences because they preserve the current Peppy More-screen hierarchy, native iOS behavior, and functional clarity.
 
-## Result
+## Final result
 
-**Passed.** No blocking visual, interaction, or accessibility mismatch remains
-for the Task 9 release root.
+passed

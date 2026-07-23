@@ -249,7 +249,7 @@ final class SettingsStoreTests: XCTestCase {
 
         XCTAssertEqual(dependencies.settingsStore.user?.id, user.id)
 
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
 
         XCTAssertNil(dependencies.settingsStore.user)
         XCTAssertNil(dependencies.settingsStore.profile)

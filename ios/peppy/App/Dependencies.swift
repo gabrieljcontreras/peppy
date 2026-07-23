@@ -16,6 +16,10 @@ final class Dependencies {
     let checkinStore: CheckinStore
     let settingsStore: SettingsStore
     let weightUnitPreferences: WeightUnitPreferences
+    let localNotificationScheduler: LocalNotificationScheduling
+    let remoteNotificationRegistrar: RemoteNotificationRegistering
+    let pushRegistrationCoordinator: PushRegistrationCoordinator
+    let notificationReconciliation: NotificationReconciliationCoordinator
 
     init(
         api: APIClientProtocol,
@@ -31,7 +35,11 @@ final class Dependencies {
         insightsStore: InsightsStore,
         checkinStore: CheckinStore,
         settingsStore: SettingsStore,
-        weightUnitPreferences: WeightUnitPreferences
+        weightUnitPreferences: WeightUnitPreferences,
+        localNotificationScheduler: LocalNotificationScheduling,
+        remoteNotificationRegistrar: RemoteNotificationRegistering,
+        pushRegistrationCoordinator: PushRegistrationCoordinator,
+        notificationReconciliation: NotificationReconciliationCoordinator
     ) {
         self.api = api
         self.keychain = keychain
@@ -47,6 +55,10 @@ final class Dependencies {
         self.checkinStore = checkinStore
         self.settingsStore = settingsStore
         self.weightUnitPreferences = weightUnitPreferences
+        self.localNotificationScheduler = localNotificationScheduler
+        self.remoteNotificationRegistrar = remoteNotificationRegistrar
+        self.pushRegistrationCoordinator = pushRegistrationCoordinator
+        self.notificationReconciliation = notificationReconciliation
     }
 
     static func live() -> Dependencies {
@@ -59,6 +71,21 @@ final class Dependencies {
         let protocolNavigation = ProtocolNavigationCoordinator()
         let checkinStore = CheckinStore(api: api)
         let settingsStore = SettingsStore(api: api)
+        let protocolStore = ProtocolStore(api: api)
+        let localNotificationScheduler = LocalNotificationScheduler()
+        let remoteNotificationRegistrar = ApplicationRemoteNotificationRegistrar()
+        let pushRegistrationCoordinator = PushRegistrationCoordinator(
+            api: api,
+            isSignedIn: { appState.isAuthenticated }
+        )
+        let notificationReconciliation = NotificationReconciliationCoordinator(
+            settingsStore: settingsStore,
+            protocolStore: protocolStore,
+            scheduler: localNotificationScheduler,
+            pushRegistration: pushRegistrationCoordinator,
+            permissionService: notifications,
+            remoteNotificationRegistrar: remoteNotificationRegistrar
+        )
         let weightUnitPreferences = WeightUnitPreferences {
             if let userID = appState.currentUser?.id,
                let draft = onboardingStore.loadDraft(for: userID) {
@@ -78,13 +105,20 @@ final class Dependencies {
             resetSessionData: { [
                 weak checkinStore,
                 weak protocolNavigation,
+                weak protocolStore,
                 weak settingsStore,
                 weak weightUnitPreferences
             ] in
                 checkinStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
+                protocolStore?.resetSession()
                 settingsStore?.resetSession()
                 weightUnitPreferences?.resetSession()
+            },
+            cleanupAuthenticatedSessionData: { [
+                weak notificationReconciliation
+            ] in
+                await notificationReconciliation?.resetSession()
             }
         )
         let onboardingViewModel = OnboardingViewModel(
@@ -92,7 +126,6 @@ final class Dependencies {
             healthKit: healthKit,
             notifications: notifications
         )
-        let protocolStore = ProtocolStore(api: api)
         let insightsStore = InsightsStore(api: api)
         return Dependencies(
             api: api,
@@ -108,7 +141,11 @@ final class Dependencies {
             insightsStore: insightsStore,
             checkinStore: checkinStore,
             settingsStore: settingsStore,
-            weightUnitPreferences: weightUnitPreferences
+            weightUnitPreferences: weightUnitPreferences,
+            localNotificationScheduler: localNotificationScheduler,
+            remoteNotificationRegistrar: remoteNotificationRegistrar,
+            pushRegistrationCoordinator: pushRegistrationCoordinator,
+            notificationReconciliation: notificationReconciliation
         )
     }
 
@@ -166,6 +203,21 @@ final class Dependencies {
             cachedProfile: previewProfile,
             cachedNotificationPreferences: previewPreferences
         )
+        let protocolStore = ProtocolStore(api: api)
+        let localNotificationScheduler = LocalNotificationScheduler()
+        let remoteNotificationRegistrar = ApplicationRemoteNotificationRegistrar()
+        let pushRegistrationCoordinator = PushRegistrationCoordinator(
+            api: api,
+            isSignedIn: { appState.isAuthenticated }
+        )
+        let notificationReconciliation = NotificationReconciliationCoordinator(
+            settingsStore: settingsStore,
+            protocolStore: protocolStore,
+            scheduler: localNotificationScheduler,
+            pushRegistration: pushRegistrationCoordinator,
+            permissionService: notifications,
+            remoteNotificationRegistrar: remoteNotificationRegistrar
+        )
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
@@ -178,13 +230,20 @@ final class Dependencies {
             resetSessionData: { [
                 weak checkinStore,
                 weak protocolNavigation,
+                weak protocolStore,
                 weak settingsStore,
                 weak weightUnitPreferences
             ] in
                 checkinStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
+                protocolStore?.resetSession()
                 settingsStore?.resetSession()
                 weightUnitPreferences?.resetSession()
+            },
+            cleanupAuthenticatedSessionData: { [
+                weak notificationReconciliation
+            ] in
+                await notificationReconciliation?.resetSession()
             }
         )
         let onboardingViewModel = OnboardingViewModel(
@@ -192,7 +251,6 @@ final class Dependencies {
             healthKit: healthKit,
             notifications: notifications
         )
-        let protocolStore = ProtocolStore(api: api)
         let insightsStore = InsightsStore(api: api)
         return Dependencies(
             api: api,
@@ -208,7 +266,11 @@ final class Dependencies {
             insightsStore: insightsStore,
             checkinStore: checkinStore,
             settingsStore: settingsStore,
-            weightUnitPreferences: weightUnitPreferences
+            weightUnitPreferences: weightUnitPreferences,
+            localNotificationScheduler: localNotificationScheduler,
+            remoteNotificationRegistrar: remoteNotificationRegistrar,
+            pushRegistrationCoordinator: pushRegistrationCoordinator,
+            notificationReconciliation: notificationReconciliation
         )
     }
 }

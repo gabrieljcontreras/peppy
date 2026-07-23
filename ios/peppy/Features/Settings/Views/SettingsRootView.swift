@@ -82,6 +82,20 @@ struct SettingsRootView: View {
                 store: store,
                 weightUnitPreferences: dependencies.weightUnitPreferences
             )
+        case .notifications:
+            NotificationSettingsView(
+                store: store,
+                protocolStore: dependencies.protocolStore,
+                permissionService: dependencies.notifications,
+                scheduler: dependencies.localNotificationScheduler,
+                registerForRemoteNotifications: {
+                    dependencies.remoteNotificationRegistrar
+                        .registerForRemoteNotifications()
+                },
+                showProtocols: {
+                    dependencies.protocolNavigation.showProtocolsTab()
+                }
+            )
         default:
             SettingsDestinationScaffold(route: route)
         }

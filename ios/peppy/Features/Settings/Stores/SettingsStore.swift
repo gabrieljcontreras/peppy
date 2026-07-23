@@ -106,6 +106,22 @@ final class SettingsStore {
         notificationPreferences = confirmed
     }
 
+    func updateTimezoneIfNeeded(_ identifier: String) async throws {
+        guard let user, user.timezone != identifier else { return }
+
+        let generation = sessionGeneration
+        let confirmed: User = try await api.execute(
+            .updateCurrentUser(
+                .init(displayName: nil, timezone: identifier)
+            )
+        )
+
+        guard generation == sessionGeneration else {
+            throw APIError.unauthorized
+        }
+        self.user = confirmed
+    }
+
     func resetSession() {
         sessionGeneration += 1
         refreshGeneration += 1

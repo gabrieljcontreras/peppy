@@ -21,9 +21,25 @@ final class ProtocolStore {
     private var selectionToken = 0
     private var doseLogToken = 0
     private var mutatingProtocolIDs: Set<UUID> = []
+    private var sessionGeneration = 0
 
     init(api: APIClientProtocol) {
         self.api = api
+    }
+
+    func resetSession() {
+        sessionGeneration += 1
+        loadToken += 1
+        selectionToken += 1
+        doseLogToken += 1
+        protocols = []
+        selectedProtocol = nil
+        doseLogs = []
+        isLoading = false
+        mutatingProtocolID = nil
+        mutatingProtocolIDs = []
+        hasLoadedProtocols = false
+        errorMessage = nil
     }
 
     func loadProtocols(force: Bool = false) async {
@@ -68,80 +84,110 @@ final class ProtocolStore {
     }
 
     func create(_ request: CreateProtocolRequest) async -> ProtocolModel? {
+        let generation = sessionGeneration
         errorMessage = nil
 
         do {
             let created: ProtocolModel = try await api.execute(.createProtocol(request))
+            guard generation == sessionGeneration else { return nil }
             reconcile(created, insertAtFront: true, deactivateOthersIfActive: created.isActive)
             hasLoadedProtocols = true
             revision += 1
             return created
         } catch {
+            guard generation == sessionGeneration else { return nil }
             errorMessage = message(for: error)
             return nil
         }
     }
 
     func update(id: UUID, request: UpdateProtocolRequest) async -> ProtocolModel? {
+        let generation = sessionGeneration
         guard beginMutation(for: id) else { return nil }
-        defer { endMutation(for: id) }
+        defer {
+            if generation == sessionGeneration {
+                endMutation(for: id)
+            }
+        }
 
         errorMessage = nil
         do {
             let updated: ProtocolModel = try await api.execute(.updateProtocol(id: id, request))
+            guard generation == sessionGeneration else { return nil }
             reconcile(updated)
             revision += 1
             return updated
         } catch {
+            guard generation == sessionGeneration else { return nil }
             errorMessage = message(for: error)
             return nil
         }
     }
 
     func addCompound(protocolID: UUID, request: CreateCompoundRequest) async -> Compound? {
+        let generation = sessionGeneration
         guard beginMutation(for: protocolID) else { return nil }
-        defer { endMutation(for: protocolID) }
+        defer {
+            if generation == sessionGeneration {
+                endMutation(for: protocolID)
+            }
+        }
 
         errorMessage = nil
         do {
             let added: Compound = try await api.execute(.addCompound(protocolID: protocolID, request))
+            guard generation == sessionGeneration else { return nil }
             updateProtocol(id: protocolID) { protocolValue in
                 protocolValue.replacingCompounds(protocolValue.compounds + [added])
             }
             revision += 1
             return added
         } catch {
+            guard generation == sessionGeneration else { return nil }
             errorMessage = message(for: error)
             return nil
         }
     }
 
     func updateCompound(id: UUID, request: UpdateCompoundRequest) async -> Compound? {
+        let generation = sessionGeneration
         guard let protocolID = owningProtocolID(forCompoundID: id),
               beginMutation(for: protocolID) else {
             return nil
         }
-        defer { endMutation(for: protocolID) }
+        defer {
+            if generation == sessionGeneration {
+                endMutation(for: protocolID)
+            }
+        }
 
         errorMessage = nil
         do {
             let updated: Compound = try await api.execute(.updateCompound(id: id, request))
+            guard generation == sessionGeneration else { return nil }
             replaceCompound(updated)
             revision += 1
             return updated
         } catch {
+            guard generation == sessionGeneration else { return nil }
             errorMessage = message(for: error)
             return nil
         }
     }
 
     func removeCompound(id: UUID, protocolID: UUID) async -> Bool {
+        let generation = sessionGeneration
         guard beginMutation(for: protocolID) else { return false }
-        defer { endMutation(for: protocolID) }
+        defer {
+            if generation == sessionGeneration {
+                endMutation(for: protocolID)
+            }
+        }
 
         errorMessage = nil
         do {
             try await api.executeVoid(.removeCompound(id: id))
+            guard generation == sessionGeneration else { return false }
             updateProtocol(id: protocolID) { protocolValue in
                 protocolValue.replacingCompounds(
                     protocolValue.compounds.filter { $0.id != id }
@@ -150,22 +196,30 @@ final class ProtocolStore {
             revision += 1
             return true
         } catch {
+            guard generation == sessionGeneration else { return false }
             errorMessage = message(for: error)
             return false
         }
     }
 
     func activate(id: UUID) async -> Bool {
+        let generation = sessionGeneration
         guard beginMutation(for: id) else { return false }
-        defer { endMutation(for: id) }
+        defer {
+            if generation == sessionGeneration {
+                endMutation(for: id)
+            }
+        }
 
         errorMessage = nil
         do {
             let activated: ProtocolModel = try await api.execute(.activateProtocol(id: id))
+            guard generation == sessionGeneration else { return false }
             reconcile(activated, deactivateOthersIfActive: activated.isActive)
             revision += 1
             return true
         } catch {
+            guard generation == sessionGeneration else { return false }
             errorMessage = message(for: error)
             return false
         }
@@ -183,38 +237,55 @@ final class ProtocolStore {
     /// locally, and does not surface a user-facing error, so a retry doesn't
     /// re-POST an already-active protocol.
     func activateStarter(id: UUID, request: StarterProtocolActivationRequest) async -> Bool {
+        let generation = sessionGeneration
         guard beginMutation(for: id) else { return false }
-        defer { endMutation(for: id) }
+        defer {
+            if generation == sessionGeneration {
+                endMutation(for: id)
+            }
+        }
 
         errorMessage = nil
         do {
             try await api.executeVoid(.activateStarterProtocol(id: id, request))
+            guard generation == sessionGeneration else { return false }
         } catch {
+            guard generation == sessionGeneration else { return false }
             errorMessage = message(for: error)
             return false
         }
 
         do {
             let activated: ProtocolModel = try await api.execute(.getProtocol(id: id))
+            guard generation == sessionGeneration else { return false }
             reconcile(activated, deactivateOthersIfActive: activated.isActive)
         } catch {
+            guard generation == sessionGeneration else { return false }
             applyOptimisticActivation(id: id)
         }
+        guard generation == sessionGeneration else { return false }
         revision += 1
         return true
     }
 
     func deactivate(id: UUID) async -> Bool {
+        let generation = sessionGeneration
         guard beginMutation(for: id) else { return false }
-        defer { endMutation(for: id) }
+        defer {
+            if generation == sessionGeneration {
+                endMutation(for: id)
+            }
+        }
 
         errorMessage = nil
         do {
             let deactivated: ProtocolModel = try await api.execute(.deactivateProtocol(id: id))
+            guard generation == sessionGeneration else { return false }
             reconcile(deactivated)
             revision += 1
             return true
         } catch {
+            guard generation == sessionGeneration else { return false }
             errorMessage = message(for: error)
             return false
         }
@@ -223,18 +294,25 @@ final class ProtocolStore {
     func deleteSelected() async -> Bool {
         guard let selectedProtocol else { return false }
         let id = selectedProtocol.id
+        let generation = sessionGeneration
 
         guard beginMutation(for: id) else { return false }
-        defer { endMutation(for: id) }
+        defer {
+            if generation == sessionGeneration {
+                endMutation(for: id)
+            }
+        }
 
         errorMessage = nil
         do {
             try await api.executeVoid(.deleteProtocol(id: id))
+            guard generation == sessionGeneration else { return false }
             protocols.removeAll { $0.id == id }
             self.selectedProtocol = nil
             revision += 1
             return true
         } catch {
+            guard generation == sessionGeneration else { return false }
             errorMessage = message(for: error)
             return false
         }
@@ -256,15 +334,18 @@ final class ProtocolStore {
     }
 
     func logDose(_ request: CreateDoseLogRequest) async -> DoseLog? {
+        let generation = sessionGeneration
         errorMessage = nil
 
         do {
             let logged: DoseLog = try await api.execute(.createDoseLog(request))
+            guard generation == sessionGeneration else { return nil }
             doseLogs.insert(logged, at: 0)
             doseLogs.sort { $0.administeredAt > $1.administeredAt }
             revision += 1
             return logged
         } catch {
+            guard generation == sessionGeneration else { return nil }
             errorMessage = message(for: error)
             return nil
         }

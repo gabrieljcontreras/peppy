@@ -936,7 +936,7 @@ final class CheckinViewModelTests: XCTestCase {
 
         let load = Task { await dependencies.checkinStore.load() }
         await fulfillment(of: [requestStarted], timeout: 2)
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
         await gate.open()
         _ = await load.value
 
@@ -966,7 +966,7 @@ final class CheckinViewModelTests: XCTestCase {
 
         let load = Task { await dependencies.checkinStore.loadDetail(original.id) }
         await fulfillment(of: [requestStarted], timeout: 2)
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
         await gate.open()
         _ = await load.value
 
@@ -989,7 +989,7 @@ final class CheckinViewModelTests: XCTestCase {
 
         let create = Task { await dependencies.checkinStore.create(.fixture) }
         await fulfillment(of: [requestStarted], timeout: 2)
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
         await gate.open()
         let result = await create.value
 
@@ -1026,7 +1026,7 @@ final class CheckinViewModelTests: XCTestCase {
             await dependencies.checkinStore.update(id: original.id, request: request)
         }
         await fulfillment(of: [requestStarted], timeout: 2)
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
         await gate.open()
         let result = await update.value
 

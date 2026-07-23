@@ -45,6 +45,11 @@ final class ProtocolNavigationCoordinator {
         insightsPath = []
     }
 
+    func showProtocolsTab() {
+        selectedTab = .protocols
+        path = []
+    }
+
     func showCheckin(_ route: CheckinRoute) {
         selectedTab = .checkin
         checkinPath = [route]
@@ -145,7 +150,7 @@ struct ProfileTab: View {
 
     var body: some View {
         SettingsRootView(store: deps.settingsStore) {
-            deps.flow.logout()
+            Task { await deps.flow.logoutAndWait() }
         }
     }
 }
