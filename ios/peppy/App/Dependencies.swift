@@ -80,6 +80,7 @@ final class Dependencies {
         let checkinStore = CheckinStore(api: api)
         let settingsStore = SettingsStore(api: api)
         let protocolStore = ProtocolStore(api: api)
+        let insightsStore = InsightsStore(api: api)
         let localNotificationScheduler = LocalNotificationScheduler()
         let remoteNotificationRegistrar = ApplicationRemoteNotificationRegistrar()
         let pushRegistrationCoordinator = PushRegistrationCoordinator(
@@ -121,6 +122,7 @@ final class Dependencies {
             },
             resetSessionData: { [
                 weak checkinStore,
+                weak insightsStore,
                 weak protocolNavigation,
                 weak protocolStore,
                 weak settingsStore,
@@ -128,16 +130,20 @@ final class Dependencies {
                 weak appLock
             ] in
                 checkinStore?.resetSession()
+                insightsStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
                 protocolStore?.resetSession()
                 settingsStore?.resetSession()
                 weightUnitPreferences?.resetSession()
                 appLock?.resetSession()
+                try? exportFileService.removeStaleFiles()
             },
             cleanupAuthenticatedSessionData: { [
                 weak notificationReconciliation
-            ] in
-                await notificationReconciliation?.resetSession()
+            ] accessToken in
+                await notificationReconciliation?.resetSession(
+                    authenticatedBy: accessToken
+                )
             }
         )
         flowReference = flow
@@ -146,7 +152,6 @@ final class Dependencies {
             healthKit: healthKit,
             notifications: notifications
         )
-        let insightsStore = InsightsStore(api: api)
         return Dependencies(
             api: api,
             keychain: keychain,
@@ -234,6 +239,7 @@ final class Dependencies {
             cachedNotificationPreferences: previewPreferences
         )
         let protocolStore = ProtocolStore(api: api)
+        let insightsStore = InsightsStore(api: api)
         let localNotificationScheduler = LocalNotificationScheduler()
         let remoteNotificationRegistrar = ApplicationRemoteNotificationRegistrar()
         let pushRegistrationCoordinator = PushRegistrationCoordinator(
@@ -268,6 +274,7 @@ final class Dependencies {
             },
             resetSessionData: { [
                 weak checkinStore,
+                weak insightsStore,
                 weak protocolNavigation,
                 weak protocolStore,
                 weak settingsStore,
@@ -275,16 +282,20 @@ final class Dependencies {
                 weak appLock
             ] in
                 checkinStore?.resetSession()
+                insightsStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
                 protocolStore?.resetSession()
                 settingsStore?.resetSession()
                 weightUnitPreferences?.resetSession()
                 appLock?.resetSession()
+                try? exportFileService.removeStaleFiles()
             },
             cleanupAuthenticatedSessionData: { [
                 weak notificationReconciliation
-            ] in
-                await notificationReconciliation?.resetSession()
+            ] accessToken in
+                await notificationReconciliation?.resetSession(
+                    authenticatedBy: accessToken
+                )
             }
         )
         flowReference = flow
@@ -293,7 +304,6 @@ final class Dependencies {
             healthKit: healthKit,
             notifications: notifications
         )
-        let insightsStore = InsightsStore(api: api)
         return Dependencies(
             api: api,
             keychain: keychain,

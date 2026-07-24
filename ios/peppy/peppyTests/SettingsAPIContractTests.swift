@@ -244,6 +244,125 @@ final class SettingsAPIContractTests: XCTestCase {
         XCTAssertEqual(api.requestLog.map(\.requestID), ["POST /profile/export"])
     }
 
+    func testSnapshotAuthenticatedRequestNeverRefreshesOrMutatesKeychain() async throws {
+        var requestCount = 0
+        let fixture = try makeAPIClient { request in
+            requestCount += 1
+            XCTAssertEqual(request.url?.path, "/api/v1/auth/logout")
+            XCTAssertEqual(
+                request.value(forHTTPHeaderField: "Authorization"),
+                "Bearer old-session-access"
+            )
+            return .init(
+                statusCode: 401,
+                headers: ["Content-Type": "application/json"],
+                body: Data()
+            )
+        }
+        try fixture.keychain.save(
+            "new-session-access",
+            for: KeychainKeys.accessToken
+        )
+        try fixture.keychain.save(
+            "new-session-refresh",
+            for: KeychainKeys.refreshToken
+        )
+
+        do {
+            try await fixture.client.executeVoid(
+                .logout,
+                authenticatedBy: "old-session-access"
+            )
+            XCTFail("Expected the expired session snapshot to be rejected")
+        } catch let error as APIError {
+            guard case .unauthorized = error else {
+                return XCTFail("Expected unauthorized, got \(error)")
+            }
+        }
+
+        XCTAssertEqual(requestCount, 1)
+        XCTAssertEqual(
+            fixture.keychain.get(KeychainKeys.accessToken),
+            "new-session-access"
+        )
+        XCTAssertEqual(
+            fixture.keychain.get(KeychainKeys.refreshToken),
+            "new-session-refresh"
+        )
+    }
+
+    func testSuspendedRefreshCannotRestoreCredentialsAfterLogoutAndReauthentication() async throws {
+        let refreshStarted = expectation(description: "refresh started")
+        SuspendedRefreshURLProtocolStub.onRefreshStarted = {
+            refreshStarted.fulfill()
+        }
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [
+            SuspendedRefreshURLProtocolStub.self
+        ]
+        let keychain = MockKeychainService()
+        let client = APIClient(
+            baseURL: URL(string: "https://settings.example/api/v1")!,
+            session: URLSession(configuration: configuration),
+            keychain: keychain
+        )
+        let fixture = (client: client, keychain: keychain)
+        try fixture.keychain.save(
+            "old-session-access",
+            for: KeychainKeys.accessToken
+        )
+        try fixture.keychain.save(
+            "old-session-refresh",
+            for: KeychainKeys.refreshToken
+        )
+        let appState = AppState()
+        let oldUser = User(id: UUID(), email: "old@example.com")
+        appState.login(user: oldUser)
+        let coordinator = AppFlowCoordinator(
+            api: fixture.client,
+            keychain: fixture.keychain,
+            appState: appState,
+            onboardingStore: InMemoryOnboardingStore()
+        )
+        coordinator.route = .dashboard
+
+        let staleRequest = Task<User, Error> {
+            try await fixture.client.execute(.me)
+        }
+        await fulfillment(of: [refreshStarted])
+
+        await coordinator.logout()
+        try fixture.keychain.save(
+            "new-session-access",
+            for: KeychainKeys.accessToken
+        )
+        try fixture.keychain.save(
+            "new-session-refresh",
+            for: KeychainKeys.refreshToken
+        )
+        let newUser = User(id: UUID(), email: "new@example.com")
+        await coordinator.didAuthenticate(user: newUser)
+
+        SuspendedRefreshURLProtocolStub.completeRefresh()
+        do {
+            _ = try await staleRequest.value
+            XCTFail("The stale refresh should not complete successfully")
+        } catch {
+            // The old revision must be rejected after logout.
+        }
+
+        XCTAssertEqual(
+            fixture.keychain.get(KeychainKeys.accessToken),
+            "new-session-access"
+        )
+        XCTAssertEqual(
+            fixture.keychain.get(KeychainKeys.refreshToken),
+            "new-session-refresh"
+        )
+        XCTAssertEqual(appState.currentUser?.id, newUser.id)
+        XCTAssertEqual(coordinator.route, .dashboard)
+    }
+
     func testDownloadStreamsAuthenticatedResponseAndUsesContentDispositionFilename() async throws {
         let body = Data("streamed export bytes".utf8)
         let fixture = try makeAPIClient { request in
@@ -479,4 +598,76 @@ private final class SettingsURLProtocolStub: URLProtocol {
     }
 
     override func stopLoading() {}
+}
+
+private final class SuspendedRefreshURLProtocolStub: URLProtocol {
+    nonisolated(unsafe) static var onRefreshStarted: (() -> Void)?
+    nonisolated(unsafe) private static var pendingRefresh:
+        SuspendedRefreshURLProtocolStub?
+
+    override class func canInit(with request: URLRequest) -> Bool {
+        true
+    }
+
+    override class func canonicalRequest(
+        for request: URLRequest
+    ) -> URLRequest {
+        request
+    }
+
+    override func startLoading() {
+        switch request.url?.path {
+        case "/api/v1/auth/me":
+            send(statusCode: 401, body: Data())
+        case "/api/v1/auth/refresh":
+            Self.pendingRefresh = self
+            Self.onRefreshStarted?()
+        case "/api/v1/auth/logout":
+            send(statusCode: 204, body: Data())
+        default:
+            send(statusCode: 500, body: Data())
+        }
+    }
+
+    override func stopLoading() {}
+
+    static func completeRefresh() {
+        guard let pendingRefresh else { return }
+        Self.pendingRefresh = nil
+        pendingRefresh.send(
+            statusCode: 200,
+            body: Data(
+                """
+                {
+                  "access_token": "stale-refreshed-access",
+                  "refresh_token": "stale-refreshed-refresh",
+                  "token_type": "bearer"
+                }
+                """.utf8
+            )
+        )
+    }
+
+    private func send(statusCode: Int, body: Data) {
+        guard let url = request.url,
+              let response = HTTPURLResponse(
+                url: url,
+                statusCode: statusCode,
+                httpVersion: nil,
+                headerFields: ["Content-Type": "application/json"]
+              ) else {
+            client?.urlProtocol(
+                self,
+                didFailWithError: URLError(.badServerResponse)
+            )
+            return
+        }
+        client?.urlProtocol(
+            self,
+            didReceive: response,
+            cacheStoragePolicy: .notAllowed
+        )
+        client?.urlProtocol(self, didLoad: body)
+        client?.urlProtocolDidFinishLoading(self)
+    }
 }

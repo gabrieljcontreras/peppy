@@ -45,6 +45,15 @@
 		A2C8100F260723000000000F /* PeppyAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C8100E260723000000000E /* PeppyAppDelegate.swift */; };
 		A2C900022607230100000002 /* AppLockCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C900012607230100000001 /* AppLockCoordinatorTests.swift */; };
 		A2CA00022607230200000002 /* DataExportViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CA00012607230200000001 /* DataExportViewModelTests.swift */; };
+		A2CB00022607231400000002 /* AccountSecurityViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB00012607231400000001 /* AccountSecurityViewModelTests.swift */; };
+		A2CB00042607231400000004 /* HelpAboutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB00032607231400000003 /* HelpAboutTests.swift */; };
+		A2CB01022607231400000102 /* InAppBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB01012607231400000101 /* InAppBrowserView.swift */; };
+		A2CB02022607231400000202 /* AccountSecurityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB02012607231400000201 /* AccountSecurityViewModel.swift */; };
+		A2CB03022607231400000302 /* SecurityPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB03012607231400000301 /* SecurityPrivacyView.swift */; };
+		A2CB03042607231400000304 /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB03032607231400000303 /* ChangePasswordView.swift */; };
+		A2CB03062607231400000306 /* DeleteAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB03052607231400000305 /* DeleteAccountView.swift */; };
+		A2CB03082607231400000308 /* HelpAboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB03072607231400000307 /* HelpAboutView.swift */; };
+		A2CB030A260723140000030A /* MedicalDisclaimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB03092607231400000309 /* MedicalDisclaimerView.swift */; };
 		A2CA01022607230200000102 /* ExportFileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CA01012607230200000101 /* ExportFileService.swift */; };
 		A2CA01042607230200000104 /* DataExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CA01032607230200000103 /* DataExportViewModel.swift */; };
 		A2CA01072607230200000107 /* DataExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CA01062607230200000106 /* DataExportView.swift */; };
@@ -297,6 +306,15 @@
 		49E6E4422FE4EA64003B96CE /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A2C900012607230100000001 /* AppLockCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockCoordinatorTests.swift; sourceTree = "<group>"; };
 		A2CA00012607230200000001 /* DataExportViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportViewModelTests.swift; sourceTree = "<group>"; };
+		A2CB00012607231400000001 /* AccountSecurityViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSecurityViewModelTests.swift; sourceTree = "<group>"; };
+		A2CB00032607231400000003 /* HelpAboutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpAboutTests.swift; sourceTree = "<group>"; };
+		A2CB01012607231400000101 /* InAppBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InAppBrowserView.swift; sourceTree = "<group>"; };
+		A2CB02012607231400000201 /* AccountSecurityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSecurityViewModel.swift; sourceTree = "<group>"; };
+		A2CB03012607231400000301 /* SecurityPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityPrivacyView.swift; sourceTree = "<group>"; };
+		A2CB03032607231400000303 /* ChangePasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordView.swift; sourceTree = "<group>"; };
+		A2CB03052607231400000305 /* DeleteAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAccountView.swift; sourceTree = "<group>"; };
+		A2CB03072607231400000307 /* HelpAboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpAboutView.swift; sourceTree = "<group>"; };
+		A2CB03092607231400000309 /* MedicalDisclaimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicalDisclaimerView.swift; sourceTree = "<group>"; };
 		A2CA01012607230200000101 /* ExportFileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportFileService.swift; sourceTree = "<group>"; };
 		A2CA01032607230200000103 /* DataExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportViewModel.swift; sourceTree = "<group>"; };
 		A2CA01062607230200000106 /* DataExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportView.swift; sourceTree = "<group>"; };
@@ -388,6 +406,7 @@
 		49C364812FD4DE4B00C1F5DE /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				A2CB01032607231400000103 /* Browser */,
 				49C364F62FEE900100C1F5DE /* Data */,
 				A2CA01052607230200000105 /* Export */,
 				49C3647E2FD4DE4B00C1F5DE /* Network */,
@@ -397,6 +416,14 @@
 				49C364802FD4DE4B00C1F5DE /* Storage */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		A2CB01032607231400000103 /* Browser */ = {
+			isa = PBXGroup;
+			children = (
+				A2CB01012607231400000101 /* InAppBrowserView.swift */,
+			);
+			path = Browser;
 			sourceTree = "<group>";
 		};
 		A2CA01052607230200000105 /* Export */ = {
@@ -518,6 +545,7 @@
 		A2C700092607220000000009 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				A2CB02012607231400000201 /* AccountSecurityViewModel.swift */,
 				A2CA01032607230200000103 /* DataExportViewModel.swift */,
 				A2C810082607230000000008 /* NotificationSettingsViewModel.swift */,
 				A2C700032607220000000003 /* ProfileSettingsViewModel.swift */,
@@ -530,11 +558,16 @@
 			children = (
 				A2CA01082607230200000108 /* ActivityView.swift */,
 				A2C901082607230100000008 /* AppLockCoverView.swift */,
+				A2CB03032607231400000303 /* ChangePasswordView.swift */,
 				A2CA01062607230200000106 /* DataExportView.swift */,
+				A2CB03052607231400000305 /* DeleteAccountView.swift */,
+				A2CB03072607231400000307 /* HelpAboutView.swift */,
+				A2CB03092607231400000309 /* MedicalDisclaimerView.swift */,
 				A2C8100A260723000000000A /* NotificationSettingsView.swift */,
 				A2C8100C260723000000000C /* ReminderSetupSheets.swift */,
 				A2C700072607220000000007 /* ProfileEditorSheets.swift */,
 				A2C700052607220000000005 /* ProfileSettingsView.swift */,
+				A2CB03012607231400000301 /* SecurityPrivacyView.swift */,
 				A2C600092607220000000009 /* SettingsComponents.swift */,
 				A2C6000B260722000000000B /* SettingsRootView.swift */,
 			);
@@ -544,6 +577,7 @@
 		49C364B62FEE000100C1F5DE /* peppyTests */ = {
 			isa = PBXGroup;
 			children = (
+				A2CB00012607231400000001 /* AccountSecurityViewModelTests.swift */,
 				A2C900012607230100000001 /* AppLockCoordinatorTests.swift */,
 				A2CA00012607230200000001 /* DataExportViewModelTests.swift */,
 				49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */,
@@ -575,6 +609,7 @@
 				A2C800012607230000000001 /* NotificationSettingsTests.swift */,
 				49C365112FF000500C1F5DE /* StarterProtocolViewModelTests.swift */,
 				49C3658E2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift */,
+				A2CB00032607231400000003 /* HelpAboutTests.swift */,
 			);
 			path = peppyTests;
 			sourceTree = "<group>";
@@ -1012,6 +1047,13 @@
 				A2CA01042607230200000104 /* DataExportViewModel.swift in Sources */,
 				A2CA01072607230200000107 /* DataExportView.swift in Sources */,
 				A2CA01092607230200000109 /* ActivityView.swift in Sources */,
+				A2CB01022607231400000102 /* InAppBrowserView.swift in Sources */,
+				A2CB02022607231400000202 /* AccountSecurityViewModel.swift in Sources */,
+				A2CB03022607231400000302 /* SecurityPrivacyView.swift in Sources */,
+				A2CB03042607231400000304 /* ChangePasswordView.swift in Sources */,
+				A2CB03062607231400000306 /* DeleteAccountView.swift in Sources */,
+				A2CB03082607231400000308 /* HelpAboutView.swift in Sources */,
+				A2CB030A260723140000030A /* MedicalDisclaimerView.swift in Sources */,
 				49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */,
 				A2C200022607170000000002 /* WeightUnitPreferenceStore.swift in Sources */,
 				49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */,
@@ -1055,6 +1097,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A2CB00022607231400000002 /* AccountSecurityViewModelTests.swift in Sources */,
 				A2C900022607230100000002 /* AppLockCoordinatorTests.swift in Sources */,
 				A2CA00022607230200000002 /* DataExportViewModelTests.swift in Sources */,
 				49C364D02FEE400100C1F5DE /* AppFlowCoordinatorTests.swift in Sources */,
@@ -1086,6 +1129,7 @@
 				49C365632FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift in Sources */,
 				49C3654B2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift in Sources */,
 				49C365512FF000D00C1F5DE /* ProtocolListViewModelTests.swift in Sources */,
+				A2CB00042607231400000004 /* HelpAboutTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

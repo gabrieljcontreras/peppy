@@ -353,6 +353,15 @@ final class NotificationReconciliationCoordinator {
         }
     }
 
+    func resetSession(authenticatedBy accessToken: String?) async {
+        await enqueue {
+            await self.scheduler.removeSettingsRequests()
+            await self.pushRegistration.unregister(
+                authenticatedBy: accessToken
+            )
+        }
+    }
+
     private func performReconcile() async {
         let status = await permissionService?.authorizationStatus()
 

@@ -83,6 +83,13 @@ final class WeightUnitPreferences {
         selectedUnit = savedUnit(forKey: Self.anonymousKey)
     }
 
+    func removePreference(for userID: UUID) {
+        defaults.removeObject(forKey: Self.userKey(userID))
+        if activeUserID == userID {
+            resetSession()
+        }
+    }
+
     private var persistenceKey: String {
         activeUserID.map(Self.userKey) ?? Self.anonymousKey
     }

@@ -64,6 +64,53 @@ async def test_password_change_invalidates_old_access_and_refresh_tokens(client)
     ).status_code == 200
 
 
+async def test_password_change_removes_all_registered_devices(client):
+    registered = await client.post(
+        "/api/v1/auth/register",
+        json={"email": "rotate-devices@example.com", "password": "password123"},
+    )
+    old = registered.json()
+    authorization = {"Authorization": f"Bearer {old['access_token']}"}
+
+    for token in ("first-device-token", "second-device-token"):
+        response = await client.post(
+            "/api/v1/notifications/devices",
+            headers=authorization,
+            json={"token": token, "platform": "ios"},
+        )
+        assert response.status_code == 201
+
+    assert len(
+        (
+            await client.get(
+                "/api/v1/notifications/devices",
+                headers=authorization,
+            )
+        ).json()
+    ) == 2
+
+    response = await client.post(
+        "/api/v1/auth/change-password",
+        headers=authorization,
+        json={"current_password": "password123", "new_password": "replacement456"},
+    )
+
+    assert response.status_code == 204
+    replacement = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "rotate-devices@example.com", "password": "replacement456"},
+    )
+    assert replacement.status_code == 200
+    assert (
+        await client.get(
+            "/api/v1/notifications/devices",
+            headers={
+                "Authorization": f"Bearer {replacement.json()['access_token']}"
+            },
+        )
+    ).json() == []
+
+
 async def test_wrong_current_password_does_not_rotate_tokens(client):
     registered = await client.post(
         "/api/v1/auth/register",

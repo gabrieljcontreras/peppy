@@ -449,6 +449,13 @@ private final class SuspendedDownloadAPI: APIClientProtocol {
         throw APIError.notFound
     }
 
+    func executeVoid(
+        _ endpoint: Endpoint,
+        authenticatedBy accessToken: String
+    ) async throws {
+        throw APIError.notFound
+    }
+
     func download(_ endpoint: Endpoint) async throws -> DownloadedFile {
         isWaiting = true
         return await withCheckedContinuation { continuation in

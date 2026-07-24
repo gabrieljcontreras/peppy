@@ -44,6 +44,13 @@ final class ApplicationRemoteNotificationRegistrar: RemoteNotificationRegisterin
 protocol PushRegistrationCoordinating: AnyObject {
     func registerPendingTokenIfPossible() async
     func unregister() async
+    func unregister(authenticatedBy accessToken: String?) async
+}
+
+extension PushRegistrationCoordinating {
+    func unregister(authenticatedBy accessToken: String?) async {
+        await unregister()
+    }
 }
 
 @MainActor
@@ -121,6 +128,23 @@ final class PushRegistrationCoordinator: PushRegistrationCoordinating {
     }
 
     func unregister() async {
+        await unregister(
+            authenticatedBy: nil,
+            allowsSharedCredentials: true
+        )
+    }
+
+    func unregister(authenticatedBy accessToken: String?) async {
+        await unregister(
+            authenticatedBy: accessToken,
+            allowsSharedCredentials: false
+        )
+    }
+
+    private func unregister(
+        authenticatedBy accessToken: String?,
+        allowsSharedCredentials: Bool
+    ) async {
         sessionGeneration += 1
         isUnregistering = true
 
@@ -139,7 +163,14 @@ final class PushRegistrationCoordinator: PushRegistrationCoordinating {
         registrationStore.deviceID = nil
 
         for deviceID in deviceIDs {
-            try? await api.executeVoid(.deleteDevice(id: deviceID))
+            if let accessToken {
+                try? await api.executeVoid(
+                    .deleteDevice(id: deviceID),
+                    authenticatedBy: accessToken
+                )
+            } else if allowsSharedCredentials {
+                try? await api.executeVoid(.deleteDevice(id: deviceID))
+            }
         }
 
         isUnregistering = false

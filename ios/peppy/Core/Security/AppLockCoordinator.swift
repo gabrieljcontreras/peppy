@@ -201,6 +201,13 @@ final class AppLockCoordinator {
         requiresUnlock = false
     }
 
+    func removePreference(for userID: UUID) {
+        preferences.removePreference(for: userID)
+        if currentUserID == userID {
+            resetSession()
+        }
+    }
+
     private func attemptUnlock() async {
         guard !isAuthenticating else { return }
 
