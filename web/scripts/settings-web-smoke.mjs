@@ -62,6 +62,17 @@ try {
   }
 
   const privacyText = await page.locator("body").innerText();
+  const securitySection = page.locator("#security");
+  assert.equal(
+    await securitySection.count(),
+    1,
+    "Privacy should expose a stable security-section anchor",
+  );
+  assert.match(
+    (await securitySection.getAttribute("class")) ?? "",
+    /\bscroll-mt-/,
+    "The security anchor should clear the sticky site header",
+  );
   assert.match(privacyText, /third-party AI processing service/i);
   assert.doesNotMatch(privacyText, /openai/i);
   assert.match(

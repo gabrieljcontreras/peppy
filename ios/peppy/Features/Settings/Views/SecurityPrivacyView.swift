@@ -173,7 +173,7 @@ struct SecurityPrivacyView: View {
                 SettingsDetailDivider()
 
                 Button {
-                    browserDestination = .privacy
+                    browserDestination = .privacySecurity
                 } label: {
                     SettingsDetailRowLabel(
                         systemImage: "lock.shield",

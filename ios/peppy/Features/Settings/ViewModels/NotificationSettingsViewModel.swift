@@ -201,6 +201,7 @@ final class NotificationSettingsViewModel {
     func save() async -> Bool {
         guard canSave else { return false }
 
+        let enablesInsights = draft.insightsEnabled && !confirmedDraft.insightsEnabled
         isSaving = true
         errorMessage = nil
         repairMessage = nil
@@ -215,6 +216,11 @@ final class NotificationSettingsViewModel {
             confirmedDraft = reconciledDraft
             draft = reconciledDraft
 
+            if enablesInsights {
+                await requestPermissionAfterValidSetup(
+                    offerDetailedPreviews: false
+                )
+            }
             let status = await permissionService.authorizationStatus()
             showsOpenSystemSettingsAction = status == .denied
             if status.canDeliverNotifications {
@@ -257,7 +263,9 @@ final class NotificationSettingsViewModel {
         }
     }
 
-    private func requestPermissionAfterValidSetup() async {
+    private func requestPermissionAfterValidSetup(
+        offerDetailedPreviews: Bool = true
+    ) async {
         var status = await permissionService.authorizationStatus()
         if status == .notDetermined {
             let outcome = await permissionService.requestAuthorization()
@@ -276,7 +284,9 @@ final class NotificationSettingsViewModel {
         showsOpenSystemSettingsAction = status == .denied
         if status.canDeliverNotifications {
             registerForRemoteNotifications()
-            activeSetup = .detailedPreviews
+            if offerDetailedPreviews {
+                activeSetup = .detailedPreviews
+            }
         }
     }
 

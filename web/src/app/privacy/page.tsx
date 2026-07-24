@@ -42,7 +42,7 @@ export default function PrivacyPage() {
             </p>
           </section>
 
-          <section>
+          <section id="security" className="scroll-mt-24">
             <h2>3. Data Storage &amp; Security</h2>
             <p className="mt-3">
               We use reasonable administrative, technical, and organizational

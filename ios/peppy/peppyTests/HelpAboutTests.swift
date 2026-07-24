@@ -12,7 +12,8 @@ final class HelpAboutTests: XCTestCase {
                 "https://get-peppy.com/feedback/feature",
                 "https://get-peppy.com/about",
                 "https://get-peppy.com/terms",
-                "https://get-peppy.com/privacy"
+                "https://get-peppy.com/privacy",
+                "https://get-peppy.com/privacy#security"
             ]
         )
     }

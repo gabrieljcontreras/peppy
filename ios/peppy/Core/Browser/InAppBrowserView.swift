@@ -9,6 +9,7 @@ enum PeppyWebDestination: String, CaseIterable, Identifiable {
     case about
     case terms
     case privacy
+    case privacySecurity
 
     var id: Self { self }
 
@@ -28,6 +29,8 @@ enum PeppyWebDestination: String, CaseIterable, Identifiable {
             URL(string: "https://get-peppy.com/terms")!
         case .privacy:
             URL(string: "https://get-peppy.com/privacy")!
+        case .privacySecurity:
+            URL(string: "https://get-peppy.com/privacy#security")!
         }
     }
 }

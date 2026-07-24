@@ -12,16 +12,14 @@ final class NotificationSettingsTests: XCTestCase {
         return calendar
     }()
 
-    func testDoseScheduleCalculatorSupportsEveryExistingFrequency() {
+    func testDoseScheduleCalculatorUsesFixedIntervalsOnlyForDayBasedFrequencies() {
         let expected: [String: Int] = [
             "daily": 1,
             "every other day": 2,
-            "twice weekly": 3,
             "weekly": 7,
             "once weekly": 7,
             "every 10 days": 10,
             "biweekly": 14,
-            "monthly": 30,
         ]
 
         for (frequency, interval) in expected {
@@ -31,7 +29,53 @@ final class NotificationSettingsTests: XCTestCase {
                 "Unexpected interval for \(frequency)"
             )
         }
+        XCTAssertNil(DoseScheduleCalculator.intervalDays(for: "twice weekly"))
+        XCTAssertNil(DoseScheduleCalculator.intervalDays(for: "monthly"))
         XCTAssertNil(DoseScheduleCalculator.intervalDays(for: "custom"))
+    }
+
+    func testDoseScheduleCalculatorAlternatesThreeAndFourDaysForTwiceWeekly() throws {
+        let dates = DoseScheduleCalculator.upcomingDates(
+            startingAt: try date("2026-07-01 00:00"),
+            frequency: "twice weekly",
+            localTime: DateComponents(hour: 9, minute: 0),
+            after: try date("2026-06-30 00:00"),
+            calendar: calendar,
+            limit: 6
+        )
+
+        XCTAssertEqual(
+            dates.map(Self.timestamp),
+            [
+                "2026-07-01 09:00",
+                "2026-07-04 09:00",
+                "2026-07-08 09:00",
+                "2026-07-11 09:00",
+                "2026-07-15 09:00",
+                "2026-07-18 09:00",
+            ]
+        )
+    }
+
+    func testDoseScheduleCalculatorUsesCalendarMonthsAndClampsMonthEnd() throws {
+        let dates = DoseScheduleCalculator.upcomingDates(
+            startingAt: try date("2026-01-31 00:00"),
+            frequency: "monthly",
+            localTime: DateComponents(hour: 9, minute: 0),
+            after: try date("2026-01-01 00:00"),
+            calendar: calendar,
+            limit: 4
+        )
+
+        XCTAssertEqual(
+            dates.map(Self.timestamp),
+            [
+                "2026-01-31 09:00",
+                "2026-02-28 09:00",
+                "2026-03-31 09:00",
+                "2026-04-30 09:00",
+            ]
+        )
     }
 
     func testDoseScheduleCalculatorAnchorsFutureDatesToProtocolStart() throws {
@@ -484,6 +528,66 @@ final class NotificationSettingsTests: XCTestCase {
         XCTAssertFalse(model.isLoading)
         XCTAssertEqual(model.draft, NotificationSettingsDraft(preferences: confirmed))
         XCTAssertFalse(model.hasUnsavedChanges)
+    }
+
+    func testInsightsOnlyEnableRequestsPermissionAndRegistersForRemoteNotifications() async {
+        let api = MockAPIClient()
+        let original = makePreferences(insightsEnabled: false)
+        let confirmed = makePreferences(insightsEnabled: true)
+        api.setMockResponse([ProtocolModel](), for: .getProtocols)
+        api.setMockResponse(
+            confirmed,
+            for: .updateNotificationPreferences(makeRequest())
+        )
+        let updateStarted = expectation(
+            description: "notification preference update started"
+        )
+        var releaseUpdate: CheckedContinuation<Void, Never>?
+        api.onRequest = { endpoint in
+            guard case .updateNotificationPreferences = endpoint else {
+                return
+            }
+            updateStarted.fulfill()
+            await withCheckedContinuation { continuation in
+                releaseUpdate = continuation
+            }
+        }
+        let permission = MockNotificationPermissionService(
+            outcome: .authorized,
+            authorizationStatus: .notDetermined
+        )
+        var registrationCount = 0
+        let model = NotificationSettingsViewModel(
+            store: SettingsStore(
+                api: api,
+                initialUser: makeUser(),
+                cachedNotificationPreferences: original
+            ),
+            protocolStore: ProtocolStore(api: api),
+            permissionService: permission,
+            scheduler: NotificationSchedulerSpy(),
+            registerForRemoteNotifications: {
+                registrationCount += 1
+            }
+        )
+
+        await model.load()
+        model.setInsightsEnabled(true)
+        let save = Task {
+            await model.save()
+        }
+        await fulfillment(of: [updateStarted])
+
+        XCTAssertEqual(permission.status, .notDetermined)
+        XCTAssertEqual(registrationCount, 0)
+
+        releaseUpdate?.resume()
+        let saved = await save.value
+
+        XCTAssertTrue(saved)
+        XCTAssertEqual(permission.status, .authorized)
+        XCTAssertEqual(registrationCount, 1)
+        XCTAssertNil(model.activeSetup)
     }
 
     func testDoseSetupKeepsDisabledCompoundRowsAndTheirTimes() {
