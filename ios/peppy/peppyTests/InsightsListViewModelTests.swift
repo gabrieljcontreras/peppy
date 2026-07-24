@@ -91,6 +91,31 @@ final class InsightsListViewModelTests: XCTestCase {
         XCTAssertEqual(requestsAfterRefresh, requestsAfterAppear + 1)
     }
 
+    func testLearningStateUsesApprovedCopy() {
+        XCTAssertEqual(
+            InsightsListView.learningTitle,
+            "peppy is learning your patterns."
+        )
+        XCTAssertEqual(
+            InsightsListView.learningMessage,
+            "Keep checking in daily and logging doses"
+        )
+    }
+
+    func testLearningStateShownForLoadedEmptyInsights() async {
+        let (model, _, _) = await loadedModel(insights: [])
+
+        XCTAssertTrue(model.showsLearningState)
+    }
+
+    func testLearningStateHiddenForLoadedInsights() async {
+        let (model, _, _) = await loadedModel(
+            insights: [Insight.fixture()]
+        )
+
+        XCTAssertFalse(model.showsLearningState)
+    }
+
     // MARK: - Helpers
 
     private var insightsEndpoint: Endpoint {

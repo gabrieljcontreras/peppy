@@ -25,6 +25,10 @@ final class InsightsListViewModel {
         store.weekly?.available == true
     }
 
+    var showsLearningState: Bool {
+        store.insights.isEmpty && !store.isLoading
+    }
+
     init(store: InsightsStore) {
         self.store = store
     }

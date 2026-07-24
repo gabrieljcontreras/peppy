@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct InsightsListView: View {
+    static let learningTitle = "peppy is learning your patterns."
+    static let learningMessage = "Keep checking in daily and logging doses"
+
     let store: InsightsStore
     @Environment(\.dependencies) private var deps
     @Bindable private var navigation: ProtocolNavigationCoordinator
@@ -24,18 +27,16 @@ struct InsightsListView: View {
                         weeklySummaryCard
                     }
 
-                    if store.insights.isEmpty {
-                        if store.isLoading {
-                            PepLoadingView(message: "Loading your insights")
-                                .frame(maxWidth: .infinity, minHeight: 220)
-                        } else {
-                            PepEmptyState(
-                                icon: "sparkles",
-                                title: "peppy is learning your patterns",
-                                message: "Keep checking in daily and logging doses. peppy looks for trends, anomalies, and milestones in your data — your first insight usually appears within a week."
-                            )
-                            .frame(maxWidth: .infinity)
-                        }
+                    if store.insights.isEmpty && store.isLoading {
+                        PepLoadingView(message: "Loading your insights")
+                            .frame(maxWidth: .infinity, minHeight: 220)
+                    } else if model.showsLearningState {
+                        PepEmptyState(
+                            icon: "sparkles",
+                            title: Self.learningTitle,
+                            message: Self.learningMessage
+                        )
+                        .frame(maxWidth: .infinity)
                     } else {
                         insightSections
                     }
@@ -278,4 +279,23 @@ struct InsightsListView: View {
     }
     return InsightsListView(store: deps.insightsStore, navigation: deps.protocolNavigation)
         .withDependencies(deps)
+}
+
+#Preview("Insights learning state") {
+    let deps = Dependencies.mock()
+    if let api = deps.api as? MockAPIClient {
+        api.setMockResponse(
+            [Insight](),
+            for: Endpoint.getInsights(unreadOnly: nil, type: nil, severity: nil)
+        )
+        api.setMockResponse(
+            WeeklySummaryEnvelope(available: false, summary: nil),
+            for: Endpoint.getWeeklySummary
+        )
+    }
+    return InsightsListView(
+        store: deps.insightsStore,
+        navigation: deps.protocolNavigation
+    )
+    .withDependencies(deps)
 }
