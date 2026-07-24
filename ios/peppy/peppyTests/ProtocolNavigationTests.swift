@@ -100,6 +100,9 @@ final class ProtocolNavigationTests: XCTestCase {
 
     func testSessionResetClearsCheckinPathAndReturnsCheckinTabToHome() async {
         let dependencies = Dependencies.mock()
+        dependencies.appState.login(
+            user: User(id: UUID(), email: "alex@example.com")
+        )
         dependencies.protocolNavigation.selectedTab = .checkin
         dependencies.protocolNavigation.checkinPath = [.detail(UUID())]
 

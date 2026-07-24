@@ -51,6 +51,47 @@ async def test_patch_me_rejects_invalid_timezone(client, auth_headers):
     assert response.status_code == 422
 
 
+async def test_profile_reads_are_isolated_between_two_accounts(client):
+    registrations = {}
+    for label in ("primary", "other"):
+        response = await client.post(
+            "/api/v1/auth/register",
+            json={
+                "email": f"{label}-profile-isolation@example.com",
+                "password": "password123",
+            },
+        )
+        assert response.status_code == 201
+        registrations[label] = {
+            "Authorization": f"Bearer {response.json()['access_token']}"
+        }
+
+    for label, goal in (
+        ("primary", "track_protocols"),
+        ("other", "build_habits"),
+    ):
+        response = await client.patch(
+            "/api/v1/profile/onboarding",
+            headers=registrations[label],
+            json={"primary_goal": goal},
+        )
+        assert response.status_code == 200
+
+    primary = await client.get(
+        "/api/v1/profile/onboarding",
+        headers=registrations["primary"],
+    )
+    other = await client.get(
+        "/api/v1/profile/onboarding",
+        headers=registrations["other"],
+    )
+
+    assert primary.status_code == 200
+    assert other.status_code == 200
+    assert primary.json()["primary_goal"] == "track_protocols"
+    assert other.json()["primary_goal"] == "build_habits"
+
+
 def test_user_update_rejects_explicit_null_timezone():
     with pytest.raises(ValidationError):
         UserUpdate.model_validate({"timezone": None})

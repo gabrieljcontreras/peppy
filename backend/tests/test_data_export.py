@@ -17,7 +17,7 @@ from app.models.notification import NotificationPreference
 from app.models.profile import OnboardingProfile
 from app.models.protocol import Compound, Protocol
 from app.models.user import User
-from app.services.export import ExportDataset, ExportService
+from app.services.export import ExportDataset, ExportService, GeneratedExport
 
 
 @dataclass(frozen=True)
@@ -429,6 +429,38 @@ async def test_export_requires_authentication(client):
     )
 
     assert response.status_code == 403
+
+
+async def test_export_response_closes_temporary_stream_after_completion(
+    client,
+    export_accounts,
+    monkeypatch,
+):
+    stream = BytesIO(b"generated export")
+
+    async def generate_export(*_args, **_kwargs):
+        return GeneratedExport(
+            stream=stream,
+            filename="peppy-export-test.pdf",
+            media_type="application/pdf",
+        )
+
+    monkeypatch.setattr(ExportService, "generate", generate_export)
+
+    response = await client.post(
+        "/api/v1/profile/export",
+        headers=export_accounts.primary_headers,
+        json={
+            "format": "pdf",
+            "include_protocols": False,
+            "include_checkins": False,
+            "include_insights": False,
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.content == b"generated export"
+    assert stream.closed
 
 
 def test_csv_generator_closes_temporary_stream_after_generation_failure(monkeypatch):
