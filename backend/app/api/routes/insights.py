@@ -35,7 +35,7 @@ from app.services.weekly_summary import get_or_create_weekly_summary
 router = APIRouter()
 
 
-@router.get("/", response_model=list[InsightResponse])
+@router.get("", response_model=list[InsightResponse])
 async def list_insights(
     current_user: CurrentUser,
     background_tasks: BackgroundTasks,
