@@ -260,12 +260,31 @@ final class ProtocolDetailViewModel {
         guard let latest = compoundLogs.map(\.administeredAt).max() else {
             return Self.dayDateFormatter.string(from: protocolValue.startDate)
         }
-        guard let intervalDays = DoseScheduleCalculator.intervalDays(
+        guard let recurrence = DoseScheduleCalculator.recurrence(
             for: compound.frequency
         ) else {
             return nil
         }
-        let next = latest.addingTimeInterval(TimeInterval(intervalDays) * 86_400)
+        let calendar = Calendar.current
+        let next: Date?
+        switch recurrence {
+        case .fixedDays(let interval):
+            next = calendar.date(
+                byAdding: .day,
+                value: interval,
+                to: latest
+            )
+        case .twiceWeekly, .monthly:
+            next = DoseScheduleCalculator.upcomingDates(
+                startingAt: protocolValue.startDate,
+                frequency: compound.frequency,
+                localTime: calendar.dateComponents([.hour, .minute], from: latest),
+                after: latest,
+                calendar: calendar,
+                limit: 1
+            ).first
+        }
+        guard let next else { return nil }
         return Self.dayDateFormatter.string(from: next)
     }
 
