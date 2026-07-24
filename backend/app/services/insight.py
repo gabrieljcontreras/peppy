@@ -66,6 +66,13 @@ class InsightService:
         result = await self.db.execute(query)
         return result.scalars().all()
 
+    async def has_any_for_user(self, user_id: UUID) -> bool:
+        """Return whether the user has ever stored an insight, including hidden rows."""
+        result = await self.db.execute(
+            select(exists().where(Insight.user_id == user_id))
+        )
+        return bool(result.scalar())
+
     async def create(
         self,
         user_id: UUID,

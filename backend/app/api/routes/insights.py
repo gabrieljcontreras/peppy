@@ -62,7 +62,18 @@ async def list_insights(
         limit=limit,
         offset=offset,
     )
-    if is_stale(current_user):
+    if not await service.has_any_for_user(current_user.id):
+        await run_generation(db, current_user.id)
+        insights = await service.list_for_user(
+            user_id=current_user.id,
+            unread_only=unread_only,
+            type=ModelInsightType(type.value) if type else None,
+            severity=ModelInsightSeverity(severity.value) if severity else None,
+            include_dismissed=include_dismissed,
+            limit=limit,
+            offset=offset,
+        )
+    elif is_stale(current_user):
         background_tasks.add_task(
             run_generation_in_background,
             current_user.id,

@@ -769,6 +769,21 @@ async def test_get_insights_runs_background_generation_when_stale(
         "session_factory",
         test_session_factory,
     )
+    async with test_session_factory() as setup_db:
+        user = (await setup_db.execute(select(User).where(User.email == email))).scalar_one()
+        setup_db.add(
+            Insight(
+                user_id=user.id,
+                type=InsightType.TREND,
+                severity=InsightSeverity.INFO,
+                title="Existing insight",
+                description="Existing description",
+                explanation="Existing explanation",
+                confidence=0.7,
+                source_data_refs='{"rule":"existing-route-test"}',
+            )
+        )
+        await setup_db.commit()
 
     response = await client.get("/api/v1/insights", headers=headers)
 
@@ -794,6 +809,18 @@ async def test_get_insights_does_not_regenerate_when_fresh(
     async with test_session_factory() as setup_db:
         user = (await setup_db.execute(select(User).where(User.email == email))).scalar_one()
         user.last_insight_run_at = datetime.now(timezone.utc)
+        setup_db.add(
+            Insight(
+                user_id=user.id,
+                type=InsightType.TREND,
+                severity=InsightSeverity.INFO,
+                title="Existing insight",
+                description="Existing description",
+                explanation="Existing explanation",
+                confidence=0.7,
+                source_data_refs='{"rule":"existing-route-test"}',
+            )
+        )
         await setup_db.commit()
     background_generation = AsyncMock()
     monkeypatch.setattr(

@@ -220,3 +220,33 @@ async def test_generation_persists_deterministic_baseline_only_once(db_session):
         "Your weight moved from 80.0 kg to 81.0 kg. "
         "Energy averaged 6.0/10."
     )
+
+
+@pytest.mark.asyncio
+async def test_list_returns_baseline_in_same_response_for_existing_checkins(
+    client,
+    engine,
+):
+    email = "baseline-route-recovery@example.com"
+    headers = await _auth_headers(client, email)
+    session_factory = async_sessionmaker(
+        engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+    async with session_factory() as db:
+        user = (
+            await db.execute(select(User).where(User.email == email))
+        ).scalar_one()
+        await _seed_baseline_checkins(db, user.id)
+
+    response = await client.get("/api/v1/insights", headers=headers)
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == 1
+    assert payload[0]["title"] == "Your recent check-in pattern"
+    assert payload[0]["description"] == (
+        "Your weight moved from 80.0 kg to 81.0 kg. "
+        "Energy averaged 6.0/10."
+    )
