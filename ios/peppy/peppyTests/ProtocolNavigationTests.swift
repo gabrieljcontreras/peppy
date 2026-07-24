@@ -98,12 +98,15 @@ final class ProtocolNavigationTests: XCTestCase {
         XCTAssertTrue(coordinator.checkinPath.isEmpty)
     }
 
-    func testSessionResetClearsCheckinPathAndReturnsCheckinTabToHome() {
+    func testSessionResetClearsCheckinPathAndReturnsCheckinTabToHome() async {
         let dependencies = Dependencies.mock()
+        dependencies.appState.login(
+            user: User(id: UUID(), email: "alex@example.com")
+        )
         dependencies.protocolNavigation.selectedTab = .checkin
         dependencies.protocolNavigation.checkinPath = [.detail(UUID())]
 
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
 
         XCTAssertTrue(dependencies.protocolNavigation.checkinPath.isEmpty)
         XCTAssertEqual(dependencies.protocolNavigation.selectedTab, .home)

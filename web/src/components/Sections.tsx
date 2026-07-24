@@ -468,12 +468,12 @@ export function Privacy() {
             <em className="font-serif italic font-medium text-rust-300">design.</em>
           </h2>
           <p className="max-w-[520px] text-[16.5px] text-cream-50/75">
-            Your protocols, check-ins, and health data are encrypted and only
-            visible to you. We&apos;ll never sell your data — and you can
-            export or delete it at any time.
+            Your protocols, check-ins, and health data are yours. We&apos;ll never
+            sell your data, and you can export available data or delete your
+            account at any time.
           </p>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
-            {["Encrypted at rest", "Never sold", "Export anytime"].map((chip) => (
+            {["Never sold", "Export available data", "Delete account"].map((chip) => (
               <span
                 key={chip}
                 className="rounded-full border border-cream-50/20 px-4 py-2 text-[13px] font-medium text-cream-50/90"

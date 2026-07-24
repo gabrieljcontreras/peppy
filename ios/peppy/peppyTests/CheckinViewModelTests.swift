@@ -920,6 +920,9 @@ final class CheckinViewModelTests: XCTestCase {
 
     func testLogoutInvalidatesDelayedListResponse() async {
         let dependencies = Dependencies.mock()
+        dependencies.appState.login(
+            user: User(id: UUID(), email: "alex@example.com")
+        )
         let api = try! XCTUnwrap(dependencies.api as? MockAPIClient)
         let record = Checkin.fixture()
         api.setMockResponse(
@@ -936,7 +939,7 @@ final class CheckinViewModelTests: XCTestCase {
 
         let load = Task { await dependencies.checkinStore.load() }
         await fulfillment(of: [requestStarted], timeout: 2)
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
         await gate.open()
         _ = await load.value
 
@@ -947,6 +950,9 @@ final class CheckinViewModelTests: XCTestCase {
 
     func testLogoutInvalidatesDelayedDetailResponse() async {
         let dependencies = Dependencies.mock()
+        dependencies.appState.login(
+            user: User(id: UUID(), email: "alex@example.com")
+        )
         let api = try! XCTUnwrap(dependencies.api as? MockAPIClient)
         let original = Checkin.fixture(energyLevel: 4)
         let detail = original.replacing(energyLevel: 9, notes: "User A detail")
@@ -966,7 +972,7 @@ final class CheckinViewModelTests: XCTestCase {
 
         let load = Task { await dependencies.checkinStore.loadDetail(original.id) }
         await fulfillment(of: [requestStarted], timeout: 2)
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
         await gate.open()
         _ = await load.value
 
@@ -976,6 +982,9 @@ final class CheckinViewModelTests: XCTestCase {
 
     func testLogoutInvalidatesDelayedCreateResponse() async {
         let dependencies = Dependencies.mock()
+        dependencies.appState.login(
+            user: User(id: UUID(), email: "alex@example.com")
+        )
         let api = try! XCTUnwrap(dependencies.api as? MockAPIClient)
         let created = Checkin.fixture()
         api.setMockResponse(created, for: Endpoint.createCheckin(.fixture))
@@ -989,7 +998,7 @@ final class CheckinViewModelTests: XCTestCase {
 
         let create = Task { await dependencies.checkinStore.create(.fixture) }
         await fulfillment(of: [requestStarted], timeout: 2)
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
         await gate.open()
         let result = await create.value
 
@@ -1000,6 +1009,9 @@ final class CheckinViewModelTests: XCTestCase {
 
     func testLogoutInvalidatesDelayedUpdateResponse() async {
         let dependencies = Dependencies.mock()
+        dependencies.appState.login(
+            user: User(id: UUID(), email: "alex@example.com")
+        )
         let api = try! XCTUnwrap(dependencies.api as? MockAPIClient)
         let today = Date()
         let original = Checkin.fixture(date: today, energyLevel: 4)
@@ -1026,7 +1038,7 @@ final class CheckinViewModelTests: XCTestCase {
             await dependencies.checkinStore.update(id: original.id, request: request)
         }
         await fulfillment(of: [requestStarted], timeout: 2)
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
         await gate.open()
         let result = await update.value
 

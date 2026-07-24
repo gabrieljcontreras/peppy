@@ -5,41 +5,53 @@ struct RootView: View {
 
     var body: some View {
         @Bindable var appState = deps.appState
-        Group {
-            switch Self.destination(for: deps) {
-            case .launching:
-                LaunchResolutionView(
-                    error: deps.flow.launchError,
-                    retry: {
-                        Task { await deps.flow.resolveLaunch() }
+        let route = Self.destination(for: deps)
+
+        ZStack {
+            Group {
+                switch route {
+                case .launching:
+                    LaunchResolutionView(
+                        error: deps.flow.launchError,
+                        retry: {
+                            Task { await deps.flow.resolveLaunch() }
+                        }
+                    )
+                case .onboarding:
+                    OnboardingFlowView()
+                case .readySummary:
+                    ReadySummaryView(
+                        draft: deps.onboardingStore.loadAnonymousDraft() ?? OnboardingDraft(),
+                        continueAction: deps.flow.continueFromReadySummary,
+                        signInAction: deps.flow.showSignIn
+                    )
+                case .futurePaywall:
+                    Color.pepBackground
+                        .ignoresSafeArea()
+                        .task {
+                            deps.flow.advancePastFuturePaywall()
+                        }
+                case .authentication(let mode):
+                    NavigationStack {
+                        switch mode {
+                        case .register:
+                            RegisterView()
+                        case .signIn:
+                            LoginView()
+                        }
                     }
-                )
-            case .onboarding:
-                OnboardingFlowView()
-            case .readySummary:
-                ReadySummaryView(
-                    draft: deps.onboardingStore.loadAnonymousDraft() ?? OnboardingDraft(),
-                    continueAction: deps.flow.continueFromReadySummary,
-                    signInAction: deps.flow.showSignIn
-                )
-            case .futurePaywall:
-                Color.pepBackground
-                    .ignoresSafeArea()
-                    .task {
-                        deps.flow.advancePastFuturePaywall()
-                    }
-            case .authentication(let mode):
-                NavigationStack {
-                    switch mode {
-                    case .register:
-                        RegisterView()
-                    case .signIn:
-                        LoginView()
-                    }
+                    .tint(.pepTextPrimary)
+                case .dashboard:
+                    MainTabView()
                 }
-                .tint(.pepTextPrimary)
-            case .dashboard:
-                MainTabView()
+            }
+
+            if Self.shouldPresentAppLockCover(
+                route: route,
+                isCoverVisible: deps.appLock.isPrivacyCoverVisible
+            ) {
+                AppLockCoverView(coordinator: deps.appLock)
+                    .zIndex(100)
             }
         }
         .pepToast($appState.toast)
@@ -47,6 +59,13 @@ struct RootView: View {
             if Self.shouldResolveLaunch(for: deps) {
                 await deps.flow.resolveLaunch()
             }
+        }
+        .task(id: deps.appState.currentUser?.id) {
+            guard route == .dashboard,
+                  let userID = deps.appState.currentUser?.id else {
+                return
+            }
+            await deps.appLock.authenticatedSessionBecameVisible(userID: userID)
         }
     }
 
@@ -56,6 +75,13 @@ struct RootView: View {
 
     static func shouldResolveLaunch(for dependencies: Dependencies) -> Bool {
         dependencies.flow.route == .launching
+    }
+
+    static func shouldPresentAppLockCover(
+        route: AppRoute,
+        isCoverVisible: Bool
+    ) -> Bool {
+        route == .dashboard && isCoverVisible
     }
 }
 

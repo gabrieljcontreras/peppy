@@ -66,7 +66,7 @@ struct SettingsHeader: View {
     }
 }
 
-private struct SettingsWordmark: View {
+struct SettingsWordmark: View {
     var body: some View {
         Image("PeppyLogoWordmark")
             .resizable()

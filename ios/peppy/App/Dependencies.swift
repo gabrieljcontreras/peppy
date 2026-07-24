@@ -16,6 +16,12 @@ final class Dependencies {
     let checkinStore: CheckinStore
     let settingsStore: SettingsStore
     let weightUnitPreferences: WeightUnitPreferences
+    let localNotificationScheduler: LocalNotificationScheduling
+    let remoteNotificationRegistrar: RemoteNotificationRegistering
+    let pushRegistrationCoordinator: PushRegistrationCoordinator
+    let notificationReconciliation: NotificationReconciliationCoordinator
+    let appLock: AppLockCoordinator
+    let exportFileService: ExportFileServicing
 
     init(
         api: APIClientProtocol,
@@ -31,7 +37,13 @@ final class Dependencies {
         insightsStore: InsightsStore,
         checkinStore: CheckinStore,
         settingsStore: SettingsStore,
-        weightUnitPreferences: WeightUnitPreferences
+        weightUnitPreferences: WeightUnitPreferences,
+        localNotificationScheduler: LocalNotificationScheduling,
+        remoteNotificationRegistrar: RemoteNotificationRegistering,
+        pushRegistrationCoordinator: PushRegistrationCoordinator,
+        notificationReconciliation: NotificationReconciliationCoordinator,
+        appLock: AppLockCoordinator,
+        exportFileService: ExportFileServicing
     ) {
         self.api = api
         self.keychain = keychain
@@ -47,18 +59,42 @@ final class Dependencies {
         self.checkinStore = checkinStore
         self.settingsStore = settingsStore
         self.weightUnitPreferences = weightUnitPreferences
+        self.localNotificationScheduler = localNotificationScheduler
+        self.remoteNotificationRegistrar = remoteNotificationRegistrar
+        self.pushRegistrationCoordinator = pushRegistrationCoordinator
+        self.notificationReconciliation = notificationReconciliation
+        self.appLock = appLock
+        self.exportFileService = exportFileService
     }
 
     static func live() -> Dependencies {
         let keychain = KeychainService()
         let appState = AppState()
         let api = APIClient(keychain: keychain)
+        let exportFileService = ExportFileService()
+        try? exportFileService.removeStaleFiles()
         let onboardingStore = UserDefaultsOnboardingStore()
         let healthKit = HealthKitService()
         let notifications = NotificationPermissionService()
         let protocolNavigation = ProtocolNavigationCoordinator()
         let checkinStore = CheckinStore(api: api)
         let settingsStore = SettingsStore(api: api)
+        let protocolStore = ProtocolStore(api: api)
+        let insightsStore = InsightsStore(api: api)
+        let localNotificationScheduler = LocalNotificationScheduler()
+        let remoteNotificationRegistrar = ApplicationRemoteNotificationRegistrar()
+        let pushRegistrationCoordinator = PushRegistrationCoordinator(
+            api: api,
+            isSignedIn: { appState.isAuthenticated }
+        )
+        let notificationReconciliation = NotificationReconciliationCoordinator(
+            settingsStore: settingsStore,
+            protocolStore: protocolStore,
+            scheduler: localNotificationScheduler,
+            pushRegistration: pushRegistrationCoordinator,
+            permissionService: notifications,
+            remoteNotificationRegistrar: remoteNotificationRegistrar
+        )
         let weightUnitPreferences = WeightUnitPreferences {
             if let userID = appState.currentUser?.id,
                let draft = onboardingStore.loadDraft(for: userID) {
@@ -66,34 +102,56 @@ final class Dependencies {
             }
             return onboardingStore.loadAnonymousDraft()?.preferredWeightUnit
         }
+        weak var flowReference: AppFlowCoordinator?
+        let appLock = AppLockCoordinator(
+            authenticator: LocalAuthenticationAppLockService(),
+            preferences: UserDefaultsAppLockPreferences(),
+            logout: {
+                Task { await flowReference?.logoutAndWait() }
+            }
+        )
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
             appState: appState,
             onboardingStore: onboardingStore,
             prepareSessionData: { [weak settingsStore, weak weightUnitPreferences] user in
+                appLock.prepareForAuthenticatedSession(userID: user.id)
                 settingsStore?.beginSession(user: user)
                 weightUnitPreferences?.activate(userID: user.id, serverUnit: nil)
             },
             resetSessionData: { [
                 weak checkinStore,
+                weak insightsStore,
                 weak protocolNavigation,
+                weak protocolStore,
                 weak settingsStore,
-                weak weightUnitPreferences
+                weak weightUnitPreferences,
+                weak appLock
             ] in
                 checkinStore?.resetSession()
+                insightsStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
+                protocolStore?.resetSession()
                 settingsStore?.resetSession()
                 weightUnitPreferences?.resetSession()
+                appLock?.resetSession()
+                try? exportFileService.removeStaleFiles()
+            },
+            cleanupAuthenticatedSessionData: { [
+                weak notificationReconciliation
+            ] accessToken in
+                await notificationReconciliation?.resetSession(
+                    authenticatedBy: accessToken
+                )
             }
         )
+        flowReference = flow
         let onboardingViewModel = OnboardingViewModel(
             store: onboardingStore,
             healthKit: healthKit,
             notifications: notifications
         )
-        let protocolStore = ProtocolStore(api: api)
-        let insightsStore = InsightsStore(api: api)
         return Dependencies(
             api: api,
             keychain: keychain,
@@ -108,7 +166,13 @@ final class Dependencies {
             insightsStore: insightsStore,
             checkinStore: checkinStore,
             settingsStore: settingsStore,
-            weightUnitPreferences: weightUnitPreferences
+            weightUnitPreferences: weightUnitPreferences,
+            localNotificationScheduler: localNotificationScheduler,
+            remoteNotificationRegistrar: remoteNotificationRegistrar,
+            pushRegistrationCoordinator: pushRegistrationCoordinator,
+            notificationReconciliation: notificationReconciliation,
+            appLock: appLock,
+            exportFileService: exportFileService
         )
     }
 
@@ -116,6 +180,14 @@ final class Dependencies {
         let keychain = MockKeychainService()
         let appState = AppState()
         let api = MockAPIClient()
+        let exportFileService = ExportFileService(
+            rootDirectory: FileManager.default.temporaryDirectory
+                .appendingPathComponent(
+                    "peppy-preview-exports",
+                    isDirectory: true
+                )
+        )
+        try? exportFileService.removeStaleFiles()
         let onboardingStore = InMemoryOnboardingStore()
         let healthKit = MockHealthKitService(outcome: .requested)
         let notifications = MockNotificationPermissionService(outcome: .authorized)
@@ -166,34 +238,72 @@ final class Dependencies {
             cachedProfile: previewProfile,
             cachedNotificationPreferences: previewPreferences
         )
+        let protocolStore = ProtocolStore(api: api)
+        let insightsStore = InsightsStore(api: api)
+        let localNotificationScheduler = LocalNotificationScheduler()
+        let remoteNotificationRegistrar = ApplicationRemoteNotificationRegistrar()
+        let pushRegistrationCoordinator = PushRegistrationCoordinator(
+            api: api,
+            isSignedIn: { appState.isAuthenticated }
+        )
+        let notificationReconciliation = NotificationReconciliationCoordinator(
+            settingsStore: settingsStore,
+            protocolStore: protocolStore,
+            scheduler: localNotificationScheduler,
+            pushRegistration: pushRegistrationCoordinator,
+            permissionService: notifications,
+            remoteNotificationRegistrar: remoteNotificationRegistrar
+        )
+        weak var flowReference: AppFlowCoordinator?
+        let appLock = AppLockCoordinator(
+            authenticator: LocalAuthenticationAppLockService(),
+            preferences: UserDefaultsAppLockPreferences(),
+            logout: {
+                Task { await flowReference?.logoutAndWait() }
+            }
+        )
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
             appState: appState,
             onboardingStore: onboardingStore,
             prepareSessionData: { [weak settingsStore, weak weightUnitPreferences] user in
+                appLock.prepareForAuthenticatedSession(userID: user.id)
                 settingsStore?.beginSession(user: user)
                 weightUnitPreferences?.activate(userID: user.id, serverUnit: nil)
             },
             resetSessionData: { [
                 weak checkinStore,
+                weak insightsStore,
                 weak protocolNavigation,
+                weak protocolStore,
                 weak settingsStore,
-                weak weightUnitPreferences
+                weak weightUnitPreferences,
+                weak appLock
             ] in
                 checkinStore?.resetSession()
+                insightsStore?.resetSession()
                 protocolNavigation?.resetCheckinNavigation()
+                protocolStore?.resetSession()
                 settingsStore?.resetSession()
                 weightUnitPreferences?.resetSession()
+                appLock?.resetSession()
+                try? exportFileService.removeStaleFiles()
+            },
+            cleanupAuthenticatedSessionData: { [
+                weak notificationReconciliation
+            ] accessToken in
+                await notificationReconciliation?.resetSession(
+                    authenticatedBy: accessToken
+                )
             }
         )
+        flowReference = flow
         let onboardingViewModel = OnboardingViewModel(
             store: onboardingStore,
             healthKit: healthKit,
             notifications: notifications
         )
-        let protocolStore = ProtocolStore(api: api)
-        let insightsStore = InsightsStore(api: api)
         return Dependencies(
             api: api,
             keychain: keychain,
@@ -208,7 +318,13 @@ final class Dependencies {
             insightsStore: insightsStore,
             checkinStore: checkinStore,
             settingsStore: settingsStore,
-            weightUnitPreferences: weightUnitPreferences
+            weightUnitPreferences: weightUnitPreferences,
+            localNotificationScheduler: localNotificationScheduler,
+            remoteNotificationRegistrar: remoteNotificationRegistrar,
+            pushRegistrationCoordinator: pushRegistrationCoordinator,
+            notificationReconciliation: notificationReconciliation,
+            appLock: appLock,
+            exportFileService: exportFileService
         )
     }
 }

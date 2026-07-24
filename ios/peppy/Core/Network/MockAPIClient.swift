@@ -1,10 +1,16 @@
 import Foundation
 
+struct MockAuthenticatedRequest {
+    let endpoint: Endpoint
+    let accessToken: String
+}
+
 final class MockAPIClient: APIClientProtocol {
     var mockResponses: [String: Any] = [:]
     var mockErrors: [String: APIError] = [:]
     var mockDownloads: [String: DownloadedFile] = [:]
     var requestLog: [Endpoint] = []
+    var authenticatedRequestLog: [MockAuthenticatedRequest] = []
     var onRequest: ((Endpoint) async -> Void)?
 
     func execute<T: Decodable>(_ endpoint: Endpoint) async throws -> T {
@@ -29,6 +35,19 @@ final class MockAPIClient: APIClientProtocol {
         if let error = mockError(for: endpoint) {
             throw error
         }
+    }
+
+    func executeVoid(
+        _ endpoint: Endpoint,
+        authenticatedBy accessToken: String
+    ) async throws {
+        authenticatedRequestLog.append(
+            MockAuthenticatedRequest(
+                endpoint: endpoint,
+                accessToken: accessToken
+            )
+        )
+        try await executeVoid(endpoint)
     }
 
     func download(_ endpoint: Endpoint) async throws -> DownloadedFile {
@@ -71,6 +90,7 @@ final class MockAPIClient: APIClientProtocol {
         mockErrors.removeAll()
         mockDownloads.removeAll()
         requestLog.removeAll()
+        authenticatedRequestLog.removeAll()
         onRequest = nil
     }
 

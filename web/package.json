@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test:settings": "node scripts/settings-web-smoke.mjs",
     "lint": "eslint",
     "type-check": "tsc --noEmit"
   },

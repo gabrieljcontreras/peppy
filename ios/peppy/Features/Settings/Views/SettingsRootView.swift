@@ -82,8 +82,53 @@ struct SettingsRootView: View {
                 store: store,
                 weightUnitPreferences: dependencies.weightUnitPreferences
             )
-        default:
-            SettingsDestinationScaffold(route: route)
+        case .notifications:
+            NotificationSettingsView(
+                store: store,
+                protocolStore: dependencies.protocolStore,
+                permissionService: dependencies.notifications,
+                scheduler: dependencies.localNotificationScheduler,
+                registerForRemoteNotifications: {
+                    dependencies.remoteNotificationRegistrar
+                        .registerForRemoteNotifications()
+                },
+                showProtocols: {
+                    dependencies.protocolNavigation.showProtocolsTab()
+                }
+            )
+        case .dataExport:
+            DataExportView(
+                api: dependencies.api,
+                fileService: dependencies.exportFileService
+            )
+        case .security:
+            let userID =
+                store.user?.id ?? dependencies.appState.currentUser?.id
+            SecurityPrivacyView(
+                api: dependencies.api,
+                appLock: dependencies.appLock,
+                userID: userID,
+                finishSignedOutSession: {
+                    await dependencies.flow.finishSignedOutSession()
+                },
+                removeDeviceSettings: {
+                    guard let userID else { return }
+                    dependencies.appLock.removePreference(for: userID)
+                    dependencies.weightUnitPreferences.removePreference(
+                        for: userID
+                    )
+                    dependencies.onboardingStore.removeDraft(for: userID)
+                }
+            )
+        case .help:
+            HelpAboutView(version: version)
+        case .about:
+            SettingsBrowserRouteView(destination: .about)
+        case .legal:
+            HelpAboutView(
+                version: version,
+                startSection: .importantInformation
+            )
         }
     }
 
@@ -110,28 +155,6 @@ struct SettingsRootView: View {
             .accessibilityHint("Asks for confirmation before logging out")
         }
         .frame(maxWidth: .infinity)
-    }
-}
-
-/// Task 9 established every navigation boundary. Remaining destinations are
-/// replaced by their complete Figma-backed implementations in Tasks 11–15.
-private struct SettingsDestinationScaffold: View {
-    let route: SettingsRoute
-
-    var body: some View {
-        VStack(spacing: Spacing.md) {
-            PeppyLogo(size: 42)
-
-            Text(route.title)
-                .pepTitle2()
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(Spacing.lg)
-        .background(Color.pepBackground.ignoresSafeArea())
-        .navigationTitle(route.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(.visible, for: .navigationBar)
     }
 }
 

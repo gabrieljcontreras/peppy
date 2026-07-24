@@ -3,6 +3,10 @@ import Foundation
 protocol APIClientProtocol {
     func execute<T: Decodable>(_ endpoint: Endpoint) async throws -> T
     func executeVoid(_ endpoint: Endpoint) async throws
+    func executeVoid(
+        _ endpoint: Endpoint,
+        authenticatedBy accessToken: String
+    ) async throws
     func download(_ endpoint: Endpoint) async throws -> DownloadedFile
 }
 
@@ -16,6 +20,7 @@ actor APIClient: APIClientProtocol {
     private let encoder: JSONEncoder
 
     private var refreshTask: Task<String, Error>?
+    private var refreshTaskRevision: UInt64?
 
     init(
         baseURL: URL = APIClient.defaultBaseURL,
@@ -44,6 +49,18 @@ actor APIClient: APIClientProtocol {
 
     func executeVoid(_ endpoint: Endpoint) async throws {
         _ = try await performRequest(endpoint)
+    }
+
+    /// Executes one best-effort session-cleanup request with an immutable
+    /// credential snapshot. This path never refreshes or mutates Keychain.
+    func executeVoid(
+        _ endpoint: Endpoint,
+        authenticatedBy accessToken: String
+    ) async throws {
+        _ = try await performRequest(
+            endpoint,
+            explicitAccessToken: accessToken
+        )
     }
 
     func download(_ endpoint: Endpoint) async throws -> DownloadedFile {
@@ -94,11 +111,21 @@ actor APIClient: APIClientProtocol {
         }
     }
 
-    private func performRequest(_ endpoint: Endpoint, isRetry: Bool = false) async throws -> Data {
+    private func performRequest(
+        _ endpoint: Endpoint,
+        isRetry: Bool = false,
+        explicitAccessToken: String? = nil
+    ) async throws -> Data {
         var request = try buildRequest(for: endpoint)
 
         if endpoint.requiresAuth {
-            guard let token = keychain.get(KeychainKeys.accessToken) else {
+            let token: String?
+            if let explicitAccessToken {
+                token = explicitAccessToken
+            } else {
+                token = keychain.get(KeychainKeys.accessToken)
+            }
+            guard let token else {
                 throw APIError.unauthorized
             }
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -115,7 +142,9 @@ actor APIClient: APIClientProtocol {
             return data
 
         case 401:
-            if isRetry || !endpoint.requiresAuth {
+            if explicitAccessToken != nil
+                || isRetry
+                || !endpoint.requiresAuth {
                 throw APIError.unauthorized
             }
             let newToken = try await refreshTokenOnce()
@@ -158,17 +187,17 @@ actor APIClient: APIClientProtocol {
     }
 
     private func refreshTokenOnce() async throws -> String {
-        if let existingTask = refreshTask {
+        let revision = keychain.authenticationRevision
+        if let existingTask = refreshTask,
+           refreshTaskRevision == revision {
             return try await existingTask.value
         }
+        refreshTask?.cancel()
 
+        guard let refreshToken = keychain.get(KeychainKeys.refreshToken) else {
+            throw APIError.unauthorized
+        }
         let task = Task<String, Error> {
-            defer { refreshTask = nil }
-
-            guard let refreshToken = keychain.get(KeychainKeys.refreshToken) else {
-                throw APIError.unauthorized
-            }
-
             let endpoint = Endpoint.refreshToken(refreshToken: refreshToken)
             var request = try buildRequest(for: endpoint)
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -177,20 +206,44 @@ actor APIClient: APIClientProtocol {
 
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode) else {
-                keychain.delete(KeychainKeys.accessToken)
-                keychain.delete(KeychainKeys.refreshToken)
+                _ = keychain.invalidateAuthenticatedSession(
+                    ifRevisionMatches: revision
+                )
+                throw APIError.unauthorized
+            }
+            guard !Task.isCancelled else {
                 throw APIError.unauthorized
             }
 
             let authResponse = try decoder.decode(AuthResponse.self, from: data)
-            try keychain.save(authResponse.accessToken, for: KeychainKeys.accessToken)
-            try keychain.save(authResponse.refreshToken, for: KeychainKeys.refreshToken)
+            guard try keychain.saveAuthentication(
+                accessToken: authResponse.accessToken,
+                refreshToken: authResponse.refreshToken,
+                ifRevisionMatches: revision
+            ) else {
+                throw APIError.unauthorized
+            }
 
             return authResponse.accessToken
         }
 
         refreshTask = task
-        return try await task.value
+        refreshTaskRevision = revision
+
+        do {
+            let token = try await task.value
+            clearRefreshTask(ifRevisionMatches: revision)
+            return token
+        } catch {
+            clearRefreshTask(ifRevisionMatches: revision)
+            throw error
+        }
+    }
+
+    private func clearRefreshTask(ifRevisionMatches revision: UInt64) {
+        guard refreshTaskRevision == revision else { return }
+        refreshTask = nil
+        refreshTaskRevision = nil
     }
 
     private func buildRequest(for endpoint: Endpoint) throws -> URLRequest {

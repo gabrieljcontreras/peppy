@@ -499,6 +499,33 @@ final class ProtocolStoreTests: XCTestCase {
         XCTAssertEqual(store.revision, 1)
     }
 
+    func testResetSessionInvalidatesDelayedCreateResponse() async {
+        let api = MockAPIClient()
+        let created = makeProtocol(name: "Previous user protocol")
+        api.setMockResponse(created, for: Endpoint.createProtocol(.fixture))
+        let gate = RequestGate()
+        let started = expectation(description: "create request in flight")
+        api.onRequest = { endpoint in
+            guard case .createProtocol = endpoint else { return }
+            started.fulfill()
+            await gate.wait()
+        }
+        let store = ProtocolStore(api: api)
+
+        let create = Task {
+            await store.create(.fixture)
+        }
+        await fulfillment(of: [started], timeout: 2)
+        store.resetSession()
+        await gate.open()
+        let result = await create.value
+
+        XCTAssertNil(result)
+        XCTAssertTrue(store.protocols.isEmpty)
+        XCTAssertNil(store.selectedProtocol)
+        XCTAssertEqual(store.revision, 0)
+    }
+
     func testUpdateReplacesProtocolMetadata() async {
         let api = MockAPIClient()
         api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)

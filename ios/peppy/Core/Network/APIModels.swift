@@ -20,9 +20,10 @@ struct User: Codable, Identifiable {
     let displayName: String?
     let isVerified: Bool?
     let createdAt: Date?
+    let timezone: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, email
+        case id, email, timezone
         case displayName = "display_name"
         case isVerified = "is_verified"
         case createdAt = "created_at"
@@ -33,13 +34,15 @@ struct User: Codable, Identifiable {
         email: String,
         createdAt: Date? = nil,
         displayName: String? = nil,
-        isVerified: Bool? = nil
+        isVerified: Bool? = nil,
+        timezone: String? = nil
     ) {
         self.id = id
         self.email = email
         self.displayName = displayName
         self.isVerified = isVerified
         self.createdAt = createdAt
+        self.timezone = timezone
     }
 }
 

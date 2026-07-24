@@ -35,6 +35,33 @@
 		A2C700042607220000000004 /* ProfileSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C700032607220000000003 /* ProfileSettingsViewModel.swift */; };
 		A2C700062607220000000006 /* ProfileSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C700052607220000000005 /* ProfileSettingsView.swift */; };
 		A2C700082607220000000008 /* ProfileEditorSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C700072607220000000007 /* ProfileEditorSheets.swift */; };
+		A2C800022607230000000002 /* NotificationSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C800012607230000000001 /* NotificationSettingsTests.swift */; };
+		A2C810022607230000000002 /* DoseScheduleCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C810012607230000000001 /* DoseScheduleCalculator.swift */; };
+		A2C810042607230000000004 /* LocalNotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C810032607230000000003 /* LocalNotificationScheduler.swift */; };
+		A2C810062607230000000006 /* PushRegistrationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C810052607230000000005 /* PushRegistrationCoordinator.swift */; };
+		A2C810092607230000000009 /* NotificationSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C810082607230000000008 /* NotificationSettingsViewModel.swift */; };
+		A2C8100B260723000000000B /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C8100A260723000000000A /* NotificationSettingsView.swift */; };
+		A2C8100D260723000000000D /* ReminderSetupSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C8100C260723000000000C /* ReminderSetupSheets.swift */; };
+		A2C8100F260723000000000F /* PeppyAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C8100E260723000000000E /* PeppyAppDelegate.swift */; };
+		A2C900022607230100000002 /* AppLockCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C900012607230100000001 /* AppLockCoordinatorTests.swift */; };
+		A2CA00022607230200000002 /* DataExportViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CA00012607230200000001 /* DataExportViewModelTests.swift */; };
+		A2CB00022607231400000002 /* AccountSecurityViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB00012607231400000001 /* AccountSecurityViewModelTests.swift */; };
+		A2CB00042607231400000004 /* HelpAboutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB00032607231400000003 /* HelpAboutTests.swift */; };
+		A2CB01022607231400000102 /* InAppBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB01012607231400000101 /* InAppBrowserView.swift */; };
+		A2CB02022607231400000202 /* AccountSecurityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB02012607231400000201 /* AccountSecurityViewModel.swift */; };
+		A2CB03022607231400000302 /* SecurityPrivacyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB03012607231400000301 /* SecurityPrivacyView.swift */; };
+		A2CB03042607231400000304 /* ChangePasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB03032607231400000303 /* ChangePasswordView.swift */; };
+		A2CB03062607231400000306 /* DeleteAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB03052607231400000305 /* DeleteAccountView.swift */; };
+		A2CB03082607231400000308 /* HelpAboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB03072607231400000307 /* HelpAboutView.swift */; };
+		A2CB030A260723140000030A /* MedicalDisclaimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CB03092607231400000309 /* MedicalDisclaimerView.swift */; };
+		A2CA01022607230200000102 /* ExportFileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CA01012607230200000101 /* ExportFileService.swift */; };
+		A2CA01042607230200000104 /* DataExportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CA01032607230200000103 /* DataExportViewModel.swift */; };
+		A2CA01072607230200000107 /* DataExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CA01062607230200000106 /* DataExportView.swift */; };
+		A2CA01092607230200000109 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CA01082607230200000108 /* ActivityView.swift */; };
+		A2C901022607230100000002 /* AppLockService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C901012607230100000001 /* AppLockService.swift */; };
+		A2C901042607230100000004 /* AppLockPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C901032607230100000003 /* AppLockPreferences.swift */; };
+		A2C901062607230100000006 /* AppLockCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C901052607230100000005 /* AppLockCoordinator.swift */; };
+		A2C901092607230100000009 /* AppLockCoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C901082607230100000008 /* AppLockCoverView.swift */; };
 		49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364822FD4DE4B00C1F5DE /* PepBadge.swift */; };
 		49C364A02FD4DE7E00C1F5DE /* PepButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364832FD4DE4B00C1F5DE /* PepButton.swift */; };
 		49C364A12FD4DE7E00C1F5DE /* PepCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364842FD4DE4B00C1F5DE /* PepCard.swift */; };
@@ -172,6 +199,14 @@
 		A2C700032607220000000003 /* ProfileSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsViewModel.swift; sourceTree = "<group>"; };
 		A2C700052607220000000005 /* ProfileSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsView.swift; sourceTree = "<group>"; };
 		A2C700072607220000000007 /* ProfileEditorSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileEditorSheets.swift; sourceTree = "<group>"; };
+		A2C800012607230000000001 /* NotificationSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsTests.swift; sourceTree = "<group>"; };
+		A2C810012607230000000001 /* DoseScheduleCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoseScheduleCalculator.swift; sourceTree = "<group>"; };
+		A2C810032607230000000003 /* LocalNotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotificationScheduler.swift; sourceTree = "<group>"; };
+		A2C810052607230000000005 /* PushRegistrationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushRegistrationCoordinator.swift; sourceTree = "<group>"; };
+		A2C810082607230000000008 /* NotificationSettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsViewModel.swift; sourceTree = "<group>"; };
+		A2C8100A260723000000000A /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
+		A2C8100C260723000000000C /* ReminderSetupSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderSetupSheets.swift; sourceTree = "<group>"; };
+		A2C8100E260723000000000E /* PeppyAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeppyAppDelegate.swift; sourceTree = "<group>"; };
 		49C364822FD4DE4B00C1F5DE /* PepBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepBadge.swift; sourceTree = "<group>"; };
 		49C364832FD4DE4B00C1F5DE /* PepButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepButton.swift; sourceTree = "<group>"; };
 		49C364842FD4DE4B00C1F5DE /* PepCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PepCard.swift; sourceTree = "<group>"; };
@@ -269,6 +304,25 @@
 		49C364F92FEEA00100C1F5DE /* NotificationPermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermissionView.swift; sourceTree = "<group>"; };
 		49C364FB2FEEA00100C1F5DE /* ReadySummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadySummaryView.swift; sourceTree = "<group>"; };
 		49E6E4422FE4EA64003B96CE /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A2C900012607230100000001 /* AppLockCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockCoordinatorTests.swift; sourceTree = "<group>"; };
+		A2CA00012607230200000001 /* DataExportViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportViewModelTests.swift; sourceTree = "<group>"; };
+		A2CB00012607231400000001 /* AccountSecurityViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSecurityViewModelTests.swift; sourceTree = "<group>"; };
+		A2CB00032607231400000003 /* HelpAboutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpAboutTests.swift; sourceTree = "<group>"; };
+		A2CB01012607231400000101 /* InAppBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InAppBrowserView.swift; sourceTree = "<group>"; };
+		A2CB02012607231400000201 /* AccountSecurityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSecurityViewModel.swift; sourceTree = "<group>"; };
+		A2CB03012607231400000301 /* SecurityPrivacyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityPrivacyView.swift; sourceTree = "<group>"; };
+		A2CB03032607231400000303 /* ChangePasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangePasswordView.swift; sourceTree = "<group>"; };
+		A2CB03052607231400000305 /* DeleteAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAccountView.swift; sourceTree = "<group>"; };
+		A2CB03072607231400000307 /* HelpAboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpAboutView.swift; sourceTree = "<group>"; };
+		A2CB03092607231400000309 /* MedicalDisclaimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicalDisclaimerView.swift; sourceTree = "<group>"; };
+		A2CA01012607230200000101 /* ExportFileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportFileService.swift; sourceTree = "<group>"; };
+		A2CA01032607230200000103 /* DataExportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportViewModel.swift; sourceTree = "<group>"; };
+		A2CA01062607230200000106 /* DataExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportView.swift; sourceTree = "<group>"; };
+		A2CA01082607230200000108 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
+		A2C901012607230100000001 /* AppLockService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockService.swift; sourceTree = "<group>"; };
+		A2C901032607230100000003 /* AppLockPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockPreferences.swift; sourceTree = "<group>"; };
+		A2C901052607230100000005 /* AppLockCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockCoordinator.swift; sourceTree = "<group>"; };
+		A2C901082607230100000008 /* AppLockCoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockCoverView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -320,6 +374,7 @@
 				49C364742FD4DE4B00C1F5DE /* Dependencies.swift */,
 				49C364752FD4DE4B00C1F5DE /* MainTabView.swift */,
 				49C364762FD4DE4B00C1F5DE /* PeppyApp.swift */,
+				A2C8100E260723000000000E /* PeppyAppDelegate.swift */,
 				49C364772FD4DE4B00C1F5DE /* RootView.swift */,
 			);
 			path = App;
@@ -351,12 +406,52 @@
 		49C364812FD4DE4B00C1F5DE /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				A2CB01032607231400000103 /* Browser */,
 				49C364F62FEE900100C1F5DE /* Data */,
+				A2CA01052607230200000105 /* Export */,
 				49C3647E2FD4DE4B00C1F5DE /* Network */,
+				A2C810072607230000000007 /* Notifications */,
 				49C364CB2FEE300100C1F5DE /* Permissions */,
+				A2C901072607230100000007 /* Security */,
 				49C364802FD4DE4B00C1F5DE /* Storage */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		A2CB01032607231400000103 /* Browser */ = {
+			isa = PBXGroup;
+			children = (
+				A2CB01012607231400000101 /* InAppBrowserView.swift */,
+			);
+			path = Browser;
+			sourceTree = "<group>";
+		};
+		A2CA01052607230200000105 /* Export */ = {
+			isa = PBXGroup;
+			children = (
+				A2CA01012607230200000101 /* ExportFileService.swift */,
+			);
+			path = Export;
+			sourceTree = "<group>";
+		};
+		A2C901072607230100000007 /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				A2C901052607230100000005 /* AppLockCoordinator.swift */,
+				A2C901032607230100000003 /* AppLockPreferences.swift */,
+				A2C901012607230100000001 /* AppLockService.swift */,
+			);
+			path = Security;
+			sourceTree = "<group>";
+		};
+		A2C810072607230000000007 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				A2C810012607230000000001 /* DoseScheduleCalculator.swift */,
+				A2C810032607230000000003 /* LocalNotificationScheduler.swift */,
+				A2C810052607230000000005 /* PushRegistrationCoordinator.swift */,
+			);
+			path = Notifications;
 			sourceTree = "<group>";
 		};
 		49C364892FD4DE4B00C1F5DE /* Components */ = {
@@ -450,6 +545,9 @@
 		A2C700092607220000000009 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				A2CB02012607231400000201 /* AccountSecurityViewModel.swift */,
+				A2CA01032607230200000103 /* DataExportViewModel.swift */,
+				A2C810082607230000000008 /* NotificationSettingsViewModel.swift */,
 				A2C700032607220000000003 /* ProfileSettingsViewModel.swift */,
 			);
 			path = ViewModels;
@@ -458,8 +556,18 @@
 		A2C600102607220000000010 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A2CA01082607230200000108 /* ActivityView.swift */,
+				A2C901082607230100000008 /* AppLockCoverView.swift */,
+				A2CB03032607231400000303 /* ChangePasswordView.swift */,
+				A2CA01062607230200000106 /* DataExportView.swift */,
+				A2CB03052607231400000305 /* DeleteAccountView.swift */,
+				A2CB03072607231400000307 /* HelpAboutView.swift */,
+				A2CB03092607231400000309 /* MedicalDisclaimerView.swift */,
+				A2C8100A260723000000000A /* NotificationSettingsView.swift */,
+				A2C8100C260723000000000C /* ReminderSetupSheets.swift */,
 				A2C700072607220000000007 /* ProfileEditorSheets.swift */,
 				A2C700052607220000000005 /* ProfileSettingsView.swift */,
+				A2CB03012607231400000301 /* SecurityPrivacyView.swift */,
 				A2C600092607220000000009 /* SettingsComponents.swift */,
 				A2C6000B260722000000000B /* SettingsRootView.swift */,
 			);
@@ -469,6 +577,9 @@
 		49C364B62FEE000100C1F5DE /* peppyTests */ = {
 			isa = PBXGroup;
 			children = (
+				A2CB00012607231400000001 /* AccountSecurityViewModelTests.swift */,
+				A2C900012607230100000001 /* AppLockCoordinatorTests.swift */,
+				A2CA00012607230200000001 /* DataExportViewModelTests.swift */,
 				49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */,
 				49C365212FF000700C1F5DE /* CheckinViewModelTests.swift */,
 				49C3654A2FF000B00C1F5DE /* CompoundEditorViewModelTests.swift */,
@@ -495,8 +606,10 @@
 				A2C600032607220000000003 /* SettingsNavigationTests.swift */,
 				A2C600012607220000000001 /* SettingsStoreTests.swift */,
 				A2C700012607220000000001 /* ProfileSettingsViewModelTests.swift */,
+				A2C800012607230000000001 /* NotificationSettingsTests.swift */,
 				49C365112FF000500C1F5DE /* StarterProtocolViewModelTests.swift */,
 				49C3658E2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift */,
+				A2CB00032607231400000003 /* HelpAboutTests.swift */,
 			);
 			path = peppyTests;
 			sourceTree = "<group>";
@@ -804,6 +917,9 @@
 					49C363B92FD4D81900C1F5DE = {
 						CreatedOnToolsVersion = 26.5;
 						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
 							com.apple.HealthKit = {
 								enabled = 1;
 							};
@@ -916,6 +1032,28 @@
 				A2C700042607220000000004 /* ProfileSettingsViewModel.swift in Sources */,
 				A2C700062607220000000006 /* ProfileSettingsView.swift in Sources */,
 				A2C700082607220000000008 /* ProfileEditorSheets.swift in Sources */,
+				A2C810022607230000000002 /* DoseScheduleCalculator.swift in Sources */,
+				A2C810042607230000000004 /* LocalNotificationScheduler.swift in Sources */,
+				A2C810062607230000000006 /* PushRegistrationCoordinator.swift in Sources */,
+				A2C810092607230000000009 /* NotificationSettingsViewModel.swift in Sources */,
+				A2C8100B260723000000000B /* NotificationSettingsView.swift in Sources */,
+				A2C8100D260723000000000D /* ReminderSetupSheets.swift in Sources */,
+				A2C8100F260723000000000F /* PeppyAppDelegate.swift in Sources */,
+				A2C901022607230100000002 /* AppLockService.swift in Sources */,
+				A2C901042607230100000004 /* AppLockPreferences.swift in Sources */,
+				A2C901062607230100000006 /* AppLockCoordinator.swift in Sources */,
+				A2C901092607230100000009 /* AppLockCoverView.swift in Sources */,
+				A2CA01022607230200000102 /* ExportFileService.swift in Sources */,
+				A2CA01042607230200000104 /* DataExportViewModel.swift in Sources */,
+				A2CA01072607230200000107 /* DataExportView.swift in Sources */,
+				A2CA01092607230200000109 /* ActivityView.swift in Sources */,
+				A2CB01022607231400000102 /* InAppBrowserView.swift in Sources */,
+				A2CB02022607231400000202 /* AccountSecurityViewModel.swift in Sources */,
+				A2CB03022607231400000302 /* SecurityPrivacyView.swift in Sources */,
+				A2CB03042607231400000304 /* ChangePasswordView.swift in Sources */,
+				A2CB03062607231400000306 /* DeleteAccountView.swift in Sources */,
+				A2CB03082607231400000308 /* HelpAboutView.swift in Sources */,
+				A2CB030A260723140000030A /* MedicalDisclaimerView.swift in Sources */,
 				49C3649E2FD4DE7E00C1F5DE /* KeychainService.swift in Sources */,
 				A2C200022607170000000002 /* WeightUnitPreferenceStore.swift in Sources */,
 				49C3649F2FD4DE7E00C1F5DE /* PepBadge.swift in Sources */,
@@ -959,6 +1097,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A2CB00022607231400000002 /* AccountSecurityViewModelTests.swift in Sources */,
+				A2C900022607230100000002 /* AppLockCoordinatorTests.swift in Sources */,
+				A2CA00022607230200000002 /* DataExportViewModelTests.swift in Sources */,
 				49C364D02FEE400100C1F5DE /* AppFlowCoordinatorTests.swift in Sources */,
 				49C364E22FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift in Sources */,
 				49C364D92FEE600100C1F5DE /* OnboardingComponentTests.swift in Sources */,
@@ -983,10 +1124,12 @@
 				A2C600042607220000000004 /* SettingsNavigationTests.swift in Sources */,
 				A2C600022607220000000002 /* SettingsStoreTests.swift in Sources */,
 				A2C700022607220000000002 /* ProfileSettingsViewModelTests.swift in Sources */,
+				A2C800022607230000000002 /* NotificationSettingsTests.swift in Sources */,
 				49C3658D2FF001900C1F5DE /* WeeklySummaryViewModelTests.swift in Sources */,
 				49C365632FF000F00C1F5DE /* ProtocolDetailViewModelTests.swift in Sources */,
 				49C3654B2FF000B00C1F5DE /* ProtocolEditorViewModelTests.swift in Sources */,
 				49C365512FF000D00C1F5DE /* ProtocolListViewModelTests.swift in Sources */,
+				A2CB00042607231400000004 /* HelpAboutTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1133,6 +1276,7 @@
 				DEVELOPMENT_TEAM = 8U5CH9W9C4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to protect your Peppy health information.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Peppy reads selected health data to personalize your baseline, trends, and insights.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -1169,6 +1313,7 @@
 				DEVELOPMENT_TEAM = 8U5CH9W9C4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to protect your Peppy health information.";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Peppy reads selected health data to personalize your baseline, trends, and insights.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

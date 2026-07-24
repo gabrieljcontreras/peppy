@@ -260,7 +260,9 @@ final class ProtocolDetailViewModel {
         guard let latest = compoundLogs.map(\.administeredAt).max() else {
             return Self.dayDateFormatter.string(from: protocolValue.startDate)
         }
-        guard let intervalDays = Self.frequencyIntervalDays(compound.frequency) else {
+        guard let intervalDays = DoseScheduleCalculator.intervalDays(
+            for: compound.frequency
+        ) else {
             return nil
         }
         let next = latest.addingTimeInterval(TimeInterval(intervalDays) * 86_400)
@@ -291,27 +293,6 @@ final class ProtocolDetailViewModel {
             return "Intramuscular injection"
         default:
             return route.capitalized
-        }
-    }
-
-    private static func frequencyIntervalDays(_ frequency: String) -> Int? {
-        switch frequency.lowercased() {
-        case "daily":
-            return 1
-        case "every other day":
-            return 2
-        case "twice weekly":
-            return 3
-        case "weekly", "once weekly":
-            return 7
-        case "every 10 days":
-            return 10
-        case "biweekly":
-            return 14
-        case "monthly":
-            return 30
-        default:
-            return nil
         }
     }
 

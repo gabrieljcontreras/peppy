@@ -77,6 +77,34 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertNil(fixture.keychain.get(KeychainKeys.refreshToken))
     }
 
+    func testFailedSessionRestorationCleansAuthenticatedDataBeforeDeletingCredentials() async throws {
+        let api = MockAPIClient()
+        let keychain = MockKeychainService()
+        let appState = AppState()
+        let store = InMemoryOnboardingStore()
+        var cleanupCallCount = 0
+        var tokenWasAvailableDuringCleanup = false
+        let coordinator = AppFlowCoordinator(
+            api: api,
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: store,
+            cleanupAuthenticatedSessionData: { _ in
+                cleanupCallCount += 1
+                tokenWasAvailableDuringCleanup =
+                    keychain.get(KeychainKeys.accessToken) != nil
+            }
+        )
+        try keychain.save("access", for: KeychainKeys.accessToken)
+        api.setMockError(.unauthorized, for: "/auth/me")
+
+        await coordinator.resolveLaunch()
+
+        XCTAssertEqual(cleanupCallCount, 1)
+        XCTAssertTrue(tokenWasAvailableDuringCleanup)
+        XCTAssertNil(keychain.get(KeychainKeys.accessToken))
+    }
+
     func testNetworkFailureDuringSessionRestoreRoutesReturningUserToSignIn() async throws {
         let fixture = Fixture()
         try fixture.keychain.save("access", for: KeychainKeys.accessToken)
@@ -173,14 +201,14 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertNotNil(fixture.store.loadAnonymousDraft())
     }
 
-    func testLogoutClearsCredentialsAndRoutesToSignIn() throws {
+    func testLogoutClearsCredentialsAndRoutesToSignIn() async throws {
         let fixture = Fixture()
         let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
         fixture.appState.login(user: user)
         try fixture.keychain.save("access", for: KeychainKeys.accessToken)
         try fixture.keychain.save("refresh", for: KeychainKeys.refreshToken)
 
-        fixture.coordinator.logout()
+        await fixture.coordinator.logout()
 
         XCTAssertEqual(fixture.coordinator.route, .authentication(.signIn))
         XCTAssertFalse(fixture.appState.isAuthenticated)
@@ -193,10 +221,295 @@ final class AppFlowCoordinatorTests: XCTestCase {
         let user = User(id: UUID(), email: "alex@example.com", createdAt: Date())
 
         await fixture.coordinator.didAuthenticate(user: user)
-        fixture.coordinator.logout()
+        await fixture.coordinator.logout()
 
         XCTAssertEqual(fixture.coordinator.route, .authentication(.signIn))
         XCTAssertTrue(fixture.store.hasKnownAccount)
+    }
+
+    func testLogoutAttemptsRemoteLogoutAndAlwaysClearsLocalSession() async throws {
+        let api = MockAPIClient()
+        let keychain = MockKeychainService()
+        let appState = AppState()
+        let store = InMemoryOnboardingStore()
+        var cleanupCallCount = 0
+        var cleanupAccessToken: String?
+        let coordinator = AppFlowCoordinator(
+            api: api,
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: store,
+            cleanupAuthenticatedSessionData: { accessToken in
+                cleanupCallCount += 1
+                cleanupAccessToken = accessToken
+            }
+        )
+        appState.login(
+            user: User(id: UUID(), email: "alex@example.com")
+        )
+        try keychain.save("access", for: KeychainKeys.accessToken)
+        try keychain.save("refresh", for: KeychainKeys.refreshToken)
+        api.setMockError(.networkUnavailable, for: .logout)
+
+        await coordinator.logout()
+
+        XCTAssertEqual(cleanupCallCount, 1)
+        XCTAssertEqual(cleanupAccessToken, "access")
+        XCTAssertEqual(api.requestLog.map(\.requestID), ["POST /auth/logout"])
+        XCTAssertEqual(
+            api.authenticatedRequestLog.map(\.accessToken),
+            ["access"]
+        )
+        XCTAssertNil(keychain.get(KeychainKeys.accessToken))
+        XCTAssertNil(keychain.get(KeychainKeys.refreshToken))
+        XCTAssertFalse(appState.isAuthenticated)
+        XCTAssertEqual(coordinator.route, .authentication(.signIn))
+    }
+
+    func testLogoutLeavesAuthenticatedUIBeforeRemoteCleanupFinishes() async throws {
+        let api = MockAPIClient()
+        let keychain = MockKeychainService()
+        let appState = AppState()
+        let store = InMemoryOnboardingStore()
+        let cleanupStarted = expectation(description: "cleanup started")
+        var releaseCleanup: CheckedContinuation<Void, Never>?
+        let coordinator = AppFlowCoordinator(
+            api: api,
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: store,
+            cleanupAuthenticatedSessionData: { _ in
+                cleanupStarted.fulfill()
+                await withCheckedContinuation { continuation in
+                    releaseCleanup = continuation
+                }
+            }
+        )
+        appState.login(user: User(id: UUID(), email: "alex@example.com"))
+        coordinator.route = .dashboard
+        try keychain.save("access", for: KeychainKeys.accessToken)
+        try keychain.save("refresh", for: KeychainKeys.refreshToken)
+
+        let logout = Task { await coordinator.logout() }
+        await fulfillment(of: [cleanupStarted])
+
+        XCTAssertEqual(coordinator.route, .authentication(.signIn))
+        XCTAssertFalse(appState.isAuthenticated)
+        XCTAssertNil(keychain.get(KeychainKeys.accessToken))
+        XCTAssertNil(keychain.get(KeychainKeys.refreshToken))
+
+        releaseCleanup?.resume()
+        await logout.value
+
+        XCTAssertNil(keychain.get(KeychainKeys.accessToken))
+        XCTAssertNil(keychain.get(KeychainKeys.refreshToken))
+    }
+
+    func testNewSessionCanLogoutWhilePreviousSessionCleanupFinishes() async throws {
+        let api = MockAPIClient()
+        let keychain = MockKeychainService()
+        let appState = AppState()
+        let store = InMemoryOnboardingStore()
+        let firstCleanupStarted = expectation(
+            description: "first cleanup started"
+        )
+        var cleanupCallCount = 0
+        var releaseFirstCleanup: CheckedContinuation<Void, Never>?
+        let coordinator = AppFlowCoordinator(
+            api: api,
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: store,
+            cleanupAuthenticatedSessionData: { _ in
+                cleanupCallCount += 1
+                guard cleanupCallCount == 1 else { return }
+                firstCleanupStarted.fulfill()
+                await withCheckedContinuation { continuation in
+                    releaseFirstCleanup = continuation
+                }
+            }
+        )
+        appState.login(user: User(id: UUID(), email: "old@example.com"))
+        coordinator.route = .dashboard
+        try keychain.save("old-access", for: KeychainKeys.accessToken)
+        try keychain.save("old-refresh", for: KeychainKeys.refreshToken)
+
+        let firstLogout = Task { await coordinator.logout() }
+        await fulfillment(of: [firstCleanupStarted])
+
+        let newUser = User(id: UUID(), email: "new@example.com")
+        try keychain.save("new-access", for: KeychainKeys.accessToken)
+        try keychain.save("new-refresh", for: KeychainKeys.refreshToken)
+        await coordinator.didAuthenticate(user: newUser)
+
+        let secondLogout = Task { await coordinator.logout() }
+        await Task.yield()
+
+        XCTAssertEqual(coordinator.route, .authentication(.signIn))
+        XCTAssertFalse(appState.isAuthenticated)
+        XCTAssertNil(keychain.get(KeychainKeys.accessToken))
+        XCTAssertNil(keychain.get(KeychainKeys.refreshToken))
+        XCTAssertEqual(cleanupCallCount, 2)
+
+        releaseFirstCleanup?.resume()
+        await firstLogout.value
+        await secondLogout.value
+
+        XCTAssertEqual(
+            Set(api.authenticatedRequestLog.map(\.accessToken)),
+            Set(["old-access", "new-access"])
+        )
+    }
+
+    func testConcurrentLogoutCallsShareOneRemoteCleanup() async throws {
+        let api = MockAPIClient()
+        let keychain = MockKeychainService()
+        let appState = AppState()
+        let store = InMemoryOnboardingStore()
+        let cleanupStarted = expectation(description: "cleanup started")
+        var cleanupCallCount = 0
+        var releaseCleanup: CheckedContinuation<Void, Never>?
+        let coordinator = AppFlowCoordinator(
+            api: api,
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: store,
+            cleanupAuthenticatedSessionData: { _ in
+                cleanupCallCount += 1
+                guard cleanupCallCount == 1 else { return }
+                cleanupStarted.fulfill()
+                await withCheckedContinuation { continuation in
+                    releaseCleanup = continuation
+                }
+            }
+        )
+        appState.login(user: User(id: UUID(), email: "alex@example.com"))
+        coordinator.route = .dashboard
+        try keychain.save("access", for: KeychainKeys.accessToken)
+
+        let firstLogout = Task { await coordinator.logout() }
+        await fulfillment(of: [cleanupStarted])
+        let secondLogout = Task { await coordinator.logout() }
+        await Task.yield()
+
+        XCTAssertEqual(cleanupCallCount, 1)
+
+        releaseCleanup?.resume()
+        await firstLogout.value
+        await secondLogout.value
+
+        XCTAssertEqual(cleanupCallCount, 1)
+        XCTAssertEqual(api.requestLog.map(\.requestID), ["POST /auth/logout"])
+    }
+
+    func testServerConfirmedSignOutLeavesAuthenticatedUIBeforeCleanupFinishes() async throws {
+        let keychain = MockKeychainService()
+        let appState = AppState()
+        let cleanupStarted = expectation(description: "cleanup started")
+        var releaseCleanup: CheckedContinuation<Void, Never>?
+        let coordinator = AppFlowCoordinator(
+            api: MockAPIClient(),
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: InMemoryOnboardingStore(),
+            cleanupAuthenticatedSessionData: { _ in
+                cleanupStarted.fulfill()
+                await withCheckedContinuation { continuation in
+                    releaseCleanup = continuation
+                }
+            }
+        )
+        appState.login(user: User(id: UUID(), email: "alex@example.com"))
+        coordinator.route = .dashboard
+        try keychain.save("access", for: KeychainKeys.accessToken)
+        try keychain.save("refresh", for: KeychainKeys.refreshToken)
+
+        let finish = Task { await coordinator.finishSignedOutSession() }
+        await fulfillment(of: [cleanupStarted])
+
+        XCTAssertEqual(coordinator.route, .authentication(.signIn))
+        XCTAssertFalse(appState.isAuthenticated)
+        XCTAssertNil(keychain.get(KeychainKeys.accessToken))
+        XCTAssertNil(keychain.get(KeychainKeys.refreshToken))
+
+        releaseCleanup?.resume()
+        await finish.value
+    }
+
+    func testFailedPushUnregisterDoesNotTrapLogout() async throws {
+        let api = MockAPIClient()
+        let keychain = MockKeychainService()
+        let appState = AppState()
+        let store = InMemoryOnboardingStore()
+        let deviceID = UUID()
+        let registrationStore = TestPushRegistrationStore()
+        registrationStore.deviceID = deviceID
+        let pushRegistration = PushRegistrationCoordinator(
+            api: api,
+            registrationStore: registrationStore,
+            isSignedIn: { appState.isAuthenticated }
+        )
+        let coordinator = AppFlowCoordinator(
+            api: api,
+            keychain: keychain,
+            appState: appState,
+            onboardingStore: store,
+            cleanupAuthenticatedSessionData: { accessToken in
+                await pushRegistration.unregister(
+                    authenticatedBy: accessToken
+                )
+            }
+        )
+        appState.login(
+            user: User(id: UUID(), email: "alex@example.com")
+        )
+        try keychain.save("access", for: KeychainKeys.accessToken)
+        try keychain.save("refresh", for: KeychainKeys.refreshToken)
+        api.setMockError(
+            .networkUnavailable,
+            for: .deleteDevice(id: deviceID)
+        )
+
+        await coordinator.logout()
+
+        XCTAssertEqual(
+            api.requestLog.map(\.requestID),
+            [
+                "DELETE /notifications/devices/\(deviceID)",
+                "POST /auth/logout"
+            ]
+        )
+        XCTAssertEqual(
+            api.authenticatedRequestLog.map(\.accessToken),
+            ["access", "access"]
+        )
+        XCTAssertNil(registrationStore.deviceID)
+        XCTAssertFalse(appState.isAuthenticated)
+        XCTAssertEqual(coordinator.route, .authentication(.signIn))
+    }
+
+    func testLogoutClearsInsightCache() async {
+        let dependencies = Dependencies.mock()
+        let api = dependencies.api as! MockAPIClient
+        let user = User(id: UUID(), email: "alex@example.com")
+        let insight = Insight.fixture()
+        dependencies.appState.login(user: user)
+        api.setMockResponse(
+            [insight],
+            for: Endpoint.getInsights(
+                unreadOnly: nil,
+                type: nil,
+                severity: nil
+            )
+        )
+        await dependencies.insightsStore.loadInsights()
+        XCTAssertEqual(dependencies.insightsStore.insights.map(\.id), [insight.id])
+
+        await dependencies.flow.logout()
+
+        XCTAssertTrue(dependencies.insightsStore.insights.isEmpty)
+        XCTAssertNil(dependencies.insightsStore.weekly)
+        XCTAssertNil(dependencies.insightsStore.errorMessage)
     }
 
     func testLogoutClearsUserACheckinsAndNavigationBeforeUserBLoads() async {
@@ -220,7 +533,7 @@ final class AppFlowCoordinatorTests: XCTestCase {
         dependencies.protocolNavigation.selectedTab = .checkin
         dependencies.protocolNavigation.checkinPath = [.detail(userACheckin.id)]
 
-        dependencies.flow.logout()
+        await dependencies.flow.logout()
 
         XCTAssertTrue(dependencies.checkinStore.checkins.isEmpty)
         XCTAssertNil(dependencies.checkinStore.selectedCheckin)
@@ -406,9 +719,22 @@ final class AppFlowCoordinatorTests: XCTestCase {
             throw error
         }
 
+        func executeVoid(
+            _ endpoint: Endpoint,
+            authenticatedBy accessToken: String
+        ) async throws {
+            throw error
+        }
+
         func download(_ endpoint: Endpoint) async throws -> DownloadedFile {
             throw error
         }
+    }
+
+    private final class TestPushRegistrationStore:
+        PushRegistrationStoring
+    {
+        var deviceID: UUID?
     }
 
     private func makeCheckin(userID: UUID, energyLevel: Int) -> Checkin {

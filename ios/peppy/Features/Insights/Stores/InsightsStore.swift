@@ -73,6 +73,16 @@ final class InsightsStore {
         }
     }
 
+    func resetSession() {
+        insightsLoadToken += 1
+        weeklyLoadToken += 1
+        insights = []
+        weekly = nil
+        isLoading = false
+        errorMessage = nil
+        hasLoadedInsights = false
+    }
+
     @discardableResult
     func act(_ id: UUID, action: String) async -> Bool {
         errorMessage = nil

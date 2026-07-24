@@ -1,9 +1,10 @@
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.notification import DeviceToken
 from app.models.user import User
 from app.services.auth import hash_password, verify_password
 
@@ -62,6 +63,9 @@ class UserService:
 
         user.hashed_password = hash_password(new_password)
         user.auth_version += 1
+        await self.db.execute(
+            delete(DeviceToken).where(DeviceToken.user_id == user.id)
+        )
         await self.db.commit()
 
     async def deactivate(self, user: User) -> User:

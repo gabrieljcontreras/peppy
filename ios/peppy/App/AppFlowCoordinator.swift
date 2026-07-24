@@ -29,6 +29,8 @@ final class AppFlowCoordinator {
     private let onboardingStore: OnboardingStoreProtocol
     private let prepareSessionData: @MainActor (User) -> Void
     private let resetSessionData: @MainActor () -> Void
+    private let cleanupAuthenticatedSessionData:
+        @MainActor (String?) async -> Void
 
     init(
         api: APIClientProtocol,
@@ -36,7 +38,9 @@ final class AppFlowCoordinator {
         appState: AppState,
         onboardingStore: OnboardingStoreProtocol,
         prepareSessionData: @escaping @MainActor (User) -> Void = { _ in },
-        resetSessionData: @escaping @MainActor () -> Void = {}
+        resetSessionData: @escaping @MainActor () -> Void = {},
+        cleanupAuthenticatedSessionData:
+            @escaping @MainActor (String?) async -> Void = { _ in }
     ) {
         self.api = api
         self.keychain = keychain
@@ -44,6 +48,7 @@ final class AppFlowCoordinator {
         self.onboardingStore = onboardingStore
         self.prepareSessionData = prepareSessionData
         self.resetSessionData = resetSessionData
+        self.cleanupAuthenticatedSessionData = cleanupAuthenticatedSessionData
     }
 
     func resolveLaunch() async {
@@ -51,20 +56,22 @@ final class AppFlowCoordinator {
         authenticationBackStack = []
 
         guard keychain.get(KeychainKeys.accessToken) != nil else {
+            await cleanupAuthenticatedSessionData(nil)
             resetSessionData()
+            keychain.invalidateAuthenticatedSession()
             resolveSignedOutRoute()
             return
         }
 
         do {
             let user: User = try await api.execute(.me)
-            resetForNewSession(ifNeeded: user.id)
+            await resetForNewSession(ifNeeded: user.id)
             prepareSessionData(user)
             appState.login(user: user)
             onboardingStore.hasKnownAccount = true
             route = .dashboard
         } catch {
-            resolveFailedSessionRestoration()
+            await resolveFailedSessionRestoration()
         }
     }
 
@@ -115,7 +122,7 @@ final class AppFlowCoordinator {
     }
 
     func didAuthenticate(user: User) async {
-        resetForNewSession(ifNeeded: user.id)
+        await resetForNewSession(ifNeeded: user.id)
         hasProfileAttachFailure = false
         if let draft = onboardingStore.loadAnonymousDraft(), draft.isComplete {
             do {
@@ -136,13 +143,48 @@ final class AppFlowCoordinator {
         route = .dashboard
     }
 
-    func logout() {
+    func logout() async {
+        let accessToken = keychain.get(KeychainKeys.accessToken)
+        let refreshToken = keychain.get(KeychainKeys.refreshToken)
+        guard appState.isAuthenticated
+            || accessToken != nil
+            || refreshToken != nil else {
+            return
+        }
+
+        // Clear shared credentials before exposing sign-in. Remote cleanup uses
+        // only this immutable access-token snapshot and can never refresh or
+        // mutate credentials belonging to a later session.
+        finishLocalSignedOutSession()
+        await cleanupAuthenticatedSessionData(accessToken)
+        if let accessToken {
+            try? await api.executeVoid(
+                .logout,
+                authenticatedBy: accessToken
+            )
+        }
+    }
+
+    /// Completes a server-confirmed password rotation or account deletion.
+    /// Remote notification cleanup remains best effort, while local cleanup is
+    /// unconditional and centralized in one transition.
+    func finishSignedOutSession() async {
+        finishLocalSignedOutSession()
+        await cleanupAuthenticatedSessionData(nil)
+    }
+
+    private func finishLocalSignedOutSession() {
         resetSessionData()
-        keychain.delete(KeychainKeys.accessToken)
-        keychain.delete(KeychainKeys.refreshToken)
+        keychain.invalidateAuthenticatedSession()
         appState.logout()
         authenticationBackStack = []
         route = .authentication(.signIn)
+    }
+
+    /// The app-facing logout path. Authenticated cleanup runs before credentials
+    /// are deleted so APNs can unregister the exact server device record.
+    func logoutAndWait() async {
+        await logout()
     }
 
     var shouldShowAuthenticationBackButton: Bool {
@@ -154,10 +196,12 @@ final class AppFlowCoordinator {
         route = previousRoute
     }
 
-    private func resolveFailedSessionRestoration() {
+    private func resolveFailedSessionRestoration() async {
+        await cleanupAuthenticatedSessionData(
+            keychain.get(KeychainKeys.accessToken)
+        )
         resetSessionData()
-        keychain.delete(KeychainKeys.accessToken)
-        keychain.delete(KeychainKeys.refreshToken)
+        keychain.invalidateAuthenticatedSession()
         onboardingStore.hasKnownAccount = true
         appState.logout()
         launchError = nil
@@ -180,8 +224,13 @@ final class AppFlowCoordinator {
         onboardingStore.loadAnonymousDraft()?.isComplete == true
     }
 
-    private func resetForNewSession(ifNeeded userID: UUID) {
+    private func resetForNewSession(ifNeeded userID: UUID) async {
         guard appState.currentUser?.id != userID else { return }
+        if appState.currentUser != nil {
+            await cleanupAuthenticatedSessionData(
+                keychain.get(KeychainKeys.accessToken)
+            )
+        }
         resetSessionData()
     }
 }

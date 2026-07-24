@@ -7,6 +7,7 @@ protocol OnboardingStoreProtocol: AnyObject {
     func clearAnonymousDraft()
     func associateAnonymousDraft(with userID: UUID)
     func loadDraft(for userID: UUID) -> OnboardingDraft?
+    func removeDraft(for userID: UUID)
 }
 
 final class UserDefaultsOnboardingStore: OnboardingStoreProtocol {
@@ -58,6 +59,10 @@ final class UserDefaultsOnboardingStore: OnboardingStoreProtocol {
         load(forKey: Key.user(userID))
     }
 
+    func removeDraft(for userID: UUID) {
+        defaults.removeObject(forKey: Key.user(userID))
+    }
+
     private func save(_ draft: OnboardingDraft, forKey key: String) {
         guard let data = try? encoder.encode(draft) else { return }
         defaults.set(data, forKey: key)
@@ -93,5 +98,9 @@ final class InMemoryOnboardingStore: OnboardingStoreProtocol {
 
     func loadDraft(for userID: UUID) -> OnboardingDraft? {
         userDrafts[userID]
+    }
+
+    func removeDraft(for userID: UUID) {
+        userDrafts[userID] = nil
     }
 }
