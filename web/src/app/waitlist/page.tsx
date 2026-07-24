@@ -24,7 +24,7 @@ const faqs = [
   },
   {
     q: "Is my data private?",
-    a: "Absolutely. Your health data is encrypted at rest and in transit. We never sell your data, and you can export or delete everything at any time.",
+    a: "We never sell your health data. You can export available data or delete your account at any time; see our Privacy Policy for details about how we handle your information.",
   },
 ];
 

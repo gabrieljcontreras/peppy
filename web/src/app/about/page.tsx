@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const values = [
   {
     title: "Privacy first",
-    body: "Your health data is yours. Encrypted at rest, encrypted in transit, never sold. Export or delete everything at any time.",
+    body: "Your health data is yours. We never sell it, and you can export available data or delete your account at any time.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <rect x="3" y="11" width="18" height="11" rx="2" />
