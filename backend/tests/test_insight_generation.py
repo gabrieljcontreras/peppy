@@ -770,7 +770,7 @@ async def test_get_insights_runs_background_generation_when_stale(
         test_session_factory,
     )
 
-    response = await client.get("/api/v1/insights/", headers=headers)
+    response = await client.get("/api/v1/insights", headers=headers)
 
     assert response.status_code == 200
     async with test_session_factory() as verification_db:
@@ -802,7 +802,7 @@ async def test_get_insights_does_not_regenerate_when_fresh(
         background_generation,
     )
 
-    response = await client.get("/api/v1/insights/", headers=headers)
+    response = await client.get("/api/v1/insights", headers=headers)
 
     assert response.status_code == 200
     background_generation.assert_not_awaited()

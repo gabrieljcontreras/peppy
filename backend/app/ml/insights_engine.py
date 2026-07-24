@@ -58,4 +58,14 @@ class InsightsEngine:
         results: list[GeneratedInsight] = []
         for rule in self._rules:
             results.extend(await rule(self.db, user_id, start_date, end_date))
-        return results
+        if results:
+            return results
+
+        from app.ml.rules.checkin_baseline import checkin_baseline_rule
+
+        return await checkin_baseline_rule(
+            self.db,
+            user_id,
+            start_date,
+            end_date,
+        )
