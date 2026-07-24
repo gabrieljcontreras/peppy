@@ -72,6 +72,42 @@ final class InsightAPIModelsTests: XCTestCase {
         XCTAssertFalse(insight.isUnread)
     }
 
+    func testDecodesSQLiteInsightTimestampsWithoutTimezoneAsUTC() throws {
+        let data = Data(
+            #"""
+            {
+              "id": "11111111-2222-3333-4444-555555555555",
+              "type": "trend",
+              "severity": "info",
+              "title": "Your recent check-in pattern",
+              "description": "Energy averaged 6.0/10.",
+              "explanation": "Computed from your latest 3 check-ins.",
+              "confidence": 0.6,
+              "created_at": "2026-07-24T20:40:41",
+              "read_at": "2026-07-24T20:40:41.123456",
+              "dismissed_at": null,
+              "snoozed_until": null,
+              "action_taken": null,
+              "action_notes": null,
+              "supporting_data": null
+            }
+            """#.utf8
+        )
+
+        let insight = try makeDecoder().decode(Insight.self, from: data)
+
+        XCTAssertEqual(
+            insight.createdAt.timeIntervalSince1970,
+            1_784_925_641,
+            accuracy: 0.001
+        )
+        XCTAssertEqual(
+            try XCTUnwrap(insight.readAt).timeIntervalSince1970,
+            1_784_925_641.123,
+            accuracy: 0.001
+        )
+    }
+
     func testDecodesAvailableWeeklySummaryEnvelope() throws {
         let data = Data(
             #"""

@@ -974,7 +974,29 @@ struct Insight: Codable, Identifiable, Equatable {
     }
 
     private static func timestamp(from raw: String) -> Date? {
-        timestampFormatter.date(from: raw) ?? fractionalTimestampFormatter.date(from: raw)
+        guard timestampValidators.contains(where: { $0.date(from: raw) != nil }) else {
+            return nil
+        }
+
+        return timestampFormatter.date(from: raw)
+            ?? fractionalTimestampFormatter.date(from: raw)
+            ?? timestampFormatter.date(from: raw + "Z")
+            ?? fractionalTimestampFormatter.date(from: raw + "Z")
+    }
+
+    private static let timestampValidators: [DateFormatter] = [
+        "yyyy-MM-dd'T'HH:mm:ssXXXXX",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX",
+        "yyyy-MM-dd'T'HH:mm:ss",
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSS"
+    ].map { format in
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = format
+        formatter.isLenient = false
+        return formatter
     }
 
     private static let timestampFormatter: ISO8601DateFormatter = {
