@@ -1407,7 +1407,7 @@ git commit -m "feat: compute dashboard greeting, next dose, and wearable tiles"
 
 No test steps here beyond compiling and the manual QA checklist in Task 10 — these are pure-presentation views with no branching logic of their own, and the extension properties they lean on (`cardTitle`, `badgeText`, `confidenceLabel`, etc.) already are/will be unit-tested directly.
 
-- [ ] **Step 1: Add the confidence-label extension**
+- [x] **Step 1: Add the confidence-label extension**
 
 In `ios/peppy/Features/Dashboard/Views/DashboardCards.swift`, add near the other `DashboardProtocolSummary` extension:
 
@@ -1424,7 +1424,7 @@ extension DashboardInsightSummary {
 }
 ```
 
-- [ ] **Step 2: Restyle `DashboardProtocolCard` and `DashboardTodayCard`**
+- [x] **Step 2: Restyle `DashboardProtocolCard` and `DashboardTodayCard`**
 
 Replace the `DashboardProtocolCard` body (keep its `let summary`/`let finishSetup` properties and the `DashboardProtocolSummary` extension above it untouched):
 
@@ -1540,7 +1540,7 @@ Replace the `DashboardTodayCard` body (keep `let today`/`let preview`/`let openC
     }
 ```
 
-- [ ] **Step 3: Add `DashboardNextDoseCard`**
+- [x] **Step 3: Add `DashboardNextDoseCard`**
 
 Append to `DashboardCards.swift`:
 
@@ -1622,7 +1622,7 @@ struct DashboardNextDoseCard: View {
 }
 ```
 
-- [ ] **Step 4: Add `DashboardInsightCard`**
+- [x] **Step 4: Add `DashboardInsightCard`**
 
 Append to `DashboardCards.swift`:
 
@@ -1675,7 +1675,7 @@ struct DashboardInsightCard: View {
 }
 ```
 
-- [ ] **Step 5: Update the file's `#Preview` and build**
+- [x] **Step 5: Update the file's `#Preview` and build**
 
 Update the existing `#Preview` at the bottom of `DashboardCards.swift` to also show the two new cards, so visual regressions are catchable in Xcode's canvas:
 
@@ -1705,12 +1705,12 @@ Update the existing `#Preview` at the bottom of `DashboardCards.swift` to also s
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`
 Expected: BUILD SUCCEEDED (`Compound.fixture` is declared in `peppyTests`, which the main app target can't see — if this errors, replace `.fixture` in the preview with a literal `Compound(id: UUID(), name: "Retatrutide", doseMg: 2.5, doseUnit: "mg", frequency: "weekly", administrationRoute: "subcutaneous", notes: nil)` instead).
 
-- [ ] **Step 6: Run the existing Dashboard card tests to confirm no regressions**
+- [x] **Step 6: Run the existing Dashboard card tests to confirm no regressions**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardViewModelTests test`
 Expected: PASS (the protocol-card presentation tests and accessibility test only exercise the extensions/computed properties this task didn't touch).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add ios/peppy/Features/Dashboard/Views/DashboardCards.swift

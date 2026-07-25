@@ -40,6 +40,17 @@ extension DashboardProtocolSummary {
     }
 }
 
+extension DashboardInsightSummary {
+    var confidenceLabel: String? {
+        guard let confidence else { return nil }
+        switch confidence {
+        case ..<0.5: return "Low confidence"
+        case 0.5..<0.75: return "Medium confidence"
+        default: return "High confidence"
+        }
+    }
+}
+
 struct DashboardProtocolCard: View {
     let summary: DashboardProtocolSummary
     let finishSetup: () -> Void
@@ -48,9 +59,19 @@ struct DashboardProtocolCard: View {
         PepCard {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .center, spacing: Spacing.sm) {
-                    Label(summary.cardTitle, systemImage: "pills.fill")
-                        .font(.system(size: 13, weight: .semibold))
+                    ZStack {
+                        Circle().fill(Color.pepPrimaryMuted)
+                        Image(systemName: "pills.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.pepPrimary)
+                    }
+                    .frame(width: 36, height: 36)
+                    .accessibilityHidden(true)
+
+                    Text(summary.cardTitle.uppercased())
+                        .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(Color.pepPrimary)
+                        .tracking(0.5)
 
                     Spacer(minLength: Spacing.sm)
 
@@ -92,13 +113,20 @@ struct DashboardTodayCard: View {
         Button(action: openCheckin) {
             PepCard {
                 HStack(alignment: .top, spacing: 14) {
-                    Image(systemName: isSaved ? "checkmark.circle.fill" : "plus.circle.fill")
-                        .font(.title2.weight(.semibold))
-                        .foregroundStyle(Color.pepPrimary)
-                        .frame(width: 34, height: 34)
-                        .accessibilityHidden(true)
+                    ZStack {
+                        Circle().fill(Color.pepPrimaryMuted)
+                        Image(systemName: isSaved ? "checkmark.circle.fill" : "calendar")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.pepPrimary)
+                    }
+                    .frame(width: 40, height: 40)
+                    .accessibilityHidden(true)
 
                     VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("TODAY'S CHECK-IN")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(Color.pepPrimary)
+                            .tracking(0.5)
                         Text(preview?.title ?? (isSaved ? "Your check-in" : "How are you today?"))
                             .font(.headline)
                             .foregroundStyle(Color.pepTextPrimary)
@@ -120,10 +148,14 @@ struct DashboardTodayCard: View {
                     }
 
                     Spacer(minLength: Spacing.sm)
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(Color.pepTextTertiary)
-                        .frame(width: 24, height: 44)
-                        .accessibilityHidden(true)
+                    Text(isSaved ? "View" : "Check in")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.pepPrimary)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, Spacing.xs)
+                        .overlay(
+                            Capsule().stroke(Color.pepPrimary, lineWidth: 1)
+                        )
                 }
             }
         }
@@ -139,6 +171,129 @@ struct DashboardTodayCard: View {
     }
 }
 
+struct DashboardNextDoseCard: View {
+    let compound: Compound
+    let dueDate: Date
+    let logDose: () -> Void
+
+    var body: some View {
+        Button(action: logDose) {
+            PepCard {
+                HStack(alignment: .top, spacing: Spacing.md) {
+                    ZStack {
+                        Circle().fill(Color.pepPrimaryMuted)
+                        Image(systemName: "pills.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(Color.pepPrimary)
+                    }
+                    .frame(width: 44, height: 44)
+                    .accessibilityHidden(true)
+
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("NEXT DOSE")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(Color.pepPrimary)
+                            .tracking(0.5)
+                        Text(compound.name)
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(Color.pepTextPrimary)
+                        Text("\(doseText) • Due \(Self.dueDateFormatter.string(from: dueDate))")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color.pepTextSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer(minLength: Spacing.sm)
+
+                    Text("Log dose")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color.white)
+                        .padding(.horizontal, Spacing.sm)
+                        .padding(.vertical, Spacing.xs)
+                        .background(Color.pepPrimary)
+                        .clipShape(Capsule())
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(
+            "Next dose: \(compound.name), \(doseText), due \(Self.dueDateFormatter.string(from: dueDate)). Log dose."
+        )
+    }
+
+    private var doseText: String {
+        let amount = Self.doseFormatter.string(from: NSNumber(value: compound.doseMg)) ?? "\(compound.doseMg)"
+        return "\(amount) \(compound.doseUnit)"
+    }
+
+    private static let dueDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "EEEE, MMM d"
+        return formatter
+    }()
+
+    private static let doseFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 6
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = false
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+}
+
+struct DashboardInsightCard: View {
+    let insight: DashboardInsightSummary
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            PepCard {
+                HStack(alignment: .top, spacing: Spacing.md) {
+                    ZStack {
+                        Circle().fill(Color.pepPrimaryMuted)
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.pepPrimary)
+                    }
+                    .frame(width: 40, height: 40)
+                    .accessibilityHidden(true)
+
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("LATEST INSIGHT")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(Color.pepPrimary)
+                            .tracking(0.5)
+
+                        Text(insight.title ?? insight.emptyMessage ?? "No new insights right now.")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(Color.pepTextPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        if let confidenceLabel = insight.confidenceLabel {
+                            Text(confidenceLabel)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(Color.pepSuccess)
+                        }
+                    }
+
+                    Spacer(minLength: Spacing.sm)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.pepTextTertiary)
+                        .accessibilityHidden(true)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 #Preview {
     ScrollView {
         VStack(spacing: Spacing.md) {
@@ -146,6 +301,24 @@ struct DashboardTodayCard: View {
             DashboardTodayCard(
                 today: DashboardSummary.mockPendingStarter.todayCheckin,
                 preview: nil
+            ) {}
+            DashboardNextDoseCard(
+                compound: Compound(
+                    id: UUID(),
+                    name: "Retatrutide",
+                    doseMg: 2.5,
+                    doseUnit: "mg",
+                    frequency: "weekly",
+                    administrationRoute: "subcutaneous",
+                    notes: nil
+                ),
+                dueDate: Date()
+            ) {}
+            DashboardInsightCard(
+                insight: DashboardInsightSummary(
+                    id: nil, title: "Your weight trend is accelerating", severity: "info",
+                    emptyMessage: nil, confidence: 0.82
+                )
             ) {}
         }
         .padding()
