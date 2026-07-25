@@ -563,7 +563,7 @@ git commit -m "feat: merge dose, check-in, wearable, and lab events into a dashb
 
 This task is a refactor: `ProtocolDetailViewModel.nextDoseDateText(for:in:)` currently contains this exact logic privately. We extract it verbatim into a shared, testable place and make the view model call through to it, so behavior for Protocol Detail is unchanged (verified by its existing passing tests) while the Dashboard gains the same capability for free.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to the bottom of `ios/peppy/peppyTests/ProtocolStoreTests.swift`, inside a new `// MARK: - Next dose scheduling (shared with Dashboard)` section, using the file's existing `ProtocolModel.fixture` / `Compound.fixture` (Retatrutide, weekly, dose 2.5mg, start date `1_780_000_000`):
 
@@ -660,12 +660,12 @@ final class ProtocolNextDueCompoundTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/ProtocolNextDueCompoundTests test`
 Expected: FAIL — build error, `value of type 'Protocol' has no member 'nextDueCompound'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `ios/peppy/Core/Notifications/DoseScheduleCalculator.swift`, add a new function inside `enum DoseScheduleCalculator` (after `upcomingDates`, before the private helpers):
 
@@ -745,12 +745,12 @@ private func nextDoseDateText(for compound: Compound, in protocolValue: Protocol
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/ProtocolNextDueCompoundTests -only-testing:peppyTests/ProtocolDetailViewModelTests test`
 Expected: PASS — including `testNextDoseDerivesFromLatestLogAndFrequency` and `testNextDoseFallsBackToStartDateWithoutLogs`, unchanged and still green after the refactor.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ios/peppy/Core/Notifications/DoseScheduleCalculator.swift ios/peppy/Features/Protocols/Models/ProtocolModels.swift ios/peppy/Features/Protocols/ViewModels/ProtocolDetailViewModel.swift ios/peppy/peppyTests/ProtocolStoreTests.swift

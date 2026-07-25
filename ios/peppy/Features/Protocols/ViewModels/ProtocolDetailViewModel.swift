@@ -256,35 +256,12 @@ final class ProtocolDetailViewModel {
     // MARK: - Presentation helpers
 
     private func nextDoseDateText(for compound: Compound, in protocolValue: ProtocolModel) -> String? {
-        let compoundLogs = store.doseLogs.filter { $0.compoundID == compound.id }
-        guard let latest = compoundLogs.map(\.administeredAt).max() else {
-            return Self.dayDateFormatter.string(from: protocolValue.startDate)
-        }
-        guard let recurrence = DoseScheduleCalculator.recurrence(
-            for: compound.frequency
-        ) else {
-            return nil
-        }
-        let calendar = Calendar.current
-        let next: Date?
-        switch recurrence {
-        case .fixedDays(let interval):
-            next = calendar.date(
-                byAdding: .day,
-                value: interval,
-                to: latest
-            )
-        case .twiceWeekly, .monthly:
-            next = DoseScheduleCalculator.upcomingDates(
-                startingAt: protocolValue.startDate,
-                frequency: compound.frequency,
-                localTime: calendar.dateComponents([.hour, .minute], from: latest),
-                after: latest,
-                calendar: calendar,
-                limit: 1
-            ).first
-        }
-        guard let next else { return nil }
+        guard let next = DoseScheduleCalculator.nextDueDate(
+            frequency: compound.frequency,
+            protocolStartDate: protocolValue.startDate,
+            doseLogs: store.doseLogs,
+            for: compound.id
+        ) else { return nil }
         return Self.dayDateFormatter.string(from: next)
     }
 

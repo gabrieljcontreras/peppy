@@ -19,3 +19,27 @@ extension Protocol {
         return isActive ? .active : .inactive
     }
 }
+
+extension Protocol {
+    /// The compound with the soonest upcoming dose across the whole protocol,
+    /// or `nil` if there are no compounds or none has a computable schedule
+    /// (e.g. an unrecognized frequency string).
+    func nextDueCompound(
+        doseLogs: [DoseLog],
+        calendar: Calendar = .current
+    ) -> (compound: Compound, dueDate: Date)? {
+        compounds
+            .compactMap { compound -> (Compound, Date)? in
+                guard let due = DoseScheduleCalculator.nextDueDate(
+                    frequency: compound.frequency,
+                    protocolStartDate: startDate,
+                    doseLogs: doseLogs,
+                    for: compound.id,
+                    calendar: calendar
+                ) else { return nil }
+                return (compound, due)
+            }
+            .min { $0.1 < $1.1 }
+            .map { (compound: $0.0, dueDate: $0.1) }
+    }
+}
