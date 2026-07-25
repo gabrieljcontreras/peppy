@@ -10,7 +10,8 @@ from app.models.checkin import Checkin
 from app.models.insight import Insight
 from app.models.lab import LabResult
 from app.models.profile import OnboardingProfile
-from app.models.protocol import Protocol
+from app.models.dose_log import DoseLog
+from app.models.protocol import Compound, Protocol
 from app.models.wearable import WearableConnection
 
 
@@ -50,6 +51,7 @@ class DashboardService:
                 "has_labs": await self._has_rows(LabResult, user_id),
                 "has_wearables": await self._has_rows(WearableConnection, user_id),
             },
+            "recent_activity": await self._recent_activity(user_id),
         }
 
     async def _profile(self, user_id: UUID) -> OnboardingProfile | None:
@@ -103,12 +105,14 @@ class DashboardService:
                 "status": "missing",
                 "title": "Create your protocol",
                 "compounds": [],
+                "start_date": None,
             }
         return {
             "id": protocol.id,
             "status": protocol.setup_status,
             "title": protocol.name,
             "compounds": [compound.name for compound in protocol.compounds],
+            "start_date": protocol.start_date,
         }
 
     def _insight_summary(self, insight: Insight | None, checkin_count: int) -> dict[str, Any]:
@@ -119,6 +123,7 @@ class DashboardService:
                 "title": insight.title,
                 "severity": severity,
                 "empty_message": None,
+                "confidence": insight.confidence,
             }
         if checkin_count < 3:
             return {
@@ -126,10 +131,127 @@ class DashboardService:
                 "title": None,
                 "severity": None,
                 "empty_message": "Peppy needs a few check-ins to find useful patterns.",
+                "confidence": None,
             }
         return {
             "id": None,
             "title": None,
             "severity": None,
             "empty_message": "No new insights right now.",
+            "confidence": None,
         }
+
+    async def _recent_activity(self, user_id: UUID) -> list[dict[str, Any]]:
+        items: list[dict[str, Any]] = []
+
+        dose_result = await self.db.execute(
+            select(DoseLog, Compound.name)
+            .join(Compound, DoseLog.compound_id == Compound.id)
+            .where(DoseLog.user_id == user_id)
+            .order_by(DoseLog.administered_at.desc())
+            .limit(5)
+        )
+        for dose_log, compound_name in dose_result.all():
+            items.append(
+                {
+                    "type": "dose_logged",
+                    "title": "Dose logged",
+                    "subtitle": f"{compound_name} • {self._format_dose(dose_log.dose)} {dose_log.unit}",
+                    "timestamp": self._as_utc(dose_log.administered_at),
+                    "protocol_id": dose_log.protocol_id,
+                    "checkin_id": None,
+                }
+            )
+
+        checkin_result = await self.db.execute(
+            select(Checkin)
+            .where(Checkin.user_id == user_id)
+            .order_by(Checkin.created_at.desc())
+            .limit(5)
+        )
+        for checkin in checkin_result.scalars().all():
+            items.append(
+                {
+                    "type": "checkin_completed",
+                    "title": "Check-in completed",
+                    "subtitle": self._checkin_subtitle(checkin),
+                    "timestamp": self._as_utc(checkin.created_at),
+                    "protocol_id": None,
+                    "checkin_id": checkin.id,
+                }
+            )
+
+        wearable_result = await self.db.execute(
+            select(WearableConnection)
+            .where(
+                WearableConnection.user_id == user_id,
+                WearableConnection.last_sync_at.is_not(None),
+            )
+            .order_by(WearableConnection.last_sync_at.desc())
+            .limit(5)
+        )
+        for connection in wearable_result.scalars().all():
+            items.append(
+                {
+                    "type": "wearable_synced",
+                    "title": "Wearable synced",
+                    "subtitle": self._provider_label(connection.provider),
+                    "timestamp": self._as_utc(connection.last_sync_at),
+                    "protocol_id": None,
+                    "checkin_id": None,
+                }
+            )
+
+        lab_result = await self.db.execute(
+            select(LabResult)
+            .where(LabResult.user_id == user_id)
+            .order_by(LabResult.created_at.desc())
+            .limit(5)
+        )
+        for lab in lab_result.scalars().all():
+            items.append(
+                {
+                    "type": "lab_added",
+                    "title": "Lab result added",
+                    "subtitle": lab.lab_name or lab.panel_type.replace("_", " ").title(),
+                    "timestamp": self._as_utc(lab.created_at),
+                    "protocol_id": None,
+                    "checkin_id": None,
+                }
+            )
+
+        items.sort(key=lambda item: item["timestamp"], reverse=True)
+        return items[:5]
+
+    @staticmethod
+    def _as_utc(value: datetime) -> datetime:
+        # SQLite's DateTime(timezone=True) round-trips as naive UTC; objects
+        # still in the session's identity map keep their tz-aware values.
+        # Normalize so the merged feed sorts and serializes consistently.
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
+
+    @staticmethod
+    def _format_dose(dose: float) -> str:
+        return f"{dose:g}"
+
+    @staticmethod
+    def _checkin_subtitle(checkin: Checkin) -> str:
+        parts = []
+        if checkin.energy_level is not None:
+            parts.append("energy")
+        if checkin.appetite_level is not None:
+            parts.append("appetite")
+        if checkin.mood is not None:
+            parts.append("mood")
+        if checkin.weight_kg is not None:
+            parts.append("weight")
+        if not parts:
+            return "Check-in logged"
+        return ", ".join(parts).capitalize()
+
+    @staticmethod
+    def _provider_label(provider: Any) -> str:
+        value = provider.value if hasattr(provider, "value") else str(provider)
+        return value.replace("_", " ").title()

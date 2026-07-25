@@ -83,6 +83,7 @@
 		49C365042FF000300C1F5DE /* DashboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365052FF000300C1F5DE /* DashboardModels.swift */; };
 		49C365062FF000300C1F5DE /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365072FF000300C1F5DE /* DashboardViewModel.swift */; };
 		49C3650B2FF000400C1F5DE /* DashboardCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3650C2FF000400C1F5DE /* DashboardCards.swift */; };
+		49C365992FF000400C1F5DE /* DashboardDataViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3659A2FF000400C1F5DE /* DashboardDataViews.swift */; };
 		49C3650D2FF000400C1F5DE /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3650E2FF000400C1F5DE /* DashboardView.swift */; };
 		49C365102FF000500C1F5DE /* StarterProtocolViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365112FF000500C1F5DE /* StarterProtocolViewModelTests.swift */; };
 		49C365402FF000900C1F5DE /* ProtocolStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365412FF000900C1F5DE /* ProtocolStoreTests.swift */; };
@@ -229,6 +230,7 @@
 		49C365052FF000300C1F5DE /* DashboardModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardModels.swift; sourceTree = "<group>"; };
 		49C365072FF000300C1F5DE /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
 		49C3650C2FF000400C1F5DE /* DashboardCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardCards.swift; sourceTree = "<group>"; };
+		49C3659A2FF000400C1F5DE /* DashboardDataViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardDataViews.swift; sourceTree = "<group>"; };
 		49C3650E2FF000400C1F5DE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		49C365112FF000500C1F5DE /* StarterProtocolViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarterProtocolViewModelTests.swift; sourceTree = "<group>"; };
 		49C365412FF000900C1F5DE /* ProtocolStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolStoreTests.swift; sourceTree = "<group>"; };
@@ -654,6 +656,7 @@
 			isa = PBXGroup;
 			children = (
 				49C3650C2FF000400C1F5DE /* DashboardCards.swift */,
+				49C3659A2FF000400C1F5DE /* DashboardDataViews.swift */,
 				49C3650E2FF000400C1F5DE /* DashboardView.swift */,
 			);
 			path = Views;
@@ -988,6 +991,7 @@
 				49C365042FF000300C1F5DE /* DashboardModels.swift in Sources */,
 				49C365062FF000300C1F5DE /* DashboardViewModel.swift in Sources */,
 				49C3650B2FF000400C1F5DE /* DashboardCards.swift in Sources */,
+				49C365992FF000400C1F5DE /* DashboardDataViews.swift in Sources */,
 				49C3650D2FF000400C1F5DE /* DashboardView.swift in Sources */,
 				49C365122FF000600C1F5DE /* StarterProtocolViewModel.swift in Sources */,
 				49C3654D2FF000C00C1F5DE /* CompoundEditorViewModel.swift in Sources */,

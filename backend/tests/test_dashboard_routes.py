@@ -52,3 +52,6 @@ async def test_dashboard_summary_returns_attached_pending_starter(client, auth_h
     assert data["protocol"]["compounds"] == ["Retatrutide"]
     assert data["today_checkin"]["logged"] is False
     assert data["connected_context"]["healthkit_requested"] is True
+    assert data["protocol"]["start_date"] is not None
+    assert data["insight"]["confidence"] is None
+    assert data["recent_activity"] == []

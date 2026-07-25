@@ -104,6 +104,38 @@ enum DoseScheduleCalculator {
         return dates
     }
 
+    /// The next due date for one compound, given its dose logs so far. Falls
+    /// back to the protocol's start date when the compound has never been
+    /// logged; returns `nil` when the frequency string isn't recognized.
+    static func nextDueDate(
+        frequency: String,
+        protocolStartDate: Date,
+        doseLogs: [DoseLog],
+        for compoundID: UUID,
+        calendar: Calendar = .current
+    ) -> Date? {
+        let compoundLogs = doseLogs.filter { $0.compoundID == compoundID }
+        guard let latest = compoundLogs.map(\.administeredAt).max() else {
+            return protocolStartDate
+        }
+        guard let recurrence = recurrence(for: frequency) else {
+            return nil
+        }
+        switch recurrence {
+        case .fixedDays(let interval):
+            return calendar.date(byAdding: .day, value: interval, to: latest)
+        case .twiceWeekly, .monthly:
+            return upcomingDates(
+                startingAt: protocolStartDate,
+                frequency: frequency,
+                localTime: calendar.dateComponents([.hour, .minute], from: latest),
+                after: latest,
+                calendar: calendar,
+                limit: 1
+            ).first
+        }
+    }
+
     private static func date(
         anchoredAt anchor: Date,
         recurrence: Recurrence,

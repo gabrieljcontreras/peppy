@@ -1090,6 +1090,18 @@ struct WearableConnection: Codable, Identifiable {
     }
 }
 
+struct WearableDataSnapshot: Codable, Equatable {
+    let sleepHours: Double?
+    let hrvMs: Double?
+    let readinessScore: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case sleepHours = "sleep_hours"
+        case hrvMs = "hrv_ms"
+        case readinessScore = "readiness_score"
+    }
+}
+
 // MARK: - Notifications
 
 struct DeviceToken: Codable, Identifiable {

@@ -10,6 +10,7 @@ class DashboardProtocolSummary(BaseModel):
     status: str
     title: str
     compounds: list[str]
+    start_date: Optional[date] = None
 
 
 class DashboardTodayCheckin(BaseModel):
@@ -33,12 +34,22 @@ class DashboardInsightSummary(BaseModel):
     title: Optional[str] = None
     severity: Optional[str] = None
     empty_message: Optional[str] = None
+    confidence: Optional[float] = None
 
 
 class DashboardConnectedContext(BaseModel):
     healthkit_requested: Optional[bool] = None
     has_labs: bool = False
     has_wearables: bool = False
+
+
+class DashboardActivityItem(BaseModel):
+    type: str
+    title: str
+    subtitle: str
+    timestamp: datetime
+    protocol_id: Optional[UUID] = None
+    checkin_id: Optional[UUID] = None
 
 
 class DashboardSummary(BaseModel):
@@ -49,3 +60,4 @@ class DashboardSummary(BaseModel):
     response_snapshot: DashboardResponseSnapshot
     insight: DashboardInsightSummary
     connected_context: DashboardConnectedContext
+    recent_activity: list[DashboardActivityItem] = []

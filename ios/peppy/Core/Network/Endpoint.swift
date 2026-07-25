@@ -68,6 +68,7 @@ enum Endpoint {
     case connectWearable(provider: String)
     case syncWearable(provider: String)
     case disconnectWearable(id: UUID)
+    case getLatestWearableData(provider: String)
 
     // MARK: - Notifications
     case registerDevice(token: String, platform: String)
@@ -134,6 +135,7 @@ enum Endpoint {
         case .connectWearable(let provider): return "/wearables/connect/\(provider)"
         case .syncWearable(let provider): return "/wearables/sync/\(provider)"
         case .disconnectWearable(let id): return "/wearables/connections/\(id)"
+        case .getLatestWearableData: return "/wearables/data/latest"
 
         // Notifications
         case .registerDevice, .getDevices: return "/notifications/devices"
@@ -242,6 +244,9 @@ enum Endpoint {
             }
             return items.isEmpty ? nil : items
 
+        case .getLatestWearableData(let provider):
+            return [URLQueryItem(name: "provider", value: provider)]
+
         default:
             return nil
         }
@@ -257,8 +262,17 @@ enum Endpoint {
     }
 
     /// Stable request identity for tests and mocks. Paths alone collide when
-    /// one path serves multiple verbs (e.g. GET vs POST `/protocols`).
+    /// one path serves multiple verbs (e.g. GET vs POST `/protocols`) or, for
+    /// endpoints with query items, multiple distinct requests (e.g.
+    /// `?provider=oura` vs `?provider=whoop`).
     var requestID: String {
-        "\(method.rawValue) \(path)"
+        guard let queryItems, !queryItems.isEmpty else {
+            return "\(method.rawValue) \(path)"
+        }
+        let query = queryItems
+            .sorted { $0.name < $1.name }
+            .map { "\($0.name)=\($0.value ?? "")" }
+            .joined(separator: "&")
+        return "\(method.rawValue) \(path)?\(query)"
     }
 }

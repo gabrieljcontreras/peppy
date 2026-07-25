@@ -57,7 +57,7 @@ iOS — the plan deliberately keeps new-file count to **one** (`DashboardDataVie
 **Interfaces:**
 - Produces: `DashboardProtocolSummary.start_date: Optional[date]` (JSON key `start_date`), populated from `Protocol.start_date` when a protocol exists, else `None`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `backend/tests/test_dashboard_service.py`:
 
@@ -80,12 +80,12 @@ async def test_dashboard_summary_start_date_is_none_without_protocol(db_session,
     assert summary["protocol"]["start_date"] is None
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py -k start_date -q`
 Expected: FAIL with `KeyError: 'start_date'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `backend/app/api/schemas/dashboard.py`, update `DashboardProtocolSummary`:
 
@@ -119,12 +119,12 @@ def _protocol_summary(self, protocol: Protocol | None) -> dict[str, Any]:
     }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py -q`
 Expected: PASS (all tests in the file, including the two new ones).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add backend/app/api/schemas/dashboard.py backend/app/services/dashboard.py backend/tests/test_dashboard_service.py
@@ -144,7 +144,7 @@ git commit -m "feat: add protocol start date to dashboard summary"
 - Consumes: `Insight.confidence: float` (existing model field).
 - Produces: `DashboardInsightSummary.confidence: Optional[float]` (JSON key `confidence`) — the real insight's confidence when one exists, `None` for both empty-state branches.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `backend/tests/test_dashboard_service.py` (add `from app.models.insight import Insight, InsightSeverity, InsightType` to the imports at the top of the file):
 
@@ -179,12 +179,12 @@ async def test_dashboard_summary_confidence_is_none_for_empty_insight_state(db_s
     assert summary["insight"]["confidence"] is None
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py -k confidence -q`
 Expected: FAIL with `KeyError: 'confidence'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `backend/app/api/schemas/dashboard.py`, update `DashboardInsightSummary`:
 
@@ -227,12 +227,12 @@ def _insight_summary(self, insight: Insight | None, checkin_count: int) -> dict[
     }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py -q`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add backend/app/api/schemas/dashboard.py backend/app/services/dashboard.py backend/tests/test_dashboard_service.py
@@ -252,7 +252,7 @@ git commit -m "feat: add insight confidence to dashboard summary"
 **Interfaces:**
 - Produces: `DashboardActivityItem { type: str, title: str, subtitle: str, timestamp: datetime, protocol_id: Optional[UUID], checkin_id: Optional[UUID] }` and `DashboardSummary.recent_activity: list[DashboardActivityItem]` (JSON key `recent_activity`), up to 5 items, merged from dose logs, check-ins, wearable syncs, and lab results, newest first.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to `backend/tests/test_dashboard_service.py`. Extend the imports at the top of the file with:
 
@@ -380,12 +380,12 @@ Add to `backend/tests/test_dashboard_routes.py`, appended to the end of `test_da
     assert data["recent_activity"] == []
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py tests/test_dashboard_routes.py -k "recent_activity or attached_pending_starter" -q`
 Expected: FAIL with `KeyError: 'recent_activity'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `backend/app/api/schemas/dashboard.py`, add the new model and field:
 
@@ -530,17 +530,17 @@ def _provider_label(provider: Any) -> str:
 
 Note: `LabResult` and `WearableConnection` are already imported at the top of `dashboard.py` (used by `_has_rows`) — no new import needed for those two.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py tests/test_dashboard_routes.py -q`
 Expected: PASS.
 
-- [ ] **Step 5: Run the full backend suite to confirm no regressions**
+- [x] **Step 5: Run the full backend suite to confirm no regressions**
 
 Run: `cd backend && venv/bin/python -m pytest -q`
 Expected: PASS (same pass count as before this plan, plus the new tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend/app/api/schemas/dashboard.py backend/app/services/dashboard.py backend/tests/test_dashboard_service.py backend/tests/test_dashboard_routes.py
@@ -563,7 +563,7 @@ git commit -m "feat: merge dose, check-in, wearable, and lab events into a dashb
 
 This task is a refactor: `ProtocolDetailViewModel.nextDoseDateText(for:in:)` currently contains this exact logic privately. We extract it verbatim into a shared, testable place and make the view model call through to it, so behavior for Protocol Detail is unchanged (verified by its existing passing tests) while the Dashboard gains the same capability for free.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to the bottom of `ios/peppy/peppyTests/ProtocolStoreTests.swift`, inside a new `// MARK: - Next dose scheduling (shared with Dashboard)` section, using the file's existing `ProtocolModel.fixture` / `Compound.fixture` (Retatrutide, weekly, dose 2.5mg, start date `1_780_000_000`):
 
@@ -660,12 +660,12 @@ final class ProtocolNextDueCompoundTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/ProtocolNextDueCompoundTests test`
 Expected: FAIL — build error, `value of type 'Protocol' has no member 'nextDueCompound'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `ios/peppy/Core/Notifications/DoseScheduleCalculator.swift`, add a new function inside `enum DoseScheduleCalculator` (after `upcomingDates`, before the private helpers):
 
@@ -745,12 +745,12 @@ private func nextDoseDateText(for compound: Compound, in protocolValue: Protocol
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/ProtocolNextDueCompoundTests -only-testing:peppyTests/ProtocolDetailViewModelTests test`
 Expected: PASS — including `testNextDoseDerivesFromLatestLogAndFrequency` and `testNextDoseFallsBackToStartDateWithoutLogs`, unchanged and still green after the refactor.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ios/peppy/Core/Notifications/DoseScheduleCalculator.swift ios/peppy/Features/Protocols/Models/ProtocolModels.swift ios/peppy/Features/Protocols/ViewModels/ProtocolDetailViewModel.swift ios/peppy/peppyTests/ProtocolStoreTests.swift
@@ -770,7 +770,7 @@ git commit -m "refactor: share next-dose-due calculation between Protocol Detail
 - Produces: `Endpoint.getLatestWearableData(provider: String)` → `GET /wearables/data/latest?provider=<provider>`; `WearableDataSnapshot { sleepHours: Double?, hrvMs: Double?, readinessScore: Double? }` (Codable, matches the existing `WearableDataResponse` backend schema — only the three fields the dashboard tiles need).
 - Fixes: `Endpoint.requestID` now includes query items when present, so `MockAPIClient` can hold distinct mock responses for e.g. `provider=oura` vs `provider=whoop`. For every endpoint without query items (the majority), the string is unchanged.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `ios/peppy/peppyTests/DashboardViewModelTests.swift`, as a new top-level test class at the bottom of the file:
 
@@ -815,12 +815,12 @@ final class WearableEndpointTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/WearableEndpointTests test`
 Expected: FAIL — build error, `type 'Endpoint' has no member 'getLatestWearableData'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `ios/peppy/Core/Network/Endpoint.swift`, add the case under `// MARK: - Wearables`:
 
@@ -878,17 +878,17 @@ struct WearableDataSnapshot: Codable, Equatable {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/WearableEndpointTests test`
 Expected: PASS.
 
-- [ ] **Step 5: Run the full iOS test suite to confirm the `requestID` change is safe**
+- [x] **Step 5: Run the full iOS test suite to confirm the `requestID` change is safe**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test`
 Expected: PASS, same as before this task (every existing usage of `.requestID` compares two live-computed values rather than a hardcoded string, so widening the format for query-bearing endpoints doesn't break anything).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add ios/peppy/Core/Network/Endpoint.swift ios/peppy/Core/Network/APIModels.swift ios/peppy/peppyTests/DashboardViewModelTests.swift
@@ -907,7 +907,7 @@ git commit -m "feat: add latest-wearable-data endpoint and disambiguate mock req
 - Produces: `DashboardProtocolSummary.startDate: Date?`, `DashboardInsightSummary.confidence: Double?`, `DashboardActivityItem { type, title, subtitle, timestamp, protocolID, checkinID }` (`Identifiable` via a synthetic `id`), `DashboardSummary.recentActivity: [DashboardActivityItem]?`, and `DashboardWearableTiles { sleepHours, hrvMs, readinessScore, isEmpty }`.
 - Consumes: `APIDateOnly.date(from:)` (existing, `Core/Network/APIModels.swift`) for date-only wire decoding.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `ios/peppy/peppyTests/DashboardViewModelTests.swift`, as a new top-level test class:
 
@@ -973,12 +973,12 @@ extension DashboardModelDecodingTests {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardModelDecodingTests test`
 Expected: FAIL — build errors (`value of type 'DashboardProtocolSummary' has no member 'startDate'`, `cannot find type 'DashboardActivityItem'`, `cannot find type 'DashboardWearableTiles'`).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `ios/peppy/Features/Dashboard/Models/DashboardModels.swift`, replace `DashboardProtocolSummary` with a version that adds a date-only-aware `startDate`:
 
@@ -1096,12 +1096,12 @@ struct DashboardSummary: Codable, Equatable {
 
 The `= nil` inline default matters, not just the `Optional` type: Swift's synthesized memberwise initializer only gives a parameter a default value when the stored property itself has one. Without it, every existing call site that constructs `DashboardSummary(...)` directly — the two `mock*` fixtures, `replacingProtocol(with:)`, **and** the literal `DashboardSummary(...)` built inline inside `testCheckinRefreshFailurePreservesPreviouslyLoadedSummaryAndRoute` in `DashboardViewModelTests.swift` — would fail to compile with a missing-argument error. With the inline default, all of them keep compiling completely unchanged; no existing file needs editing for this field alone.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardModelDecodingTests -only-testing:peppyTests/DashboardViewModelTests test`
 Expected: PASS — including every pre-existing `DashboardViewModelTests` case, unaffected by the new optional field.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ios/peppy/Features/Dashboard/Models/DashboardModels.swift ios/peppy/peppyTests/DashboardViewModelTests.swift
@@ -1120,7 +1120,7 @@ git commit -m "feat: decode protocol start date, insight confidence, and recent 
 - Consumes: `Endpoint.getLatestWearableData(provider:)` (Task 5), `WearableDataSnapshot` (Task 5), `Protocol.nextDueCompound(doseLogs:)` (Task 4), `ProtocolStore.loadProtocols()`/`loadDoseLogs(protocolID:)`/`protocols`/`doseLogs` (existing), `DashboardWearableTiles` (Task 6).
 - Produces: `DashboardViewModel.greetingText: String`, `DashboardViewModel.nextDose: (compound: Compound, dueDate: Date)?`, `DashboardViewModel.wearableTiles: DashboardWearableTiles?`, plus a new `now` and `currentDisplayName` initializer parameter (both defaulted, so every existing call site keeps compiling).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to `ios/peppy/peppyTests/DashboardViewModelTests.swift`:
 
@@ -1239,12 +1239,12 @@ func testWearableTilesIsNilWhenNotConnected() async {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardViewModelTests test`
 Expected: FAIL — build errors (`no member 'greetingText'`, `no member 'nextDose'`, `no member 'wearableTiles'`, extra initializer arguments not recognized).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `ios/peppy/Features/Dashboard/ViewModels/DashboardViewModel.swift`, update the class:
 
@@ -1383,12 +1383,12 @@ Update `loadDashboardSummary()` to also load what `nextDose` and `wearableTiles`
     }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardViewModelTests test`
 Expected: PASS — all new tests plus every pre-existing one in the file.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ios/peppy/Features/Dashboard/ViewModels/DashboardViewModel.swift ios/peppy/peppyTests/DashboardViewModelTests.swift
@@ -1407,7 +1407,7 @@ git commit -m "feat: compute dashboard greeting, next dose, and wearable tiles"
 
 No test steps here beyond compiling and the manual QA checklist in Task 10 — these are pure-presentation views with no branching logic of their own, and the extension properties they lean on (`cardTitle`, `badgeText`, `confidenceLabel`, etc.) already are/will be unit-tested directly.
 
-- [ ] **Step 1: Add the confidence-label extension**
+- [x] **Step 1: Add the confidence-label extension**
 
 In `ios/peppy/Features/Dashboard/Views/DashboardCards.swift`, add near the other `DashboardProtocolSummary` extension:
 
@@ -1424,7 +1424,7 @@ extension DashboardInsightSummary {
 }
 ```
 
-- [ ] **Step 2: Restyle `DashboardProtocolCard` and `DashboardTodayCard`**
+- [x] **Step 2: Restyle `DashboardProtocolCard` and `DashboardTodayCard`**
 
 Replace the `DashboardProtocolCard` body (keep its `let summary`/`let finishSetup` properties and the `DashboardProtocolSummary` extension above it untouched):
 
@@ -1540,7 +1540,7 @@ Replace the `DashboardTodayCard` body (keep `let today`/`let preview`/`let openC
     }
 ```
 
-- [ ] **Step 3: Add `DashboardNextDoseCard`**
+- [x] **Step 3: Add `DashboardNextDoseCard`**
 
 Append to `DashboardCards.swift`:
 
@@ -1622,7 +1622,7 @@ struct DashboardNextDoseCard: View {
 }
 ```
 
-- [ ] **Step 4: Add `DashboardInsightCard`**
+- [x] **Step 4: Add `DashboardInsightCard`**
 
 Append to `DashboardCards.swift`:
 
@@ -1675,7 +1675,7 @@ struct DashboardInsightCard: View {
 }
 ```
 
-- [ ] **Step 5: Update the file's `#Preview` and build**
+- [x] **Step 5: Update the file's `#Preview` and build**
 
 Update the existing `#Preview` at the bottom of `DashboardCards.swift` to also show the two new cards, so visual regressions are catchable in Xcode's canvas:
 
@@ -1705,12 +1705,12 @@ Update the existing `#Preview` at the bottom of `DashboardCards.swift` to also s
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`
 Expected: BUILD SUCCEEDED (`Compound.fixture` is declared in `peppyTests`, which the main app target can't see — if this errors, replace `.fixture` in the preview with a literal `Compound(id: UUID(), name: "Retatrutide", doseMg: 2.5, doseUnit: "mg", frequency: "weekly", administrationRoute: "subcutaneous", notes: nil)` instead).
 
-- [ ] **Step 6: Run the existing Dashboard card tests to confirm no regressions**
+- [x] **Step 6: Run the existing Dashboard card tests to confirm no regressions**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardViewModelTests test`
 Expected: PASS (the protocol-card presentation tests and accessibility test only exercise the extensions/computed properties this task didn't touch).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add ios/peppy/Features/Dashboard/Views/DashboardCards.swift
@@ -1731,7 +1731,7 @@ git commit -m "feat: restyle dashboard cards and add next-dose and insight cards
 
 This is the one new file in the whole plan. No new business logic beyond simple presentation formatting, so verification is compiling successfully plus the manual QA checklist in Task 10 — the same standard already applied to Task 8's card views.
 
-- [ ] **Step 1: Register the (empty) file in Xcode**
+- [x] **Step 1: Register the (empty) file in Xcode**
 
 Create `ios/peppy/Features/Dashboard/Views/DashboardDataViews.swift` with just:
 
@@ -1750,7 +1750,7 @@ Then confirm the empty file actually compiles as part of the target:
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`
 Expected: BUILD SUCCEEDED.
 
-- [ ] **Step 2: Add `DashboardWeightTrendCard`**
+- [x] **Step 2: Add `DashboardWeightTrendCard`**
 
 ```swift
 struct DashboardWeightTrendCard: View {
@@ -1844,7 +1844,7 @@ struct DashboardWeightTrendCard: View {
 }
 ```
 
-- [ ] **Step 3: Add `DashboardWearableTilesRow`**
+- [x] **Step 3: Add `DashboardWearableTilesRow`**
 
 ```swift
 struct DashboardWearableTilesRow: View {
@@ -1913,7 +1913,7 @@ struct DashboardWearableTilesRow: View {
 }
 ```
 
-- [ ] **Step 4: Add `DashboardActivityFeed`**
+- [x] **Step 4: Add `DashboardActivityFeed`**
 
 ```swift
 struct DashboardActivityFeed: View {
@@ -2044,12 +2044,12 @@ struct DashboardActivityFeed: View {
 }
 ```
 
-- [ ] **Step 5: Build**
+- [x] **Step 5: Build**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`
 Expected: BUILD SUCCEEDED.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add ios/peppy/Features/Dashboard/Views/DashboardDataViews.swift ios/peppy/peppy.xcodeproj/project.pbxproj
@@ -2067,7 +2067,7 @@ git commit -m "feat: add weight trend, wearable tile, and activity feed dashboar
 **Interfaces:**
 - Consumes: everything produced in Tasks 6–9, plus existing `deps.appState.currentUser?.displayName`, `deps.protocolNavigation`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `ios/peppy/peppyTests/DashboardViewModelTests.swift` — this confirms `nextDose`'s `logDoseRoute`-equivalent wiring will have the right IDs available for the view to route with (the view itself isn't unit-testable, but the data it needs is):
 
@@ -2106,12 +2106,12 @@ func testNextDoseCarriesEnoughInfoToBuildLogDoseRoute() async {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardViewModelTests/testNextDoseCarriesEnoughInfoToBuildLogDoseRoute test`
 Expected: PASS already, actually — this test only exercises Task 7's `nextDose`, which already exists. Treat this step as a **confirmation** step rather than a red step: if it's already green, that's fine, it means Task 7 laid the groundwork correctly; proceed to Step 3. (Every other part of this task is view code with no independent unit-test surface — its correctness is checked by the build in Step 4 and the manual QA checklist below.)
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Replace the entire contents of `ios/peppy/Features/Dashboard/Views/DashboardView.swift`:
 
@@ -2332,7 +2332,7 @@ extension DashboardProtocolSummary {
 
 Note: `protocolRoute` on `DashboardProtocolSummary` already existed at the bottom of the old `DashboardView.swift` — it's carried over unchanged, just still living in this file.
 
-- [ ] **Step 4: Build and run the full Dashboard test surface**
+- [x] **Step 4: Build and run the full Dashboard test surface**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`
 Expected: BUILD SUCCEEDED.
@@ -2340,12 +2340,12 @@ Expected: BUILD SUCCEEDED.
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardViewModelTests -only-testing:peppyTests/ProtocolDetailViewModelTests -only-testing:peppyTests/ProtocolNextDueCompoundTests -only-testing:peppyTests/WearableEndpointTests -only-testing:peppyTests/DashboardModelDecodingTests test`
 Expected: PASS across every test class touched by this plan.
 
-- [ ] **Step 5: Run the full iOS suite one more time**
+- [x] **Step 5: Run the full iOS suite one more time**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test`
 Expected: PASS, no regressions anywhere else in the app (Onboarding, Settings, Protocols, Insights, Checkins are all untouched by this plan).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add ios/peppy/Features/Dashboard/Views/DashboardView.swift ios/peppy/peppyTests/DashboardViewModelTests.swift

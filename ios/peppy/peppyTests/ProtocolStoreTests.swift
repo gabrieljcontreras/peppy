@@ -1021,3 +1021,94 @@ extension CreateDoseLogRequest {
         notes: nil
     )
 }
+
+// MARK: - Next dose scheduling (shared with Dashboard)
+
+final class ProtocolNextDueCompoundTests: XCTestCase {
+    func testNextDueCompoundFallsBackToStartDateWithoutLogs() {
+        let result = ProtocolModel.fixture.nextDueCompound(doseLogs: [])
+
+        XCTAssertEqual(result?.compound.id, Compound.fixture.id)
+        XCTAssertEqual(result?.dueDate, ProtocolModel.fixture.startDate)
+    }
+
+    func testNextDueCompoundAdvancesPastLatestLogByFrequency() {
+        let latest = Date(timeIntervalSince1970: 1_783_953_000)
+        let log = DoseLog(
+            id: UUID(),
+            protocolID: ProtocolModel.fixture.id,
+            compoundID: Compound.fixture.id,
+            dose: 2.5,
+            unit: "mg",
+            administeredAt: latest,
+            route: "subcutaneous",
+            notes: nil
+        )
+
+        let result = ProtocolModel.fixture.nextDueCompound(doseLogs: [log])
+
+        XCTAssertEqual(result?.dueDate, latest.addingTimeInterval(7 * 86_400))
+    }
+
+    func testNextDueCompoundPicksEarliestAcrossMultipleCompounds() {
+        let secondCompound = Compound(
+            id: UUID(uuidString: "33333333-3333-3333-3333-333333333333")!,
+            name: "Semaglutide",
+            doseMg: 1.0,
+            doseUnit: "mg",
+            frequency: "daily",
+            administrationRoute: "subcutaneous",
+            notes: nil
+        )
+        let twoCompoundProtocol = ProtocolModel(
+            id: ProtocolModel.fixture.id,
+            name: ProtocolModel.fixture.name,
+            startDate: ProtocolModel.fixture.startDate,
+            endDate: nil,
+            notes: nil,
+            isActive: true,
+            setupStatus: "active",
+            isStarter: false,
+            compounds: [Compound.fixture, secondCompound]
+        )
+        // Fixture compound (weekly) was last dosed further back than the
+        // second compound (daily) was, so its +7-day due date lands later
+        // than the second compound's +1-day due date — the second compound
+        // should win.
+        let fixtureLastDose = Date(timeIntervalSince1970: 1_783_000_000)
+        let secondCompoundLastDose = Date(timeIntervalSince1970: 1_783_500_000)
+        let logs = [
+            DoseLog(
+                id: UUID(), protocolID: twoCompoundProtocol.id, compoundID: Compound.fixture.id,
+                dose: 2.5, unit: "mg", administeredAt: fixtureLastDose,
+                route: "subcutaneous", notes: nil
+            ),
+            DoseLog(
+                id: UUID(), protocolID: twoCompoundProtocol.id, compoundID: secondCompound.id,
+                dose: 1.0, unit: "mg", administeredAt: secondCompoundLastDose,
+                route: "subcutaneous", notes: nil
+            ),
+        ]
+
+        let result = twoCompoundProtocol.nextDueCompound(doseLogs: logs)
+
+        XCTAssertEqual(result?.compound.id, secondCompound.id)
+        XCTAssertEqual(result?.dueDate, secondCompoundLastDose.addingTimeInterval(86_400))
+    }
+
+    func testNextDueCompoundReturnsNilForProtocolWithNoCompounds() {
+        let empty = ProtocolModel(
+            id: ProtocolModel.fixture.id,
+            name: ProtocolModel.fixture.name,
+            startDate: ProtocolModel.fixture.startDate,
+            endDate: nil,
+            notes: nil,
+            isActive: true,
+            setupStatus: "active",
+            isStarter: false,
+            compounds: []
+        )
+
+        XCTAssertNil(empty.nextDueCompound(doseLogs: []))
+    }
+}
