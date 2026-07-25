@@ -391,3 +391,63 @@ final class WearableEndpointTests: XCTestCase {
         XCTAssertEqual(whoop?.readinessScore, 72)
     }
 }
+
+final class DashboardModelDecodingTests: XCTestCase {
+    private let decoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }()
+
+    func testProtocolSummaryDecodesDateOnlyStartDate() throws {
+        let json = """
+        {"id": null, "status": "active", "title": "Retatrutide Titration", "compounds": [], "start_date": "2026-05-28"}
+        """
+        let summary = try decoder.decode(DashboardProtocolSummary.self, from: Data(json.utf8))
+
+        XCTAssertEqual(summary.startDate, APIDateOnly.date(from: "2026-05-28"))
+    }
+
+    func testProtocolSummaryStartDateDefaultsToNilWhenMissing() throws {
+        let json = """
+        {"id": null, "status": "missing", "title": "Create your protocol", "compounds": []}
+        """
+        let summary = try decoder.decode(DashboardProtocolSummary.self, from: Data(json.utf8))
+
+        XCTAssertNil(summary.startDate)
+    }
+
+    func testInsightSummaryDecodesConfidence() throws {
+        let json = """
+        {"id": null, "title": "Trend", "severity": "info", "empty_message": null, "confidence": 0.82}
+        """
+        let summary = try decoder.decode(DashboardInsightSummary.self, from: Data(json.utf8))
+
+        XCTAssertEqual(summary.confidence, 0.82)
+    }
+
+    func testActivityItemDecodesAndIsIdentifiable() throws {
+        let json = """
+        {"type": "dose_logged", "title": "Dose logged", "subtitle": "Retatrutide \\u2022 4 mg", "timestamp": "2026-07-23T08:02:00Z", "protocol_id": null, "checkin_id": null}
+        """
+        let item = try decoder.decode(DashboardActivityItem.self, from: Data(json.utf8))
+
+        XCTAssertEqual(item.type, "dose_logged")
+        XCTAssertEqual(item.title, "Dose logged")
+        XCTAssertFalse(item.id.isEmpty)
+    }
+}
+
+extension DashboardModelDecodingTests {
+    func testWearableTilesReportsEmptyWhenAllFieldsNil() {
+        let tiles = DashboardWearableTiles(sleepHours: nil, hrvMs: nil, readinessScore: nil)
+
+        XCTAssertTrue(tiles.isEmpty)
+    }
+
+    func testWearableTilesReportsNonEmptyWithAnyValue() {
+        let tiles = DashboardWearableTiles(sleepHours: 7.2, hrvMs: nil, readinessScore: nil)
+
+        XCTAssertFalse(tiles.isEmpty)
+    }
+}

@@ -907,7 +907,7 @@ git commit -m "feat: add latest-wearable-data endpoint and disambiguate mock req
 - Produces: `DashboardProtocolSummary.startDate: Date?`, `DashboardInsightSummary.confidence: Double?`, `DashboardActivityItem { type, title, subtitle, timestamp, protocolID, checkinID }` (`Identifiable` via a synthetic `id`), `DashboardSummary.recentActivity: [DashboardActivityItem]?`, and `DashboardWearableTiles { sleepHours, hrvMs, readinessScore, isEmpty }`.
 - Consumes: `APIDateOnly.date(from:)` (existing, `Core/Network/APIModels.swift`) for date-only wire decoding.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `ios/peppy/peppyTests/DashboardViewModelTests.swift`, as a new top-level test class:
 
@@ -973,12 +973,12 @@ extension DashboardModelDecodingTests {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardModelDecodingTests test`
 Expected: FAIL — build errors (`value of type 'DashboardProtocolSummary' has no member 'startDate'`, `cannot find type 'DashboardActivityItem'`, `cannot find type 'DashboardWearableTiles'`).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `ios/peppy/Features/Dashboard/Models/DashboardModels.swift`, replace `DashboardProtocolSummary` with a version that adds a date-only-aware `startDate`:
 
@@ -1096,12 +1096,12 @@ struct DashboardSummary: Codable, Equatable {
 
 The `= nil` inline default matters, not just the `Optional` type: Swift's synthesized memberwise initializer only gives a parameter a default value when the stored property itself has one. Without it, every existing call site that constructs `DashboardSummary(...)` directly — the two `mock*` fixtures, `replacingProtocol(with:)`, **and** the literal `DashboardSummary(...)` built inline inside `testCheckinRefreshFailurePreservesPreviouslyLoadedSummaryAndRoute` in `DashboardViewModelTests.swift` — would fail to compile with a missing-argument error. With the inline default, all of them keep compiling completely unchanged; no existing file needs editing for this field alone.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardModelDecodingTests -only-testing:peppyTests/DashboardViewModelTests test`
 Expected: PASS — including every pre-existing `DashboardViewModelTests` case, unaffected by the new optional field.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ios/peppy/Features/Dashboard/Models/DashboardModels.swift ios/peppy/peppyTests/DashboardViewModelTests.swift
