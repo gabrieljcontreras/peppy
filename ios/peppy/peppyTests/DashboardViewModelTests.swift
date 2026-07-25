@@ -268,6 +268,119 @@ final class DashboardViewModelTests: XCTestCase {
         XCTAssertEqual(summary.badgeType, .warning)
         XCTAssertEqual(summary.actionTitle, "Finish setup")
     }
+
+    func testGreetingUsesFirstNameAndMorningHour() async {
+        let api = MockAPIClient()
+        api.setMockResponse(DashboardSummary.mockPendingStarter, for: Endpoint.getDashboardSummary)
+        let morning = Date(timeIntervalSince1970: 1_784_000_400) // fixed morning-hour instant (UTC)
+        let model = DashboardViewModel(
+            api: api,
+            hasProfileAttachFailure: false,
+            currentDisplayName: { "Taylor Reed" },
+            now: { morning }
+        )
+
+        await model.load()
+
+        XCTAssertTrue(model.greetingText.hasPrefix("Good "))
+        XCTAssertTrue(model.greetingText.hasSuffix("Taylor"))
+    }
+
+    func testGreetingFallsBackToThereWithoutDisplayName() async {
+        let api = MockAPIClient()
+        api.setMockResponse(DashboardSummary.mockPendingStarter, for: Endpoint.getDashboardSummary)
+        let model = DashboardViewModel(
+            api: api,
+            hasProfileAttachFailure: false,
+            currentDisplayName: { nil }
+        )
+
+        await model.load()
+
+        XCTAssertTrue(model.greetingText.hasSuffix("there"))
+    }
+
+    func testNextDoseLoadsFullProtocolAndDoseLogsForActiveProtocol() async {
+        let api = MockAPIClient()
+        let summary = DashboardSummary(
+            generatedAt: DashboardSummary.mockPendingStarter.generatedAt,
+            profileStatus: "present",
+            protocol: DashboardProtocolSummary(
+                id: ProtocolModel.fixture.id,
+                status: "active",
+                title: ProtocolModel.fixture.name,
+                compounds: ["Retatrutide"],
+                startDate: ProtocolModel.fixture.startDate
+            ),
+            todayCheckin: DashboardTodayCheckin(logged: false, checkinId: nil),
+            responseSnapshot: DashboardSummary.mockPendingStarter.responseSnapshot,
+            insight: DashboardSummary.mockPendingStarter.insight,
+            connectedContext: DashboardSummary.mockPendingStarter.connectedContext,
+            recentActivity: nil
+        )
+        api.setMockResponse(summary, for: Endpoint.getDashboardSummary)
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        api.setMockResponse([DoseLog](), for: Endpoint.getDoseLogs(protocolID: ProtocolModel.fixture.id))
+        let store = ProtocolStore(api: api)
+        let model = DashboardViewModel(api: api, protocolStore: store, hasProfileAttachFailure: false)
+
+        await model.load()
+
+        XCTAssertEqual(model.nextDose?.compound.id, Compound.fixture.id)
+        XCTAssertEqual(model.nextDose?.dueDate, ProtocolModel.fixture.startDate)
+    }
+
+    func testNextDoseIsNilWhenProtocolNotActive() async {
+        let api = MockAPIClient()
+        api.setMockResponse(DashboardSummary.mockPendingStarter, for: Endpoint.getDashboardSummary)
+        let store = ProtocolStore(api: api)
+        let model = DashboardViewModel(api: api, protocolStore: store, hasProfileAttachFailure: false)
+
+        await model.load()
+
+        XCTAssertNil(model.nextDose)
+    }
+
+    func testWearableTilesLoadsWhenConnectedContextHasWearables() async {
+        let api = MockAPIClient()
+        let summary = DashboardSummary(
+            generatedAt: DashboardSummary.mockPendingStarter.generatedAt,
+            profileStatus: "present",
+            protocol: DashboardSummary.mockPendingStarter.protocol,
+            todayCheckin: DashboardSummary.mockPendingStarter.todayCheckin,
+            responseSnapshot: DashboardSummary.mockPendingStarter.responseSnapshot,
+            insight: DashboardSummary.mockPendingStarter.insight,
+            connectedContext: DashboardConnectedContext(healthkitRequested: nil, hasLabs: false, hasWearables: true),
+            recentActivity: nil
+        )
+        api.setMockResponse(summary, for: Endpoint.getDashboardSummary)
+        api.setMockResponse(
+            WearableDataSnapshot(sleepHours: 7.2, hrvMs: 54, readinessScore: nil),
+            for: Endpoint.getLatestWearableData(provider: "oura")
+        )
+        api.setMockResponse(
+            WearableDataSnapshot(sleepHours: nil, hrvMs: nil, readinessScore: 72),
+            for: Endpoint.getLatestWearableData(provider: "whoop")
+        )
+        let model = DashboardViewModel(api: api, hasProfileAttachFailure: false)
+
+        await model.load()
+
+        XCTAssertEqual(model.wearableTiles?.sleepHours, 7.2)
+        XCTAssertEqual(model.wearableTiles?.hrvMs, 54)
+        XCTAssertEqual(model.wearableTiles?.readinessScore, 72)
+    }
+
+    func testWearableTilesIsNilWhenNotConnected() async {
+        let api = MockAPIClient()
+        api.setMockResponse(DashboardSummary.mockMissingProfile, for: Endpoint.getDashboardSummary)
+        let model = DashboardViewModel(api: api, hasProfileAttachFailure: false)
+
+        await model.load()
+
+        XCTAssertNil(model.wearableTiles)
+        XCTAssertFalse(api.requestLog.contains { $0.path == "/wearables/data/latest" })
+    }
 }
 
 @MainActor

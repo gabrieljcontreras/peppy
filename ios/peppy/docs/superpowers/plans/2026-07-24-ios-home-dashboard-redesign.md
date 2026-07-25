@@ -1120,7 +1120,7 @@ git commit -m "feat: decode protocol start date, insight confidence, and recent 
 - Consumes: `Endpoint.getLatestWearableData(provider:)` (Task 5), `WearableDataSnapshot` (Task 5), `Protocol.nextDueCompound(doseLogs:)` (Task 4), `ProtocolStore.loadProtocols()`/`loadDoseLogs(protocolID:)`/`protocols`/`doseLogs` (existing), `DashboardWearableTiles` (Task 6).
 - Produces: `DashboardViewModel.greetingText: String`, `DashboardViewModel.nextDose: (compound: Compound, dueDate: Date)?`, `DashboardViewModel.wearableTiles: DashboardWearableTiles?`, plus a new `now` and `currentDisplayName` initializer parameter (both defaulted, so every existing call site keeps compiling).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to `ios/peppy/peppyTests/DashboardViewModelTests.swift`:
 
@@ -1239,12 +1239,12 @@ func testWearableTilesIsNilWhenNotConnected() async {
 }
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardViewModelTests test`
 Expected: FAIL — build errors (`no member 'greetingText'`, `no member 'nextDose'`, `no member 'wearableTiles'`, extra initializer arguments not recognized).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `ios/peppy/Features/Dashboard/ViewModels/DashboardViewModel.swift`, update the class:
 
@@ -1383,12 +1383,12 @@ Update `loadDashboardSummary()` to also load what `nextDose` and `wearableTiles`
     }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardViewModelTests test`
 Expected: PASS — all new tests plus every pre-existing one in the file.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add ios/peppy/Features/Dashboard/ViewModels/DashboardViewModel.swift ios/peppy/peppyTests/DashboardViewModelTests.swift
