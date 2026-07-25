@@ -1731,7 +1731,7 @@ git commit -m "feat: restyle dashboard cards and add next-dose and insight cards
 
 This is the one new file in the whole plan. No new business logic beyond simple presentation formatting, so verification is compiling successfully plus the manual QA checklist in Task 10 — the same standard already applied to Task 8's card views.
 
-- [ ] **Step 1: Register the (empty) file in Xcode**
+- [x] **Step 1: Register the (empty) file in Xcode**
 
 Create `ios/peppy/Features/Dashboard/Views/DashboardDataViews.swift` with just:
 
@@ -1750,7 +1750,7 @@ Then confirm the empty file actually compiles as part of the target:
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`
 Expected: BUILD SUCCEEDED.
 
-- [ ] **Step 2: Add `DashboardWeightTrendCard`**
+- [x] **Step 2: Add `DashboardWeightTrendCard`**
 
 ```swift
 struct DashboardWeightTrendCard: View {
@@ -1844,7 +1844,7 @@ struct DashboardWeightTrendCard: View {
 }
 ```
 
-- [ ] **Step 3: Add `DashboardWearableTilesRow`**
+- [x] **Step 3: Add `DashboardWearableTilesRow`**
 
 ```swift
 struct DashboardWearableTilesRow: View {
@@ -1913,7 +1913,7 @@ struct DashboardWearableTilesRow: View {
 }
 ```
 
-- [ ] **Step 4: Add `DashboardActivityFeed`**
+- [x] **Step 4: Add `DashboardActivityFeed`**
 
 ```swift
 struct DashboardActivityFeed: View {
@@ -2044,12 +2044,12 @@ struct DashboardActivityFeed: View {
 }
 ```
 
-- [ ] **Step 5: Build**
+- [x] **Step 5: Build**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`
 Expected: BUILD SUCCEEDED.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add ios/peppy/Features/Dashboard/Views/DashboardDataViews.swift ios/peppy/peppy.xcodeproj/project.pbxproj
