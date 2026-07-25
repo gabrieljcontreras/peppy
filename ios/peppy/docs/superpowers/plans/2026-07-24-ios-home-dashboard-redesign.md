@@ -144,7 +144,7 @@ git commit -m "feat: add protocol start date to dashboard summary"
 - Consumes: `Insight.confidence: float` (existing model field).
 - Produces: `DashboardInsightSummary.confidence: Optional[float]` (JSON key `confidence`) — the real insight's confidence when one exists, `None` for both empty-state branches.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `backend/tests/test_dashboard_service.py` (add `from app.models.insight import Insight, InsightSeverity, InsightType` to the imports at the top of the file):
 
@@ -179,12 +179,12 @@ async def test_dashboard_summary_confidence_is_none_for_empty_insight_state(db_s
     assert summary["insight"]["confidence"] is None
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py -k confidence -q`
 Expected: FAIL with `KeyError: 'confidence'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `backend/app/api/schemas/dashboard.py`, update `DashboardInsightSummary`:
 
@@ -227,12 +227,12 @@ def _insight_summary(self, insight: Insight | None, checkin_count: int) -> dict[
     }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py -q`
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add backend/app/api/schemas/dashboard.py backend/app/services/dashboard.py backend/tests/test_dashboard_service.py

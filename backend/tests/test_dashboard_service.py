@@ -2,6 +2,7 @@ from datetime import date, timedelta
 
 import pytest
 
+from app.models.insight import Insight, InsightSeverity, InsightType
 from app.services.checkin import CheckinService
 from app.services.dashboard import DashboardService
 from app.services.protocol import ProtocolService
@@ -67,3 +68,33 @@ async def test_dashboard_summary_includes_today_and_weight_trend(db_session, use
     assert summary["today_checkin"]["logged"] is True
     assert summary["response_snapshot"]["weight_trend"][-1]["weight_kg"] == 74.8
     assert summary["response_snapshot"]["latest_energy"] == 7
+
+
+async def test_dashboard_summary_includes_insight_confidence(db_session, user):
+    await ProtocolService(db_session).create_pending_starter(
+        user_id=user.id,
+        peptide_names=["Retatrutide"],
+        goals=["track_protocols"],
+    )
+    db_session.add(
+        Insight(
+            user_id=user.id,
+            type=InsightType.TREND,
+            severity=InsightSeverity.INFO,
+            title="Your weight trend is accelerating",
+            description="Your rate of loss increased over the past 7 days.",
+            explanation="Computed from your last 10 check-ins.",
+            confidence=0.82,
+        )
+    )
+    await db_session.flush()
+
+    summary = await DashboardService(db_session).summary_for_user(user.id)
+
+    assert summary["insight"]["confidence"] == 0.82
+
+
+async def test_dashboard_summary_confidence_is_none_for_empty_insight_state(db_session, user):
+    summary = await DashboardService(db_session).summary_for_user(user.id)
+
+    assert summary["insight"]["confidence"] is None

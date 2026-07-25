@@ -121,6 +121,7 @@ class DashboardService:
                 "title": insight.title,
                 "severity": severity,
                 "empty_message": None,
+                "confidence": insight.confidence,
             }
         if checkin_count < 3:
             return {
@@ -128,10 +129,12 @@ class DashboardService:
                 "title": None,
                 "severity": None,
                 "empty_message": "Peppy needs a few check-ins to find useful patterns.",
+                "confidence": None,
             }
         return {
             "id": None,
             "title": None,
             "severity": None,
             "empty_message": "No new insights right now.",
+            "confidence": None,
         }

@@ -34,6 +34,7 @@ class DashboardInsightSummary(BaseModel):
     title: Optional[str] = None
     severity: Optional[str] = None
     empty_message: Optional[str] = None
+    confidence: Optional[float] = None
 
 
 class DashboardConnectedContext(BaseModel):
