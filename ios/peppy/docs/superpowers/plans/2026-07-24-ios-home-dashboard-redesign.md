@@ -770,7 +770,7 @@ git commit -m "refactor: share next-dose-due calculation between Protocol Detail
 - Produces: `Endpoint.getLatestWearableData(provider: String)` → `GET /wearables/data/latest?provider=<provider>`; `WearableDataSnapshot { sleepHours: Double?, hrvMs: Double?, readinessScore: Double? }` (Codable, matches the existing `WearableDataResponse` backend schema — only the three fields the dashboard tiles need).
 - Fixes: `Endpoint.requestID` now includes query items when present, so `MockAPIClient` can hold distinct mock responses for e.g. `provider=oura` vs `provider=whoop`. For every endpoint without query items (the majority), the string is unchanged.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `ios/peppy/peppyTests/DashboardViewModelTests.swift`, as a new top-level test class at the bottom of the file:
 
@@ -815,12 +815,12 @@ final class WearableEndpointTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/WearableEndpointTests test`
 Expected: FAIL — build error, `type 'Endpoint' has no member 'getLatestWearableData'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `ios/peppy/Core/Network/Endpoint.swift`, add the case under `// MARK: - Wearables`:
 
@@ -878,17 +878,17 @@ struct WearableDataSnapshot: Codable, Equatable {
 }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/WearableEndpointTests test`
 Expected: PASS.
 
-- [ ] **Step 5: Run the full iOS test suite to confirm the `requestID` change is safe**
+- [x] **Step 5: Run the full iOS test suite to confirm the `requestID` change is safe**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test`
 Expected: PASS, same as before this task (every existing usage of `.requestID` compares two live-computed values rather than a hardcoded string, so widening the format for query-bearing endpoints doesn't break anything).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add ios/peppy/Core/Network/Endpoint.swift ios/peppy/Core/Network/APIModels.swift ios/peppy/peppyTests/DashboardViewModelTests.swift

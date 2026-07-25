@@ -352,3 +352,42 @@ private extension Checkin {
         )
     }
 }
+
+final class WearableEndpointTests: XCTestCase {
+    func testGetLatestWearableDataPathAndQuery() {
+        let endpoint = Endpoint.getLatestWearableData(provider: "oura")
+
+        XCTAssertEqual(endpoint.path, "/wearables/data/latest")
+        XCTAssertEqual(endpoint.queryItems, [URLQueryItem(name: "provider", value: "oura")])
+        XCTAssertEqual(endpoint.method, .get)
+    }
+
+    func testRequestIDDisambiguatesByProvider() {
+        let oura = Endpoint.getLatestWearableData(provider: "oura")
+        let whoop = Endpoint.getLatestWearableData(provider: "whoop")
+
+        XCTAssertNotEqual(oura.requestID, whoop.requestID)
+    }
+
+    func testRequestIDUnchangedForEndpointsWithoutQueryItems() {
+        XCTAssertEqual(Endpoint.getDashboardSummary.requestID, "GET /dashboard/summary")
+    }
+
+    func testMockAPIClientHoldsDistinctResponsesPerProvider() async throws {
+        let api = MockAPIClient()
+        api.setMockResponse(
+            WearableDataSnapshot(sleepHours: 7.2, hrvMs: 54, readinessScore: nil),
+            for: Endpoint.getLatestWearableData(provider: "oura")
+        )
+        api.setMockResponse(
+            WearableDataSnapshot(sleepHours: nil, hrvMs: nil, readinessScore: 72),
+            for: Endpoint.getLatestWearableData(provider: "whoop")
+        )
+
+        let oura: WearableDataSnapshot? = try await api.execute(.getLatestWearableData(provider: "oura"))
+        let whoop: WearableDataSnapshot? = try await api.execute(.getLatestWearableData(provider: "whoop"))
+
+        XCTAssertEqual(oura?.sleepHours, 7.2)
+        XCTAssertEqual(whoop?.readinessScore, 72)
+    }
+}
