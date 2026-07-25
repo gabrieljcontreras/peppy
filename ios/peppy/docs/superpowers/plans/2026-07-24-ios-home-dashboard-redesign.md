@@ -2067,7 +2067,7 @@ git commit -m "feat: add weight trend, wearable tile, and activity feed dashboar
 **Interfaces:**
 - Consumes: everything produced in Tasks 6–9, plus existing `deps.appState.currentUser?.displayName`, `deps.protocolNavigation`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `ios/peppy/peppyTests/DashboardViewModelTests.swift` — this confirms `nextDose`'s `logDoseRoute`-equivalent wiring will have the right IDs available for the view to route with (the view itself isn't unit-testable, but the data it needs is):
 
@@ -2106,12 +2106,12 @@ func testNextDoseCarriesEnoughInfoToBuildLogDoseRoute() async {
 }
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardViewModelTests/testNextDoseCarriesEnoughInfoToBuildLogDoseRoute test`
 Expected: PASS already, actually — this test only exercises Task 7's `nextDose`, which already exists. Treat this step as a **confirmation** step rather than a red step: if it's already green, that's fine, it means Task 7 laid the groundwork correctly; proceed to Step 3. (Every other part of this task is view code with no independent unit-test surface — its correctness is checked by the build in Step 4 and the manual QA checklist below.)
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Replace the entire contents of `ios/peppy/Features/Dashboard/Views/DashboardView.swift`:
 
@@ -2332,7 +2332,7 @@ extension DashboardProtocolSummary {
 
 Note: `protocolRoute` on `DashboardProtocolSummary` already existed at the bottom of the old `DashboardView.swift` — it's carried over unchanged, just still living in this file.
 
-- [ ] **Step 4: Build and run the full Dashboard test surface**
+- [x] **Step 4: Build and run the full Dashboard test surface**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build`
 Expected: BUILD SUCCEEDED.
@@ -2340,12 +2340,12 @@ Expected: BUILD SUCCEEDED.
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:peppyTests/DashboardViewModelTests -only-testing:peppyTests/ProtocolDetailViewModelTests -only-testing:peppyTests/ProtocolNextDueCompoundTests -only-testing:peppyTests/WearableEndpointTests -only-testing:peppyTests/DashboardModelDecodingTests test`
 Expected: PASS across every test class touched by this plan.
 
-- [ ] **Step 5: Run the full iOS suite one more time**
+- [x] **Step 5: Run the full iOS suite one more time**
 
 Run: `cd ios/peppy && DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project peppy.xcodeproj -scheme peppy -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test`
 Expected: PASS, no regressions anywhere else in the app (Onboarding, Settings, Protocols, Insights, Checkins are all untouched by this plan).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add ios/peppy/Features/Dashboard/Views/DashboardView.swift ios/peppy/peppyTests/DashboardViewModelTests.swift

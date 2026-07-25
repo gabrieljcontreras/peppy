@@ -381,6 +381,39 @@ final class DashboardViewModelTests: XCTestCase {
         XCTAssertNil(model.wearableTiles)
         XCTAssertFalse(api.requestLog.contains { $0.path == "/wearables/data/latest" })
     }
+
+    func testNextDoseCarriesEnoughInfoToBuildLogDoseRoute() async {
+        let api = MockAPIClient()
+        let summary = DashboardSummary(
+            generatedAt: DashboardSummary.mockPendingStarter.generatedAt,
+            profileStatus: "present",
+            protocol: DashboardProtocolSummary(
+                id: ProtocolModel.fixture.id,
+                status: "active",
+                title: ProtocolModel.fixture.name,
+                compounds: ["Retatrutide"],
+                startDate: ProtocolModel.fixture.startDate
+            ),
+            todayCheckin: DashboardTodayCheckin(logged: false, checkinId: nil),
+            responseSnapshot: DashboardSummary.mockPendingStarter.responseSnapshot,
+            insight: DashboardSummary.mockPendingStarter.insight,
+            connectedContext: DashboardSummary.mockPendingStarter.connectedContext,
+            recentActivity: nil
+        )
+        api.setMockResponse(summary, for: Endpoint.getDashboardSummary)
+        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
+        api.setMockResponse([DoseLog](), for: Endpoint.getDoseLogs(protocolID: ProtocolModel.fixture.id))
+        let store = ProtocolStore(api: api)
+        let model = DashboardViewModel(api: api, protocolStore: store, hasProfileAttachFailure: false)
+
+        await model.load()
+
+        let route = ProtocolRoute.logDose(
+            protocolID: model.state.summary!.protocol.id!,
+            compoundID: model.nextDose?.compound.id
+        )
+        XCTAssertEqual(route, .logDose(protocolID: ProtocolModel.fixture.id, compoundID: Compound.fixture.id))
+    }
 }
 
 @MainActor

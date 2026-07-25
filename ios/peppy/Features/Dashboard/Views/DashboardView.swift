@@ -16,9 +16,26 @@ struct DashboardView: View {
                         }
 
                         if let summary = state.summary {
-                            DashboardProtocolCard(summary: summary.protocol) {
-                                deps.protocolNavigation.show(summary.protocol.protocolRoute)
+                            dateRow(for: summary.protocol)
+
+                            if let nextDose = model?.nextDose {
+                                DashboardNextDoseCard(
+                                    compound: nextDose.compound,
+                                    dueDate: nextDose.dueDate
+                                ) {
+                                    deps.protocolNavigation.show(
+                                        .logDose(
+                                            protocolID: summary.protocol.id ?? nextDose.compound.id,
+                                            compoundID: nextDose.compound.id
+                                        )
+                                    )
+                                }
+                            } else {
+                                DashboardProtocolCard(summary: summary.protocol) {
+                                    deps.protocolNavigation.show(summary.protocol.protocolRoute)
+                                }
                             }
+
                             DashboardTodayCard(
                                 today: summary.todayCheckin,
                                 preview: model?.todayPreview
@@ -26,9 +43,35 @@ struct DashboardView: View {
                                 guard let model else { return }
                                 deps.protocolNavigation.showCheckin(model.checkinRoute)
                             }
-                            responseSnapshot(summary.responseSnapshot)
-                            insightCard(summary.insight)
-                            connectedContextCard(summary.connectedContext)
+
+                            DashboardWeightTrendCard(
+                                snapshot: summary.responseSnapshot,
+                                preferredUnit: deps.weightUnitPreferences.unit
+                            )
+
+                            if let wearableTiles = model?.wearableTiles {
+                                DashboardWearableTilesRow(tiles: wearableTiles)
+                            }
+
+                            DashboardInsightCard(insight: summary.insight) {
+                                if let id = summary.insight.id {
+                                    deps.protocolNavigation.showInsight(.detail(id))
+                                } else {
+                                    deps.protocolNavigation.showInsightsTab()
+                                }
+                            }
+
+                            if let activity = summary.recentActivity, !activity.isEmpty {
+                                DashboardActivityFeed(
+                                    items: activity,
+                                    openProtocol: { id in
+                                        deps.protocolNavigation.show(.detail(id))
+                                    },
+                                    openCheckin: { id in
+                                        deps.protocolNavigation.showCheckin(.detail(id))
+                                    }
+                                )
+                            }
                         } else if state.isLoading {
                             PepLoadingView(message: "Loading your dashboard")
                                 .frame(minHeight: 220)
@@ -52,7 +95,8 @@ struct DashboardView: View {
                         protocolStore: deps.protocolStore,
                         checkinStore: deps.checkinStore,
                         weightUnitPreferences: deps.weightUnitPreferences,
-                        hasProfileAttachFailure: deps.flow.hasProfileAttachFailure
+                        hasProfileAttachFailure: deps.flow.hasProfileAttachFailure,
+                        currentDisplayName: { deps.appState.currentUser?.displayName }
                     )
                 }
                 await model?.load()
@@ -67,20 +111,58 @@ struct DashboardView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            PeppyLogo(size: 28, showsWordmark: true)
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                PeppyLogo(size: 28, showsWordmark: true)
+                Text(model?.greetingText ?? "Good day")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(Color.pepTextPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("Here's what's happening with your protocol today.")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.pepTextSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
-            Text("Your protocol, understood.")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(Color.pepTextPrimary)
-                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: Spacing.sm)
 
-            Text("Track what you take, how you feel, and what is changing.")
-                .font(.system(size: 14))
-                .foregroundStyle(Color.pepTextSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+            Button {
+                deps.protocolNavigation.selectedTab = .profile
+            } label: {
+                ZStack {
+                    Circle().fill(Color.pepPrimaryMuted)
+                    PeppyLogo(size: 20, showsWordmark: false)
+                }
+                .frame(width: 40, height: 40)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Open profile")
         }
         .padding(.top, Spacing.sm)
+    }
+
+    private func dateRow(for protocolSummary: DashboardProtocolSummary) -> some View {
+        HStack {
+            Label(Self.dateFormatter.string(from: Date()), systemImage: "calendar")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(Color.pepTextSecondary)
+
+            Spacer()
+
+            if protocolSummary.status != "missing" && protocolSummary.status != "pending_setup" {
+                PepBadge(
+                    text: "\(protocolSummary.badgeText) \u{2022} \(weekText(for: protocolSummary))",
+                    type: protocolSummary.badgeType
+                )
+            }
+        }
+    }
+
+    private func weekText(for protocolSummary: DashboardProtocolSummary) -> String {
+        guard let startDate = protocolSummary.startDate else { return "Week 1" }
+        let elapsed = Date().timeIntervalSince(startDate)
+        let week = max(1, Int(elapsed / (7 * 86_400)) + 1)
+        return "Week \(week)"
     }
 
     private var syncRecoveryCard: some View {
@@ -88,68 +170,6 @@ struct DashboardView: View {
             Label("Finish syncing setup", systemImage: "arrow.triangle.2.circlepath")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Color.pepPrimary)
-        }
-    }
-
-    private func responseSnapshot(_ snapshot: DashboardResponseSnapshot) -> some View {
-        PepCard {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                Text("Response snapshot")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.pepTextPrimary)
-
-                Text(snapshot.weightTrend.isEmpty ? "Log a few check-ins to see your trend." : "\(snapshot.weightTrend.count) weight points logged")
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color.pepTextSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-    }
-
-    private func insightCard(_ insight: DashboardInsightSummary) -> some View {
-        Button {
-            if let id = insight.id {
-                deps.protocolNavigation.showInsight(.detail(id))
-            } else {
-                deps.protocolNavigation.showInsightsTab()
-            }
-        } label: {
-            PepCard {
-                HStack(spacing: Spacing.sm) {
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
-                        Text("Insight")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(Color.pepTextPrimary)
-
-                        Text(insight.title ?? insight.emptyMessage ?? "No new insights right now.")
-                            .font(.system(size: 13))
-                            .foregroundStyle(Color.pepTextSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color.pepTextTertiary)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func connectedContextCard(_ context: DashboardConnectedContext) -> some View {
-        PepCard {
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                Text("Connected context")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(Color.pepTextPrimary)
-
-                Text(context.healthkitRequested == true ? "Apple Health is connected." : "Connect Apple Health or add labs for more context.")
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color.pepTextSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
         }
     }
 
@@ -161,6 +181,13 @@ struct DashboardView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
+
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        return formatter
+    }()
 }
 
 extension DashboardProtocolSummary {
@@ -176,6 +203,10 @@ extension DashboardProtocolSummary {
 }
 
 #Preview {
-    DashboardView()
-        .withDependencies(.mock())
+    let dependencies = Dependencies.mock()
+    dependencies.appState.login(
+        user: User(id: UUID(), email: "taylor@example.com", displayName: "Taylor Reed", isVerified: true)
+    )
+    return DashboardView()
+        .withDependencies(dependencies)
 }
