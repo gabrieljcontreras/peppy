@@ -103,12 +103,14 @@ class DashboardService:
                 "status": "missing",
                 "title": "Create your protocol",
                 "compounds": [],
+                "start_date": None,
             }
         return {
             "id": protocol.id,
             "status": protocol.setup_status,
             "title": protocol.name,
             "compounds": [compound.name for compound in protocol.compounds],
+            "start_date": protocol.start_date,
         }
 
     def _insight_summary(self, insight: Insight | None, checkin_count: int) -> dict[str, Any]:

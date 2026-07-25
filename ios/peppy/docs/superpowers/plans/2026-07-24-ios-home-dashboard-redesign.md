@@ -57,7 +57,7 @@ iOS — the plan deliberately keeps new-file count to **one** (`DashboardDataVie
 **Interfaces:**
 - Produces: `DashboardProtocolSummary.start_date: Optional[date]` (JSON key `start_date`), populated from `Protocol.start_date` when a protocol exists, else `None`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add to `backend/tests/test_dashboard_service.py`:
 
@@ -80,12 +80,12 @@ async def test_dashboard_summary_start_date_is_none_without_protocol(db_session,
     assert summary["protocol"]["start_date"] is None
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py -k start_date -q`
 Expected: FAIL with `KeyError: 'start_date'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `backend/app/api/schemas/dashboard.py`, update `DashboardProtocolSummary`:
 
@@ -119,12 +119,12 @@ def _protocol_summary(self, protocol: Protocol | None) -> dict[str, Any]:
     }
 ```
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py -q`
 Expected: PASS (all tests in the file, including the two new ones).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add backend/app/api/schemas/dashboard.py backend/app/services/dashboard.py backend/tests/test_dashboard_service.py

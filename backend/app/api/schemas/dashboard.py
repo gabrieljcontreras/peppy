@@ -10,6 +10,7 @@ class DashboardProtocolSummary(BaseModel):
     status: str
     title: str
     compounds: list[str]
+    start_date: Optional[date] = None
 
 
 class DashboardTodayCheckin(BaseModel):
