@@ -1,8 +1,12 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
+from app.models.checkin import Checkin
+from app.models.dose_log import DoseLog
 from app.models.insight import Insight, InsightSeverity, InsightType
+from app.models.lab import LabResult
+from app.models.wearable import WearableConnection, WearableProvider
 from app.services.checkin import CheckinService
 from app.services.dashboard import DashboardService
 from app.services.protocol import ProtocolService
@@ -98,3 +102,107 @@ async def test_dashboard_summary_confidence_is_none_for_empty_insight_state(db_s
     summary = await DashboardService(db_session).summary_for_user(user.id)
 
     assert summary["insight"]["confidence"] is None
+
+
+async def test_dashboard_summary_recent_activity_merges_all_event_types(db_session, user):
+    protocol = await ProtocolService(db_session).create_pending_starter(
+        user_id=user.id,
+        peptide_names=["Retatrutide"],
+        goals=["track_protocols"],
+    )
+    compound = protocol.compounds[0]
+    now = datetime.now(timezone.utc)
+
+    # Every timestamp is set explicitly (including `created_at`, which
+    # overrides the model's server_default) so the expected descending order
+    # below is deterministic rather than depending on real wall-clock
+    # ordering between separate flush calls.
+    checkin = Checkin(
+        user_id=user.id,
+        date=date.today(),
+        weight_kg=74.8,
+        energy_level=7,
+        mood=8,
+        created_at=now - timedelta(hours=2),
+    )
+    db_session.add_all(
+        [
+            DoseLog(
+                user_id=user.id,
+                protocol_id=protocol.id,
+                compound_id=compound.id,
+                dose=4.0,
+                unit="mg",
+                administered_at=now - timedelta(hours=1),
+                route="subcutaneous",
+            ),
+            checkin,
+            WearableConnection(
+                user_id=user.id,
+                provider=WearableProvider.OURA,
+                access_token="test-token",
+                last_sync_at=now - timedelta(hours=3),
+            ),
+            LabResult(
+                user_id=user.id,
+                date=date.today() - timedelta(days=2),
+                panel_type="metabolic",
+                lab_name="Comprehensive Metabolic Panel",
+                created_at=now - timedelta(hours=4),
+            ),
+        ]
+    )
+    await db_session.flush()
+
+    summary = await DashboardService(db_session).summary_for_user(user.id)
+    activity = summary["recent_activity"]
+
+    assert [item["type"] for item in activity] == [
+        "dose_logged",
+        "checkin_completed",
+        "wearable_synced",
+        "lab_added",
+    ]
+    assert activity[0]["title"] == "Dose logged"
+    assert activity[0]["subtitle"] == "Retatrutide • 4 mg"
+    assert activity[0]["protocol_id"] == protocol.id
+    assert activity[1]["subtitle"] == "Energy, mood, weight"
+    assert activity[1]["checkin_id"] == checkin.id
+    assert activity[2]["subtitle"] == "Oura"
+    assert activity[3]["subtitle"] == "Comprehensive Metabolic Panel"
+
+
+async def test_dashboard_summary_recent_activity_empty_when_no_events(db_session, user):
+    summary = await DashboardService(db_session).summary_for_user(user.id)
+
+    assert summary["recent_activity"] == []
+
+
+async def test_dashboard_summary_recent_activity_caps_at_five_most_recent(db_session, user):
+    protocol = await ProtocolService(db_session).create_pending_starter(
+        user_id=user.id,
+        peptide_names=["Retatrutide"],
+        goals=["track_protocols"],
+    )
+    compound = protocol.compounds[0]
+    now = datetime.now(timezone.utc)
+    db_session.add_all(
+        [
+            DoseLog(
+                user_id=user.id,
+                protocol_id=protocol.id,
+                compound_id=compound.id,
+                dose=4.0,
+                unit="mg",
+                administered_at=now - timedelta(hours=offset),
+                route="subcutaneous",
+            )
+            for offset in range(1, 8)
+        ]
+    )
+    await db_session.flush()
+
+    summary = await DashboardService(db_session).summary_for_user(user.id)
+
+    assert len(summary["recent_activity"]) == 5
+    assert summary["recent_activity"][0]["timestamp"] == now - timedelta(hours=1)

@@ -252,7 +252,7 @@ git commit -m "feat: add insight confidence to dashboard summary"
 **Interfaces:**
 - Produces: `DashboardActivityItem { type: str, title: str, subtitle: str, timestamp: datetime, protocol_id: Optional[UUID], checkin_id: Optional[UUID] }` and `DashboardSummary.recent_activity: list[DashboardActivityItem]` (JSON key `recent_activity`), up to 5 items, merged from dose logs, check-ins, wearable syncs, and lab results, newest first.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Add to `backend/tests/test_dashboard_service.py`. Extend the imports at the top of the file with:
 
@@ -380,12 +380,12 @@ Add to `backend/tests/test_dashboard_routes.py`, appended to the end of `test_da
     assert data["recent_activity"] == []
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py tests/test_dashboard_routes.py -k "recent_activity or attached_pending_starter" -q`
 Expected: FAIL with `KeyError: 'recent_activity'`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `backend/app/api/schemas/dashboard.py`, add the new model and field:
 
@@ -530,17 +530,17 @@ def _provider_label(provider: Any) -> str:
 
 Note: `LabResult` and `WearableConnection` are already imported at the top of `dashboard.py` (used by `_has_rows`) — no new import needed for those two.
 
-- [ ] **Step 4: Run tests to verify they pass**
+- [x] **Step 4: Run tests to verify they pass**
 
 Run: `cd backend && venv/bin/python -m pytest tests/test_dashboard_service.py tests/test_dashboard_routes.py -q`
 Expected: PASS.
 
-- [ ] **Step 5: Run the full backend suite to confirm no regressions**
+- [x] **Step 5: Run the full backend suite to confirm no regressions**
 
 Run: `cd backend && venv/bin/python -m pytest -q`
 Expected: PASS (same pass count as before this plan, plus the new tests).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add backend/app/api/schemas/dashboard.py backend/app/services/dashboard.py backend/tests/test_dashboard_service.py backend/tests/test_dashboard_routes.py
