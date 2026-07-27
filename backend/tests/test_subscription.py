@@ -13,6 +13,20 @@ from app.services.subscription import (
 )
 
 
+@pytest.fixture
+async def auth_headers(client):
+    await client.post(
+        "/api/v1/auth/register",
+        json={"email": "subscription_route@example.com", "password": "password123"},
+    )
+    login_response = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "subscription_route@example.com", "password": "password123"},
+    )
+    token = login_response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
 @pytest.mark.anyio
 async def test_new_user_defaults_to_free_tier(db_session):
     user = User(email="free@example.com", hashed_password="x")
@@ -115,3 +129,44 @@ async def test_lapsed_subscription_reads_as_free(db_session):
     )
 
     assert current_entitlement(user)["is_premium"] is False
+
+
+@pytest.mark.anyio
+async def test_get_subscription_defaults_to_free(client, auth_headers):
+    response = await client.get("/api/v1/subscription", headers=auth_headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["tier"] == "free"
+    assert body["is_premium"] is False
+
+
+@pytest.mark.anyio
+async def test_post_apple_transaction_grants_premium(client, auth_headers):
+    response = await client.post(
+        "/api/v1/subscription/apple",
+        headers=auth_headers,
+        json={"signed_transaction": _jws(_payload())},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["tier"] == "premium"
+    assert body["is_premium"] is True
+    assert body["product_id"] == "com.gabriel.peppy.premium.yearly"
+
+
+@pytest.mark.anyio
+async def test_post_apple_transaction_rejects_foreign_bundle(client, auth_headers):
+    response = await client.post(
+        "/api/v1/subscription/apple",
+        headers=auth_headers,
+        json={"signed_transaction": _jws(_payload(bundleId="com.someone.else"))},
+    )
+
+    assert response.status_code == 400
+
+
+@pytest.mark.anyio
+async def test_subscription_requires_auth(client):
+    assert (await client.get("/api/v1/subscription")).status_code in (401, 403)
