@@ -137,6 +137,7 @@
 		49C364C92FEE300100C1F5DE /* NotificationPermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364CA2FEE300100C1F5DE /* NotificationPermissionService.swift */; };
 		49C364CD2FEE300100C1F5DE /* PermissionOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */; };
 		49C364D02FEE400100C1F5DE /* AppFlowCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */; };
+		49C365F02FEE400100C1F5DE /* PremiumGatingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365F12FEE400100C1F5DE /* PremiumGatingTests.swift */; };
 		49C364D22FEE400100C1F5DE /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364D32FEE400100C1F5DE /* AppFlowCoordinator.swift */; };
 		49C364D42FEE500100C1F5DE /* OnboardingViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364D52FEE500100C1F5DE /* OnboardingViewModelTests.swift */; };
 		49C364D62FEE500100C1F5DE /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364D72FEE500100C1F5DE /* OnboardingViewModel.swift */; };
@@ -285,6 +286,7 @@
 		49C364CC2FEE300100C1F5DE /* peppy.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = peppy.entitlements; sourceTree = "<group>"; };
 		49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionOutcome.swift; sourceTree = "<group>"; };
 		49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinatorTests.swift; sourceTree = "<group>"; };
+		49C365F12FEE400100C1F5DE /* PremiumGatingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumGatingTests.swift; sourceTree = "<group>"; };
 		49C364D32FEE400100C1F5DE /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		49C364D52FEE500100C1F5DE /* OnboardingViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModelTests.swift; sourceTree = "<group>"; };
 		49C364D72FEE500100C1F5DE /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
@@ -583,6 +585,7 @@
 				A2C900012607230100000001 /* AppLockCoordinatorTests.swift */,
 				A2CA00012607230200000001 /* DataExportViewModelTests.swift */,
 				49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */,
+				49C365F12FEE400100C1F5DE /* PremiumGatingTests.swift */,
 				49C365212FF000700C1F5DE /* CheckinViewModelTests.swift */,
 				49C3654A2FF000B00C1F5DE /* CompoundEditorViewModelTests.swift */,
 				49C3656A2FF001100C1F5DE /* DoseLogViewModelTests.swift */,
@@ -1105,6 +1108,7 @@
 				A2C900022607230100000002 /* AppLockCoordinatorTests.swift in Sources */,
 				A2CA00022607230200000002 /* DataExportViewModelTests.swift in Sources */,
 				49C364D02FEE400100C1F5DE /* AppFlowCoordinatorTests.swift in Sources */,
+				49C365F02FEE400100C1F5DE /* PremiumGatingTests.swift in Sources */,
 				49C364E22FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift in Sources */,
 				49C364D92FEE600100C1F5DE /* OnboardingComponentTests.swift in Sources */,
 				49C365022FF000200C1F5DE /* DashboardViewModelTests.swift in Sources */,
