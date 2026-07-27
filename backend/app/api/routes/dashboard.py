@@ -16,4 +16,4 @@ async def get_dashboard_summary(
     current_user: CurrentUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    return await DashboardService(db).summary_for_user(current_user.id)
+    return await DashboardService(db).summary_for_user(current_user)

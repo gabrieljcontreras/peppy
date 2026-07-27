@@ -76,3 +76,19 @@ async def get_current_active_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_active_user)]
+
+
+async def require_premium(
+    current_user: Annotated[User, Depends(get_current_active_user)],
+) -> User:
+    from app.services.subscription import current_entitlement
+
+    if not current_entitlement(current_user)["is_premium"]:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail="premium_required",
+        )
+    return current_user
+
+
+PremiumUser = Annotated[User, Depends(require_premium)]

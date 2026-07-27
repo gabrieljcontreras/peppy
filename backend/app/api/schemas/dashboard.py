@@ -58,6 +58,7 @@ class DashboardSummary(BaseModel):
     protocol: DashboardProtocolSummary
     today_checkin: DashboardTodayCheckin
     response_snapshot: DashboardResponseSnapshot
-    insight: DashboardInsightSummary
+    # Null for free users — insights are gated behind Peppy Premium.
+    insight: Optional[DashboardInsightSummary] = None
     connected_context: DashboardConnectedContext
     recent_activity: list[DashboardActivityItem] = []

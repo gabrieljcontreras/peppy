@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import CurrentUser
+from app.api.deps import CurrentUser, PremiumUser
 from app.api.schemas.export import DataExportRequest
 from app.api.schemas.profile import (
     OnboardingProfileAttachRequest,
@@ -22,7 +22,7 @@ router = APIRouter()
 @router.post("/export")
 async def export_profile_data(
     request: DataExportRequest,
-    current_user: CurrentUser,
+    current_user: PremiumUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> StreamingResponse:
     generated = await ExportService(db).generate(current_user, request)

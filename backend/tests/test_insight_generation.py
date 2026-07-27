@@ -23,6 +23,7 @@ from app.services import insight_generation as generation_service
 from app.services.insight import InsightService
 from app.services.insight_generation import is_stale, run_generation
 from app.services.notification import NotificationService
+from conftest import grant_premium
 
 START = date(2026, 6, 1)
 END = date(2026, 6, 30)
@@ -130,7 +131,9 @@ async def _auth_headers(client, email):
         "/api/v1/auth/login",
         json={"email": email, "password": "password123"},
     )
-    return {"Authorization": f"Bearer {login.json()['access_token']}"}
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    # Insights are premium-gated; these tests exercise the feature itself.
+    return await grant_premium(client, headers)
 
 
 @pytest.mark.parametrize(

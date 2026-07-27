@@ -13,20 +13,6 @@ from app.services.subscription import (
 )
 
 
-@pytest.fixture
-async def auth_headers(client):
-    await client.post(
-        "/api/v1/auth/register",
-        json={"email": "subscription_route@example.com", "password": "password123"},
-    )
-    login_response = await client.post(
-        "/api/v1/auth/login",
-        json={"email": "subscription_route@example.com", "password": "password123"},
-    )
-    token = login_response.json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
-
-
 @pytest.mark.anyio
 async def test_new_user_defaults_to_free_tier(db_session):
     user = User(email="free@example.com", hashed_password="x")

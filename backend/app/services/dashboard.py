@@ -12,7 +12,9 @@ from app.models.lab import LabResult
 from app.models.profile import OnboardingProfile
 from app.models.dose_log import DoseLog
 from app.models.protocol import Compound, Protocol
+from app.models.user import User
 from app.models.wearable import WearableConnection
+from app.services.subscription import current_entitlement
 
 
 class DashboardService:
@@ -21,12 +23,19 @@ class DashboardService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def summary_for_user(self, user_id: UUID) -> dict[str, Any]:
+    async def summary_for_user(self, user: User) -> dict[str, Any]:
+        user_id = user.id
         profile = await self._profile(user_id)
         protocol = await self._protocol(user_id)
         today = await self._today_checkin(user_id)
         recent = await self._recent_checkins(user_id)
         latest_insight = await self._latest_insight(user_id)
+
+        # Insights are a premium feature; the dashboard tile stays empty for
+        # free users rather than leaking a generated insight into the summary.
+        insight = self._insight_summary(latest_insight, len(recent))
+        if not current_entitlement(user)["is_premium"]:
+            insight = None
 
         return {
             "generated_at": datetime.now(timezone.utc),
@@ -45,7 +54,7 @@ class DashboardService:
                 "latest_energy": None if not recent else recent[0].energy_level,
                 "latest_mood": None if not recent else recent[0].mood,
             },
-            "insight": self._insight_summary(latest_insight, len(recent)),
+            "insight": insight,
             "connected_context": {
                 "healthkit_requested": None if profile is None else profile.healthkit_requested,
                 "has_labs": await self._has_rows(LabResult, user_id),
