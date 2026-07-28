@@ -25,6 +25,7 @@
 		A2C400072607170000000007 /* CheckinHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C400062607170000000006 /* CheckinHubView.swift */; };
 		A2C500042607210000000004 /* SettingsAPIContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500032607210000000003 /* SettingsAPIContractTests.swift */; };
 		A2C500022607210000000002 /* SettingsAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500012607210000000001 /* SettingsAPIModels.swift */; };
+		A2C5000B260721000000000B /* SubscriptionAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C5000A260721000000000A /* SubscriptionAPIModels.swift */; };
 		A2C600022607220000000002 /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600012607220000000001 /* SettingsStoreTests.swift */; };
 		A2C600042607220000000004 /* SettingsNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600032607220000000003 /* SettingsNavigationTests.swift */; };
 		A2C600062607220000000006 /* SettingsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600052607220000000005 /* SettingsModels.swift */; };
@@ -194,6 +195,7 @@
 		A2C400062607170000000006 /* CheckinHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinHubView.swift; sourceTree = "<group>"; };
 		A2C500032607210000000003 /* SettingsAPIContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAPIContractTests.swift; sourceTree = "<group>"; };
 		A2C500012607210000000001 /* SettingsAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAPIModels.swift; sourceTree = "<group>"; };
+		A2C5000A260721000000000A /* SubscriptionAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionAPIModels.swift; sourceTree = "<group>"; };
 		A2C600012607220000000001 /* SettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStoreTests.swift; sourceTree = "<group>"; };
 		A2C600032607220000000003 /* SettingsNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNavigationTests.swift; sourceTree = "<group>"; };
 		A2C600052607220000000005 /* SettingsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModels.swift; sourceTree = "<group>"; };
@@ -399,6 +401,7 @@
 				49C3647C2FD4DE4B00C1F5DE /* Endpoint.swift */,
 				49C3647D2FD4DE4B00C1F5DE /* MockAPIClient.swift */,
 				A2C500012607210000000001 /* SettingsAPIModels.swift */,
+				A2C5000A260721000000000A /* SubscriptionAPIModels.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -1051,6 +1054,7 @@
 				A2C400072607170000000007 /* CheckinHubView.swift in Sources */,
 				49C3649D2FD4DE7E00C1F5DE /* MockAPIClient.swift in Sources */,
 				A2C500022607210000000002 /* SettingsAPIModels.swift in Sources */,
+				A2C5000B260721000000000B /* SubscriptionAPIModels.swift in Sources */,
 				A2C600062607220000000006 /* SettingsModels.swift in Sources */,
 				A2C600082607220000000008 /* SettingsStore.swift in Sources */,
 				A2C6000A260722000000000A /* SettingsComponents.swift in Sources */,
