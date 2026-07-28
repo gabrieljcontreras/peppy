@@ -26,6 +26,9 @@
 		A2C500042607210000000004 /* SettingsAPIContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500032607210000000003 /* SettingsAPIContractTests.swift */; };
 		A2C500022607210000000002 /* SettingsAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500012607210000000001 /* SettingsAPIModels.swift */; };
 		A2C5000B260721000000000B /* SubscriptionAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C5000A260721000000000A /* SubscriptionAPIModels.swift */; };
+		A2C5000D260721000000000D /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C5000C260721000000000C /* SubscriptionService.swift */; };
+		A2C5000F260721000000000F /* MockSubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C5000E260721000000000E /* MockSubscriptionService.swift */; };
+		A2C500112607210000000011 /* Peppy.storekit in Resources */ = {isa = PBXBuildFile; fileRef = A2C500102607210000000010 /* Peppy.storekit */; };
 		A2C600022607220000000002 /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600012607220000000001 /* SettingsStoreTests.swift */; };
 		A2C600042607220000000004 /* SettingsNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600032607220000000003 /* SettingsNavigationTests.swift */; };
 		A2C600062607220000000006 /* SettingsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600052607220000000005 /* SettingsModels.swift */; };
@@ -196,6 +199,9 @@
 		A2C500032607210000000003 /* SettingsAPIContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAPIContractTests.swift; sourceTree = "<group>"; };
 		A2C500012607210000000001 /* SettingsAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAPIModels.swift; sourceTree = "<group>"; };
 		A2C5000A260721000000000A /* SubscriptionAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionAPIModels.swift; sourceTree = "<group>"; };
+		A2C5000C260721000000000C /* SubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionService.swift; sourceTree = "<group>"; };
+		A2C5000E260721000000000E /* MockSubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSubscriptionService.swift; sourceTree = "<group>"; };
+		A2C500102607210000000010 /* Peppy.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Peppy.storekit; sourceTree = "<group>"; };
 		A2C600012607220000000001 /* SettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStoreTests.swift; sourceTree = "<group>"; };
 		A2C600032607220000000003 /* SettingsNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNavigationTests.swift; sourceTree = "<group>"; };
 		A2C600052607220000000005 /* SettingsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModels.swift; sourceTree = "<group>"; };
@@ -365,6 +371,7 @@
 				49C364932FD4DE4B00C1F5DE /* Features */,
 				49C364B62FEE000100C1F5DE /* peppyTests */,
 				49C364CC2FEE300100C1F5DE /* peppy.entitlements */,
+				A2C500102607210000000010 /* Peppy.storekit */,
 				49C363BB2FD4D81900C1F5DE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -840,6 +847,8 @@
 			children = (
 				49C365F52FEE400100C1F5DE /* PremiumPlan.swift */,
 				49C365F72FEE400100C1F5DE /* PremiumEntitlement.swift */,
+				A2C5000C260721000000000C /* SubscriptionService.swift */,
+				A2C5000E260721000000000E /* MockSubscriptionService.swift */,
 			);
 			path = Subscriptions;
 			sourceTree = "<group>";
@@ -984,6 +993,7 @@
 			files = (
 				49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */,
 				49E6E4432FE4EA64003B96CE /* LaunchScreen.storyboard in Resources */,
+				A2C500112607210000000011 /* Peppy.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1055,6 +1065,8 @@
 				49C3649D2FD4DE7E00C1F5DE /* MockAPIClient.swift in Sources */,
 				A2C500022607210000000002 /* SettingsAPIModels.swift in Sources */,
 				A2C5000B260721000000000B /* SubscriptionAPIModels.swift in Sources */,
+				A2C5000D260721000000000D /* SubscriptionService.swift in Sources */,
+				A2C5000F260721000000000F /* MockSubscriptionService.swift in Sources */,
 				A2C600062607220000000006 /* SettingsModels.swift in Sources */,
 				A2C600082607220000000008 /* SettingsStore.swift in Sources */,
 				A2C6000A260722000000000A /* SettingsComponents.swift in Sources */,
