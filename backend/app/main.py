@@ -14,6 +14,7 @@ from app.api.routes import (
     notifications,
     profile,
     protocols,
+    subscription,
     waitlist,
     wearables,
 )
@@ -55,6 +56,9 @@ app.include_router(waitlist.router, prefix="/api/v1/waitlist", tags=["waitlist"]
 app.include_router(feedback.router, prefix="/api/v1/feedback", tags=["feedback"])
 app.include_router(profile.router, prefix="/api/v1/profile", tags=["profile"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
+app.include_router(
+    subscription.router, prefix="/api/v1/subscription", tags=["subscription"]
+)
 
 
 @app.on_event("startup")

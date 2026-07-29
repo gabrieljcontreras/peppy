@@ -3,6 +3,7 @@ import Foundation
 enum APIError: Error, Equatable {
     case unauthorized
     case forbidden
+    case paymentRequired
     case notFound
     case conflict(String)
     case validationFailed([String])
@@ -17,6 +18,8 @@ enum APIError: Error, Equatable {
             return "Session expired. Please log in again."
         case .forbidden:
             return "You don't have permission to do that."
+        case .paymentRequired:
+            return "Peppy Premium is required for this."
         case .notFound:
             return "The requested item was not found."
         case .conflict(let message):
@@ -38,6 +41,7 @@ enum APIError: Error, Equatable {
         switch (lhs, rhs) {
         case (.unauthorized, .unauthorized),
              (.forbidden, .forbidden),
+             (.paymentRequired, .paymentRequired),
              (.notFound, .notFound),
              (.serverError, .serverError),
              (.networkUnavailable, .networkUnavailable),

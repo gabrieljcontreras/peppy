@@ -20,6 +20,15 @@ class User(Base, UUIDMixin, TimestampMixin):
     # Staleness marker for generate-if-stale insight list fetches.
     last_insight_run_at = Column(DateTime(timezone=True), nullable=True)
 
+    # Premium subscription state, synced from StoreKit transactions.
+    subscription_tier = Column(
+        String(20), default="free", server_default="free", nullable=False
+    )
+    subscription_product_id = Column(String(100), nullable=True)
+    subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
+    subscription_original_transaction_id = Column(String(100), nullable=True, index=True)
+    subscription_updated_at = Column(DateTime(timezone=True), nullable=True)
+
     # Relationships
     protocols = relationship("Protocol", back_populates="user", cascade="all, delete-orphan")
     dose_logs = relationship("DoseLog", back_populates="user", cascade="all, delete")

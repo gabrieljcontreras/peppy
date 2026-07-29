@@ -17,6 +17,7 @@ from app.models.protocol import Compound, Protocol
 from app.models.user import User
 from app.models.weekly_summary import WeeklySummary
 from app.services.weekly_summary import completed_week_bounds, get_or_create_weekly_summary
+from conftest import grant_premium
 
 TODAY = date(2026, 7, 15)
 WEEK_START = date(2026, 7, 6)
@@ -136,7 +137,9 @@ async def _auth_headers(client, email: str) -> dict[str, str]:
         json={"email": email, "password": "password123"},
     )
     assert response.status_code == 201
-    return {"Authorization": f"Bearer {response.json()['access_token']}"}
+    headers = {"Authorization": f"Bearer {response.json()['access_token']}"}
+    # The weekly summary is premium-gated; these tests exercise the feature itself.
+    return await grant_premium(client, headers)
 
 
 @pytest.mark.parametrize(

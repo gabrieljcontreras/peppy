@@ -24,7 +24,13 @@
 		A2C400052607170000000005 /* CheckinHubViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C400042607170000000004 /* CheckinHubViewModel.swift */; };
 		A2C400072607170000000007 /* CheckinHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C400062607170000000006 /* CheckinHubView.swift */; };
 		A2C500042607210000000004 /* SettingsAPIContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500032607210000000003 /* SettingsAPIContractTests.swift */; };
+		A2C500132607210000000013 /* EntitlementStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500122607210000000012 /* EntitlementStoreTests.swift */; };
 		A2C500022607210000000002 /* SettingsAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500012607210000000001 /* SettingsAPIModels.swift */; };
+		A2C5000B260721000000000B /* SubscriptionAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C5000A260721000000000A /* SubscriptionAPIModels.swift */; };
+		A2C5000D260721000000000D /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C5000C260721000000000C /* SubscriptionService.swift */; };
+		A2C5000F260721000000000F /* MockSubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C5000E260721000000000E /* MockSubscriptionService.swift */; };
+		A2C500152607210000000015 /* EntitlementStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500142607210000000014 /* EntitlementStore.swift */; };
+		A2C500112607210000000011 /* Peppy.storekit in Resources */ = {isa = PBXBuildFile; fileRef = A2C500102607210000000010 /* Peppy.storekit */; };
 		A2C600022607220000000002 /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600012607220000000001 /* SettingsStoreTests.swift */; };
 		A2C600042607220000000004 /* SettingsNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600032607220000000003 /* SettingsNavigationTests.swift */; };
 		A2C600062607220000000006 /* SettingsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C600052607220000000005 /* SettingsModels.swift */; };
@@ -137,6 +143,10 @@
 		49C364C92FEE300100C1F5DE /* NotificationPermissionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364CA2FEE300100C1F5DE /* NotificationPermissionService.swift */; };
 		49C364CD2FEE300100C1F5DE /* PermissionOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */; };
 		49C364D02FEE400100C1F5DE /* AppFlowCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */; };
+		49C365F02FEE400100C1F5DE /* PremiumGatingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365F12FEE400100C1F5DE /* PremiumGatingTests.swift */; };
+		49C365F22FEE400100C1F5DE /* PremiumPlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365F32FEE400100C1F5DE /* PremiumPlanTests.swift */; };
+		49C365F42FEE400100C1F5DE /* PremiumPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365F52FEE400100C1F5DE /* PremiumPlan.swift */; };
+		49C365F62FEE400100C1F5DE /* PremiumEntitlement.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365F72FEE400100C1F5DE /* PremiumEntitlement.swift */; };
 		49C364D22FEE400100C1F5DE /* AppFlowCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364D32FEE400100C1F5DE /* AppFlowCoordinator.swift */; };
 		49C364D42FEE500100C1F5DE /* OnboardingViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364D52FEE500100C1F5DE /* OnboardingViewModelTests.swift */; };
 		49C364D62FEE500100C1F5DE /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364D72FEE500100C1F5DE /* OnboardingViewModel.swift */; };
@@ -189,7 +199,13 @@
 		A2C400042607170000000004 /* CheckinHubViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinHubViewModel.swift; sourceTree = "<group>"; };
 		A2C400062607170000000006 /* CheckinHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinHubView.swift; sourceTree = "<group>"; };
 		A2C500032607210000000003 /* SettingsAPIContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAPIContractTests.swift; sourceTree = "<group>"; };
+		A2C500122607210000000012 /* EntitlementStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementStoreTests.swift; sourceTree = "<group>"; };
 		A2C500012607210000000001 /* SettingsAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAPIModels.swift; sourceTree = "<group>"; };
+		A2C5000A260721000000000A /* SubscriptionAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionAPIModels.swift; sourceTree = "<group>"; };
+		A2C5000C260721000000000C /* SubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionService.swift; sourceTree = "<group>"; };
+		A2C5000E260721000000000E /* MockSubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSubscriptionService.swift; sourceTree = "<group>"; };
+		A2C500142607210000000014 /* EntitlementStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementStore.swift; sourceTree = "<group>"; };
+		A2C500102607210000000010 /* Peppy.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Peppy.storekit; sourceTree = "<group>"; };
 		A2C600012607220000000001 /* SettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStoreTests.swift; sourceTree = "<group>"; };
 		A2C600032607220000000003 /* SettingsNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsNavigationTests.swift; sourceTree = "<group>"; };
 		A2C600052607220000000005 /* SettingsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModels.swift; sourceTree = "<group>"; };
@@ -285,6 +301,10 @@
 		49C364CC2FEE300100C1F5DE /* peppy.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = peppy.entitlements; sourceTree = "<group>"; };
 		49C364CE2FEE300100C1F5DE /* PermissionOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionOutcome.swift; sourceTree = "<group>"; };
 		49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinatorTests.swift; sourceTree = "<group>"; };
+		49C365F12FEE400100C1F5DE /* PremiumGatingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumGatingTests.swift; sourceTree = "<group>"; };
+		49C365F32FEE400100C1F5DE /* PremiumPlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumPlanTests.swift; sourceTree = "<group>"; };
+		49C365F52FEE400100C1F5DE /* PremiumPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumPlan.swift; sourceTree = "<group>"; };
+		49C365F72FEE400100C1F5DE /* PremiumEntitlement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumEntitlement.swift; sourceTree = "<group>"; };
 		49C364D32FEE400100C1F5DE /* AppFlowCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowCoordinator.swift; sourceTree = "<group>"; };
 		49C364D52FEE500100C1F5DE /* OnboardingViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModelTests.swift; sourceTree = "<group>"; };
 		49C364D72FEE500100C1F5DE /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
@@ -355,6 +375,7 @@
 				49C364932FD4DE4B00C1F5DE /* Features */,
 				49C364B62FEE000100C1F5DE /* peppyTests */,
 				49C364CC2FEE300100C1F5DE /* peppy.entitlements */,
+				A2C500102607210000000010 /* Peppy.storekit */,
 				49C363BB2FD4D81900C1F5DE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -391,6 +412,7 @@
 				49C3647C2FD4DE4B00C1F5DE /* Endpoint.swift */,
 				49C3647D2FD4DE4B00C1F5DE /* MockAPIClient.swift */,
 				A2C500012607210000000001 /* SettingsAPIModels.swift */,
+				A2C5000A260721000000000A /* SubscriptionAPIModels.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -416,6 +438,7 @@
 				49C364CB2FEE300100C1F5DE /* Permissions */,
 				A2C901072607230100000007 /* Security */,
 				49C364802FD4DE4B00C1F5DE /* Storage */,
+				49C365F82FEE400100C1F5DE /* Subscriptions */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -583,6 +606,8 @@
 				A2C900012607230100000001 /* AppLockCoordinatorTests.swift */,
 				A2CA00012607230200000001 /* DataExportViewModelTests.swift */,
 				49C364D12FEE400100C1F5DE /* AppFlowCoordinatorTests.swift */,
+				49C365F12FEE400100C1F5DE /* PremiumGatingTests.swift */,
+				49C365F32FEE400100C1F5DE /* PremiumPlanTests.swift */,
 				49C365212FF000700C1F5DE /* CheckinViewModelTests.swift */,
 				49C3654A2FF000B00C1F5DE /* CompoundEditorViewModelTests.swift */,
 				49C3656A2FF001100C1F5DE /* DoseLogViewModelTests.swift */,
@@ -605,6 +630,7 @@
 				49C3656C2FF001200C1F5DE /* ProtocolNavigationTests.swift */,
 				49C365412FF000900C1F5DE /* ProtocolStoreTests.swift */,
 				A2C500032607210000000003 /* SettingsAPIContractTests.swift */,
+				A2C500122607210000000012 /* EntitlementStoreTests.swift */,
 				A2C600032607220000000003 /* SettingsNavigationTests.swift */,
 				A2C600012607220000000001 /* SettingsStoreTests.swift */,
 				A2C700012607220000000001 /* ProfileSettingsViewModelTests.swift */,
@@ -821,6 +847,18 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		49C365F82FEE400100C1F5DE /* Subscriptions */ = {
+			isa = PBXGroup;
+			children = (
+				49C365F52FEE400100C1F5DE /* PremiumPlan.swift */,
+				49C365F72FEE400100C1F5DE /* PremiumEntitlement.swift */,
+				A2C5000C260721000000000C /* SubscriptionService.swift */,
+				A2C5000E260721000000000E /* MockSubscriptionService.swift */,
+				A2C500142607210000000014 /* EntitlementStore.swift */,
+			);
+			path = Subscriptions;
+			sourceTree = "<group>";
+		};
 		49C364CB2FEE300100C1F5DE /* Permissions */ = {
 			isa = PBXGroup;
 			children = (
@@ -961,6 +999,7 @@
 			files = (
 				49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */,
 				49E6E4432FE4EA64003B96CE /* LaunchScreen.storyboard in Resources */,
+				A2C500112607210000000011 /* Peppy.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -979,6 +1018,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				49C364942FD4DE7E00C1F5DE /* AppState.swift in Sources */,
+				49C365F42FEE400100C1F5DE /* PremiumPlan.swift in Sources */,
+				49C365F62FEE400100C1F5DE /* PremiumEntitlement.swift in Sources */,
 				49C364952FD4DE7E00C1F5DE /* Dependencies.swift in Sources */,
 				49C364962FD4DE7E00C1F5DE /* MainTabView.swift in Sources */,
 				49C364972FD4DE7E00C1F5DE /* PeppyApp.swift in Sources */,
@@ -1029,6 +1070,10 @@
 				A2C400072607170000000007 /* CheckinHubView.swift in Sources */,
 				49C3649D2FD4DE7E00C1F5DE /* MockAPIClient.swift in Sources */,
 				A2C500022607210000000002 /* SettingsAPIModels.swift in Sources */,
+				A2C5000B260721000000000B /* SubscriptionAPIModels.swift in Sources */,
+				A2C5000D260721000000000D /* SubscriptionService.swift in Sources */,
+				A2C5000F260721000000000F /* MockSubscriptionService.swift in Sources */,
+				A2C500152607210000000015 /* EntitlementStore.swift in Sources */,
 				A2C600062607220000000006 /* SettingsModels.swift in Sources */,
 				A2C600082607220000000008 /* SettingsStore.swift in Sources */,
 				A2C6000A260722000000000A /* SettingsComponents.swift in Sources */,
@@ -1105,6 +1150,8 @@
 				A2C900022607230100000002 /* AppLockCoordinatorTests.swift in Sources */,
 				A2CA00022607230200000002 /* DataExportViewModelTests.swift in Sources */,
 				49C364D02FEE400100C1F5DE /* AppFlowCoordinatorTests.swift in Sources */,
+				49C365F02FEE400100C1F5DE /* PremiumGatingTests.swift in Sources */,
+				49C365F22FEE400100C1F5DE /* PremiumPlanTests.swift in Sources */,
 				49C364E22FEE700100C1F5DE /* OnboardingBaselineFlowTests.swift in Sources */,
 				49C364D92FEE600100C1F5DE /* OnboardingComponentTests.swift in Sources */,
 				49C365022FF000200C1F5DE /* DashboardViewModelTests.swift in Sources */,
@@ -1125,6 +1172,7 @@
 				49C365812FF001700C1F5DE /* InsightsListViewModelTests.swift in Sources */,
 				49C3658C2FF001800C1F5DE /* InsightDetailViewModelTests.swift in Sources */,
 				A2C500042607210000000004 /* SettingsAPIContractTests.swift in Sources */,
+				A2C500132607210000000013 /* EntitlementStoreTests.swift in Sources */,
 				A2C600042607220000000004 /* SettingsNavigationTests.swift in Sources */,
 				A2C600022607220000000002 /* SettingsStoreTests.swift in Sources */,
 				A2C700022607220000000002 /* ProfileSettingsViewModelTests.swift in Sources */,

@@ -27,6 +27,10 @@ enum Endpoint {
     // MARK: - Dashboard
     case getDashboardSummary
 
+    // MARK: - Subscription
+    case getSubscription
+    case syncAppleTransaction(AppleTransactionRequest)
+
     // MARK: - Protocols
     case getProtocols
     case getProtocol(id: UUID)
@@ -100,6 +104,10 @@ enum Endpoint {
         case .getDashboardSummary:
             return "/dashboard/summary"
 
+        // Subscription
+        case .getSubscription: return "/subscription"
+        case .syncAppleTransaction: return "/subscription/apple"
+
         // Protocols
         case .getProtocols, .createProtocol: return "/protocols"
         case .getProtocol(let id), .updateProtocol(let id, _), .deleteProtocol(let id):
@@ -156,7 +164,8 @@ enum Endpoint {
              .createLab,
              .markInsightRead, .insightAction, .generateInsights,
              .connectWearable, .syncWearable,
-             .registerDevice:
+             .registerDevice,
+             .syncAppleTransaction:
             return .post
         case .updateCurrentUser, .updateProfile,
              .updateProtocol, .updateCompound, .updateCheckin, .updateNotificationPreferences:
@@ -212,6 +221,8 @@ enum Endpoint {
         case .registerDevice(let token, let platform):
             return ["token": token, "platform": platform]
         case .updateNotificationPreferences(let request):
+            return request
+        case .syncAppleTransaction(let request):
             return request
         default:
             return nil

@@ -64,6 +64,8 @@ async def export_accounts(client, db_session) -> ExportAccounts:
     other = users_by_email[other_email]
 
     primary.timezone = "America/New_York"
+    # Data export is premium-gated; these tests exercise the export itself.
+    primary.subscription_tier = "premium"
     db_session.add_all(
         [
             OnboardingProfile(

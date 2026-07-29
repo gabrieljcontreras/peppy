@@ -98,6 +98,8 @@ actor APIClient: APIClientProtocol {
             }
             _ = try await refreshTokenOnce()
             return try await performDownload(endpoint, isRetry: true)
+        case 402:
+            throw APIError.paymentRequired
         case 403:
             throw APIError.forbidden
         case 404:
@@ -156,6 +158,9 @@ actor APIClient: APIClientProtocol {
                 throw APIError.unauthorized
             }
             return retryData
+
+        case 402:
+            throw APIError.paymentRequired
 
         case 403:
             throw APIError.forbidden

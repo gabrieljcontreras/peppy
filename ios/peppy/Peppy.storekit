@@ -1,0 +1,77 @@
+{
+  "identifier" : "A1B2C3D4",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "139.99",
+      "familyShareable" : true,
+      "internalID" : "P0000001",
+      "localizations" : [
+        {
+          "description" : "Pay once, use Peppy Premium forever.",
+          "displayName" : "Peppy Premium Lifetime",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.gabriel.peppy.premium.lifetime",
+      "referenceName" : "Peppy Premium Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "S0000001",
+      "localizations" : [],
+      "name" : "Peppy Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "7.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "S0000003",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Peppy Premium, billed monthly.",
+              "displayName" : "Peppy Premium Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.gabriel.peppy.premium.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Peppy Premium Monthly",
+          "subscriptionGroupID" : "S0000001",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "24.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "S0000002",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Peppy Premium, billed yearly.",
+              "displayName" : "Peppy Premium Yearly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.gabriel.peppy.premium.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Peppy Premium Yearly",
+          "subscriptionGroupID" : "S0000001",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : { "major" : 4, "minor" : 0 }
+}

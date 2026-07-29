@@ -5,7 +5,7 @@ from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import CurrentUser
+from app.api.deps import PremiumUser
 from app.api.schemas.insight import (
     GenerationResult,
     InsightAction,
@@ -37,7 +37,7 @@ router = APIRouter()
 
 @router.get("", response_model=list[InsightResponse])
 async def list_insights(
-    current_user: CurrentUser,
+    current_user: PremiumUser,
     background_tasks: BackgroundTasks,
     db: Annotated[AsyncSession, Depends(get_db)],
     unread_only: bool = Query(False, description="Only return insights the user has not read"),
@@ -83,7 +83,7 @@ async def list_insights(
 
 @router.get("/summary/weekly", response_model=WeeklySummaryEnvelope)
 async def get_weekly_summary(
-    current_user: CurrentUser,
+    current_user: PremiumUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """Return the latest qualifying completed-week summary."""
@@ -100,7 +100,7 @@ async def get_weekly_summary(
 @router.get("/{insight_id}", response_model=InsightResponse)
 async def get_insight(
     insight_id: UUID,
-    current_user: CurrentUser,
+    current_user: PremiumUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """
@@ -124,7 +124,7 @@ async def get_insight(
 async def take_action_on_insight(
     insight_id: UUID,
     action: InsightAction,
-    current_user: CurrentUser,
+    current_user: PremiumUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """
@@ -149,7 +149,7 @@ async def take_action_on_insight(
 @router.post("/{insight_id}/read", response_model=InsightResponse)
 async def mark_insight_read(
     insight_id: UUID,
-    current_user: CurrentUser,
+    current_user: PremiumUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """
@@ -171,7 +171,7 @@ async def mark_insight_read(
 @router.get("/jobs/{job_id}", response_model=JobResponse)
 async def get_job_status(
     job_id: UUID,
-    current_user: CurrentUser,
+    current_user: PremiumUser,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     """
@@ -202,7 +202,7 @@ async def get_job_status(
 
 @router.post("/generate", response_model=Union[GenerationResult, JobResponse])
 async def trigger_insight_generation(
-    current_user: CurrentUser,
+    current_user: PremiumUser,
     db: Annotated[AsyncSession, Depends(get_db)],
     response: Response,
     start_date: Optional[date] = Query(

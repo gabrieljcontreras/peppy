@@ -21,10 +21,10 @@ async def test_dashboard_summary_requires_auth(client):
     assert response.status_code == 403
 
 
-async def test_dashboard_summary_returns_attached_pending_starter(client, auth_headers):
+async def test_dashboard_summary_returns_attached_pending_starter(client, premium_auth_headers):
     attach_response = await client.post(
         "/api/v1/profile/onboarding/attach",
-        headers=auth_headers,
+        headers=premium_auth_headers,
         json={
             "schema_version": 1,
             "draft_id": "dashboard-route-draft",
@@ -42,7 +42,7 @@ async def test_dashboard_summary_returns_attached_pending_starter(client, auth_h
     )
     assert attach_response.status_code == 201
 
-    response = await client.get("/api/v1/dashboard/summary", headers=auth_headers)
+    response = await client.get("/api/v1/dashboard/summary", headers=premium_auth_headers)
 
     assert response.status_code == 200
     data = response.json()

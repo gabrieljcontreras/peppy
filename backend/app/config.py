@@ -59,6 +59,10 @@ class Settings(BaseSettings):
     apns_topic: str = ""
     apns_use_sandbox: bool = False
 
+    # In-app purchases (StoreKit 2)
+    apple_bundle_id: str = "com.gabriel.peppy"
+    apple_verify_receipts: bool = False
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
