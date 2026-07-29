@@ -10,7 +10,7 @@ enum AppRoute: Equatable {
     case launching
     case onboarding
     case readySummary
-    case futurePaywall
+    case paywall
     case authentication(AuthenticationMode)
     case dashboard
 }
@@ -97,7 +97,7 @@ final class AppFlowCoordinator {
 
     func showRegistration() {
         switch route {
-        case .readySummary, .futurePaywall:
+        case .readySummary:
             authenticationBackStack = [.readySummary]
         case .authentication(.signIn):
             authenticationBackStack.append(.authentication(.signIn))
@@ -113,15 +113,17 @@ final class AppFlowCoordinator {
     }
 
     func continueFromReadySummary() {
-        route = .futurePaywall
-    }
-
-    func advancePastFuturePaywall() {
         authenticationBackStack = [.readySummary]
         route = .authentication(.register)
     }
 
-    func didAuthenticate(user: User) async {
+    /// Leaves the post-registration paywall without purchasing. Free accounts
+    /// are a real tier — Check-ins and Protocols still work.
+    func dismissPaywall() {
+        route = .dashboard
+    }
+
+    func didAuthenticate(user: User, isNewAccount: Bool = false) async {
         await resetForNewSession(ifNeeded: user.id)
         hasProfileAttachFailure = false
         if let draft = onboardingStore.loadAnonymousDraft(), draft.isComplete {
@@ -140,7 +142,7 @@ final class AppFlowCoordinator {
         prepareSessionData(user)
         appState.login(user: user)
         authenticationBackStack = []
-        route = .dashboard
+        route = isNewAccount ? .paywall : .dashboard
     }
 
     func logout() async {

@@ -25,12 +25,8 @@ struct RootView: View {
                         continueAction: deps.flow.continueFromReadySummary,
                         signInAction: deps.flow.showSignIn
                     )
-                case .futurePaywall:
-                    Color.pepBackground
-                        .ignoresSafeArea()
-                        .task {
-                            deps.flow.advancePastFuturePaywall()
-                        }
+                case .paywall:
+                    PaywallView(onDismiss: deps.flow.dismissPaywall)
                 case .authentication(let mode):
                     NavigationStack {
                         switch mode {
