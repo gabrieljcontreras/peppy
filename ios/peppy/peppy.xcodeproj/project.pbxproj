@@ -78,6 +78,9 @@
 		49C364A62FD4DE7E00C1F5DE /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648A2FD4DE4B00C1F5DE /* Colors.swift */; };
 		49C364A72FD4DE7E00C1F5DE /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */; };
 		49C364A82FD4DE7E00C1F5DE /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648C2FD4DE4B00C1F5DE /* Typography.swift */; };
+		49C366022FEE500100C1F5DE /* PeppyFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C366012FEE500100C1F5DE /* PeppyFonts.swift */; };
+		49C366042FEE500100C1F5DE /* Fraunces-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 49C366032FEE500100C1F5DE /* Fraunces-Italic.ttf */; };
+		49C366062FEE500100C1F5DE /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 49C366052FEE500100C1F5DE /* OFL.txt */; };
 		49C364A92FD4DE7E00C1F5DE /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648E2FD4DE4B00C1F5DE /* LoginView.swift */; };
 		49C364AA2FD4DE7E00C1F5DE /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648F2FD4DE4B00C1F5DE /* RegisterView.swift */; };
 		49C364AB2FD4DE7E00C1F5DE /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364902FD4DE4B00C1F5DE /* WelcomeView.swift */; };
@@ -234,6 +237,9 @@
 		49C3648A2FD4DE4B00C1F5DE /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
 		49C3648C2FD4DE4B00C1F5DE /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		49C366012FEE500100C1F5DE /* PeppyFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeppyFonts.swift; sourceTree = "<group>"; };
+		49C366032FEE500100C1F5DE /* Fraunces-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fraunces-Italic.ttf"; sourceTree = "<group>"; };
+		49C366052FEE500100C1F5DE /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		49C3648E2FD4DE4B00C1F5DE /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		49C3648F2FD4DE4B00C1F5DE /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
 		49C364902FD4DE4B00C1F5DE /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
@@ -500,12 +506,23 @@
 			isa = PBXGroup;
 			children = (
 				49C364892FD4DE4B00C1F5DE /* Components */,
+				49C366072FEE500100C1F5DE /* Fonts */,
 				49C3648A2FD4DE4B00C1F5DE /* Colors.swift */,
 				49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */,
 				49C3648C2FD4DE4B00C1F5DE /* Typography.swift */,
+				49C366012FEE500100C1F5DE /* PeppyFonts.swift */,
 				49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */,
 			);
 			path = Design;
+			sourceTree = "<group>";
+		};
+		49C366072FEE500100C1F5DE /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				49C366032FEE500100C1F5DE /* Fraunces-Italic.ttf */,
+				49C366052FEE500100C1F5DE /* OFL.txt */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		49C364912FD4DE4B00C1F5DE /* Views */ = {
@@ -1000,6 +1017,8 @@
 				49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */,
 				49E6E4432FE4EA64003B96CE /* LaunchScreen.storyboard in Resources */,
 				A2C500112607210000000011 /* Peppy.storekit in Resources */,
+				49C366042FEE500100C1F5DE /* Fraunces-Italic.ttf in Resources */,
+				49C366062FEE500100C1F5DE /* OFL.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1135,6 +1154,7 @@
 				49C364F22FEE900100C1F5DE /* WorkoutStepView.swift in Sources */,
 				49C364A72FD4DE7E00C1F5DE /* Spacing.swift in Sources */,
 				49C364A82FD4DE7E00C1F5DE /* Typography.swift in Sources */,
+				49C366022FEE500100C1F5DE /* PeppyFonts.swift in Sources */,
 				49C364A92FD4DE7E00C1F5DE /* LoginView.swift in Sources */,
 				49C364AA2FD4DE7E00C1F5DE /* RegisterView.swift in Sources */,
 				49C364AB2FD4DE7E00C1F5DE /* WelcomeView.swift in Sources */,

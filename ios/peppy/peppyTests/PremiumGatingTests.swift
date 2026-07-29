@@ -1,3 +1,4 @@
+import UIKit
 import XCTest
 @testable import peppy
 
@@ -55,5 +56,16 @@ extension PremiumGatingTests {
         let response = try JSONDecoder().decode(SubscriptionResponse.self, from: json)
 
         XCTAssertEqual(response.entitlement, .free)
+    }
+}
+
+extension PremiumGatingTests {
+    func testPremiumItalicFontResolvesToFraunces() {
+        let font = PeppyFonts.premiumItalicUIFont(size: 40)
+
+        // If this fails the .ttf is missing from Copy Bundle Resources and
+        // the headline is silently rendering in the system serif fallback.
+        XCTAssertEqual(font.familyName, "Fraunces")
+        XCTAssertEqual(font.pointSize, 40)
     }
 }
