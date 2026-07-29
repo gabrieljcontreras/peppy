@@ -25,6 +25,7 @@
 		A2C400072607170000000007 /* CheckinHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C400062607170000000006 /* CheckinHubView.swift */; };
 		A2C500042607210000000004 /* SettingsAPIContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500032607210000000003 /* SettingsAPIContractTests.swift */; };
 		A2C500132607210000000013 /* EntitlementStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500122607210000000012 /* EntitlementStoreTests.swift */; };
+		49C366122FEE500100C1F5DE /* PaywallViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C366112FEE500100C1F5DE /* PaywallViewModelTests.swift */; };
 		A2C500022607210000000002 /* SettingsAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C500012607210000000001 /* SettingsAPIModels.swift */; };
 		A2C5000B260721000000000B /* SubscriptionAPIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C5000A260721000000000A /* SubscriptionAPIModels.swift */; };
 		A2C5000D260721000000000D /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C5000C260721000000000C /* SubscriptionService.swift */; };
@@ -78,6 +79,9 @@
 		49C364A62FD4DE7E00C1F5DE /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648A2FD4DE4B00C1F5DE /* Colors.swift */; };
 		49C364A72FD4DE7E00C1F5DE /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */; };
 		49C364A82FD4DE7E00C1F5DE /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648C2FD4DE4B00C1F5DE /* Typography.swift */; };
+		49C366022FEE500100C1F5DE /* PeppyFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C366012FEE500100C1F5DE /* PeppyFonts.swift */; };
+		49C366042FEE500100C1F5DE /* Fraunces-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 49C366032FEE500100C1F5DE /* Fraunces-Italic.ttf */; };
+		49C366062FEE500100C1F5DE /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 49C366052FEE500100C1F5DE /* OFL.txt */; };
 		49C364A92FD4DE7E00C1F5DE /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648E2FD4DE4B00C1F5DE /* LoginView.swift */; };
 		49C364AA2FD4DE7E00C1F5DE /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3648F2FD4DE4B00C1F5DE /* RegisterView.swift */; };
 		49C364AB2FD4DE7E00C1F5DE /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C364902FD4DE4B00C1F5DE /* WelcomeView.swift */; };
@@ -118,6 +122,9 @@
 		49C365742FF001500C1F5DE /* InsightsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365752FF001500C1F5DE /* InsightsStore.swift */; };
 		49C365792FF001700C1F5DE /* InsightModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365782FF001700C1F5DE /* InsightModels.swift */; };
 		49C3657B2FF001700C1F5DE /* InsightsListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3657A2FF001700C1F5DE /* InsightsListViewModel.swift */; };
+		49C366222FEE500100C1F5DE /* PaywallViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C366212FEE500100C1F5DE /* PaywallViewModel.swift */; };
+		49C366262FEE500100C1F5DE /* PaywallPlanCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C366252FEE500100C1F5DE /* PaywallPlanCard.swift */; };
+		49C366292FEE500100C1F5DE /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C366282FEE500100C1F5DE /* PaywallView.swift */; };
 		49C3657D2FF001700C1F5DE /* InsightCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3657C2FF001700C1F5DE /* InsightCardView.swift */; };
 		49C3657F2FF001700C1F5DE /* InsightsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3657E2FF001700C1F5DE /* InsightsListView.swift */; };
 		49C365862FF001800C1F5DE /* InsightDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365852FF001800C1F5DE /* InsightDetailViewModel.swift */; };
@@ -200,6 +207,7 @@
 		A2C400062607170000000006 /* CheckinHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckinHubView.swift; sourceTree = "<group>"; };
 		A2C500032607210000000003 /* SettingsAPIContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAPIContractTests.swift; sourceTree = "<group>"; };
 		A2C500122607210000000012 /* EntitlementStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementStoreTests.swift; sourceTree = "<group>"; };
+		49C366112FEE500100C1F5DE /* PaywallViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewModelTests.swift; sourceTree = "<group>"; };
 		A2C500012607210000000001 /* SettingsAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAPIModels.swift; sourceTree = "<group>"; };
 		A2C5000A260721000000000A /* SubscriptionAPIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionAPIModels.swift; sourceTree = "<group>"; };
 		A2C5000C260721000000000C /* SubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionService.swift; sourceTree = "<group>"; };
@@ -234,6 +242,9 @@
 		49C3648A2FD4DE4B00C1F5DE /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
 		49C3648C2FD4DE4B00C1F5DE /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		49C366012FEE500100C1F5DE /* PeppyFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeppyFonts.swift; sourceTree = "<group>"; };
+		49C366032FEE500100C1F5DE /* Fraunces-Italic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fraunces-Italic.ttf"; sourceTree = "<group>"; };
+		49C366052FEE500100C1F5DE /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		49C3648E2FD4DE4B00C1F5DE /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		49C3648F2FD4DE4B00C1F5DE /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
 		49C364902FD4DE4B00C1F5DE /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
@@ -275,6 +286,9 @@
 		49C365752FF001500C1F5DE /* InsightsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsStore.swift; sourceTree = "<group>"; };
 		49C365782FF001700C1F5DE /* InsightModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightModels.swift; sourceTree = "<group>"; };
 		49C3657A2FF001700C1F5DE /* InsightsListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsListViewModel.swift; sourceTree = "<group>"; };
+		49C366212FEE500100C1F5DE /* PaywallViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewModel.swift; sourceTree = "<group>"; };
+		49C366252FEE500100C1F5DE /* PaywallPlanCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPlanCard.swift; sourceTree = "<group>"; };
+		49C366282FEE500100C1F5DE /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		49C3657C2FF001700C1F5DE /* InsightCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightCardView.swift; sourceTree = "<group>"; };
 		49C3657E2FF001700C1F5DE /* InsightsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsListView.swift; sourceTree = "<group>"; };
 		49C365852FF001800C1F5DE /* InsightDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightDetailViewModel.swift; sourceTree = "<group>"; };
@@ -500,12 +514,23 @@
 			isa = PBXGroup;
 			children = (
 				49C364892FD4DE4B00C1F5DE /* Components */,
+				49C366072FEE500100C1F5DE /* Fonts */,
 				49C3648A2FD4DE4B00C1F5DE /* Colors.swift */,
 				49C3648B2FD4DE4B00C1F5DE /* Spacing.swift */,
 				49C3648C2FD4DE4B00C1F5DE /* Typography.swift */,
+				49C366012FEE500100C1F5DE /* PeppyFonts.swift */,
 				49C364AE2FDCFD9400C1F5DE /* Assets 2.xcassets */,
 			);
 			path = Design;
+			sourceTree = "<group>";
+		};
+		49C366072FEE500100C1F5DE /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				49C366032FEE500100C1F5DE /* Fraunces-Italic.ttf */,
+				49C366052FEE500100C1F5DE /* OFL.txt */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		49C364912FD4DE4B00C1F5DE /* Views */ = {
@@ -526,6 +551,32 @@
 			path = Auth;
 			sourceTree = "<group>";
 		};
+		49C366232FEE500100C1F5DE /* Paywall */ = {
+			isa = PBXGroup;
+			children = (
+				49C366242FEE500100C1F5DE /* ViewModels */,
+				49C366272FEE500100C1F5DE /* Views */,
+			);
+			path = Paywall;
+			sourceTree = "<group>";
+		};
+		49C366242FEE500100C1F5DE /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				49C366212FEE500100C1F5DE /* PaywallViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		49C366272FEE500100C1F5DE /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				49C366252FEE500100C1F5DE /* PaywallPlanCard.swift */,
+				49C366282FEE500100C1F5DE /* PaywallView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		49C364932FD4DE4B00C1F5DE /* Features */ = {
 			isa = PBXGroup;
 			children = (
@@ -534,6 +585,7 @@
 				49C365082FF000300C1F5DE /* Dashboard */,
 				49C365762FF001600C1F5DE /* Insights */,
 				49C364BF2FEE100100C1F5DE /* Onboarding */,
+				49C366232FEE500100C1F5DE /* Paywall */,
 				49C365162FF000600C1F5DE /* Protocols */,
 				A2C6000D260722000000000D /* Settings */,
 			);
@@ -631,6 +683,7 @@
 				49C365412FF000900C1F5DE /* ProtocolStoreTests.swift */,
 				A2C500032607210000000003 /* SettingsAPIContractTests.swift */,
 				A2C500122607210000000012 /* EntitlementStoreTests.swift */,
+				49C366112FEE500100C1F5DE /* PaywallViewModelTests.swift */,
 				A2C600032607220000000003 /* SettingsNavigationTests.swift */,
 				A2C600012607220000000001 /* SettingsStoreTests.swift */,
 				A2C700012607220000000001 /* ProfileSettingsViewModelTests.swift */,
@@ -1000,6 +1053,8 @@
 				49C364AF2FDCFD9400C1F5DE /* Assets 2.xcassets in Resources */,
 				49E6E4432FE4EA64003B96CE /* LaunchScreen.storyboard in Resources */,
 				A2C500112607210000000011 /* Peppy.storekit in Resources */,
+				49C366042FEE500100C1F5DE /* Fraunces-Italic.ttf in Resources */,
+				49C366062FEE500100C1F5DE /* OFL.txt in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1049,6 +1104,9 @@
 				49C365742FF001500C1F5DE /* InsightsStore.swift in Sources */,
 				49C365792FF001700C1F5DE /* InsightModels.swift in Sources */,
 				49C3657B2FF001700C1F5DE /* InsightsListViewModel.swift in Sources */,
+				49C366222FEE500100C1F5DE /* PaywallViewModel.swift in Sources */,
+				49C366262FEE500100C1F5DE /* PaywallPlanCard.swift in Sources */,
+				49C366292FEE500100C1F5DE /* PaywallView.swift in Sources */,
 				49C3657D2FF001700C1F5DE /* InsightCardView.swift in Sources */,
 				49C3657F2FF001700C1F5DE /* InsightsListView.swift in Sources */,
 				49C365862FF001800C1F5DE /* InsightDetailViewModel.swift in Sources */,
@@ -1135,6 +1193,7 @@
 				49C364F22FEE900100C1F5DE /* WorkoutStepView.swift in Sources */,
 				49C364A72FD4DE7E00C1F5DE /* Spacing.swift in Sources */,
 				49C364A82FD4DE7E00C1F5DE /* Typography.swift in Sources */,
+				49C366022FEE500100C1F5DE /* PeppyFonts.swift in Sources */,
 				49C364A92FD4DE7E00C1F5DE /* LoginView.swift in Sources */,
 				49C364AA2FD4DE7E00C1F5DE /* RegisterView.swift in Sources */,
 				49C364AB2FD4DE7E00C1F5DE /* WelcomeView.swift in Sources */,
@@ -1173,6 +1232,7 @@
 				49C3658C2FF001800C1F5DE /* InsightDetailViewModelTests.swift in Sources */,
 				A2C500042607210000000004 /* SettingsAPIContractTests.swift in Sources */,
 				A2C500132607210000000013 /* EntitlementStoreTests.swift in Sources */,
+				49C366122FEE500100C1F5DE /* PaywallViewModelTests.swift in Sources */,
 				A2C600042607220000000004 /* SettingsNavigationTests.swift in Sources */,
 				A2C600022607220000000002 /* SettingsStoreTests.swift in Sources */,
 				A2C700022607220000000002 /* ProfileSettingsViewModelTests.swift in Sources */,
