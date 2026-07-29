@@ -56,6 +56,7 @@ struct RootView: View {
         }
         .pepToast($appState.toast)
         .task {
+            deps.entitlements.start()
             if Self.shouldResolveLaunch(for: deps) {
                 await deps.flow.resolveLaunch()
             }

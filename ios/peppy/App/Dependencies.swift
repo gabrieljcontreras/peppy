@@ -22,6 +22,8 @@ final class Dependencies {
     let notificationReconciliation: NotificationReconciliationCoordinator
     let appLock: AppLockCoordinator
     let exportFileService: ExportFileServicing
+    let subscriptionService: SubscriptionServicing
+    let entitlements: EntitlementStore
 
     init(
         api: APIClientProtocol,
@@ -43,7 +45,9 @@ final class Dependencies {
         pushRegistrationCoordinator: PushRegistrationCoordinator,
         notificationReconciliation: NotificationReconciliationCoordinator,
         appLock: AppLockCoordinator,
-        exportFileService: ExportFileServicing
+        exportFileService: ExportFileServicing,
+        subscriptionService: SubscriptionServicing,
+        entitlements: EntitlementStore
     ) {
         self.api = api
         self.keychain = keychain
@@ -65,6 +69,8 @@ final class Dependencies {
         self.notificationReconciliation = notificationReconciliation
         self.appLock = appLock
         self.exportFileService = exportFileService
+        self.subscriptionService = subscriptionService
+        self.entitlements = entitlements
     }
 
     static func live() -> Dependencies {
@@ -110,6 +116,8 @@ final class Dependencies {
                 Task { await flowReference?.logoutAndWait() }
             }
         )
+        let subscriptionService = StoreKitSubscriptionService()
+        let entitlements = EntitlementStore(service: subscriptionService, api: api)
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
@@ -119,6 +127,7 @@ final class Dependencies {
                 appLock.prepareForAuthenticatedSession(userID: user.id)
                 settingsStore?.beginSession(user: user)
                 weightUnitPreferences?.activate(userID: user.id, serverUnit: nil)
+                Task { await entitlements.refresh() }
             },
             resetSessionData: { [
                 weak checkinStore,
@@ -136,6 +145,7 @@ final class Dependencies {
                 settingsStore?.resetSession()
                 weightUnitPreferences?.resetSession()
                 appLock?.resetSession()
+                entitlements.resetSession()
                 try? exportFileService.removeStaleFiles()
             },
             cleanupAuthenticatedSessionData: { [
@@ -172,7 +182,9 @@ final class Dependencies {
             pushRegistrationCoordinator: pushRegistrationCoordinator,
             notificationReconciliation: notificationReconciliation,
             appLock: appLock,
-            exportFileService: exportFileService
+            exportFileService: exportFileService,
+            subscriptionService: subscriptionService,
+            entitlements: entitlements
         )
     }
 
@@ -262,6 +274,8 @@ final class Dependencies {
                 Task { await flowReference?.logoutAndWait() }
             }
         )
+        let subscriptionService = MockSubscriptionService()
+        let entitlements = EntitlementStore(service: subscriptionService, api: api)
         let flow = AppFlowCoordinator(
             api: api,
             keychain: keychain,
@@ -271,6 +285,7 @@ final class Dependencies {
                 appLock.prepareForAuthenticatedSession(userID: user.id)
                 settingsStore?.beginSession(user: user)
                 weightUnitPreferences?.activate(userID: user.id, serverUnit: nil)
+                Task { await entitlements.refresh() }
             },
             resetSessionData: { [
                 weak checkinStore,
@@ -288,6 +303,7 @@ final class Dependencies {
                 settingsStore?.resetSession()
                 weightUnitPreferences?.resetSession()
                 appLock?.resetSession()
+                entitlements.resetSession()
                 try? exportFileService.removeStaleFiles()
             },
             cleanupAuthenticatedSessionData: { [
@@ -324,7 +340,9 @@ final class Dependencies {
             pushRegistrationCoordinator: pushRegistrationCoordinator,
             notificationReconciliation: notificationReconciliation,
             appLock: appLock,
-            exportFileService: exportFileService
+            exportFileService: exportFileService,
+            subscriptionService: subscriptionService,
+            entitlements: entitlements
         )
     }
 }
