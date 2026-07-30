@@ -60,6 +60,23 @@ extension PremiumGatingTests {
 }
 
 extension PremiumGatingTests {
+    func testLockIsHiddenUntilEntitlementResolves() {
+        // Showing a lock at launch would flash "locked" at paying customers.
+        XCTAssertFalse(PremiumGate.showsLock(for: .unknown))
+    }
+
+    func testLockShownForFreeAccounts() {
+        XCTAssertTrue(PremiumGate.showsLock(for: .free))
+    }
+
+    func testLockHiddenForPremiumAccounts() {
+        XCTAssertFalse(
+            PremiumGate.showsLock(for: .premium(plan: .yearly, expires: nil))
+        )
+    }
+}
+
+extension PremiumGatingTests {
     func testPremiumItalicFontResolvesToFraunces() {
         let font = PeppyFonts.premiumItalicUIFont(size: 40)
 
