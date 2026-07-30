@@ -6,7 +6,11 @@ struct DashboardSummary: Codable, Equatable {
     let `protocol`: DashboardProtocolSummary
     let todayCheckin: DashboardTodayCheckin
     let responseSnapshot: DashboardResponseSnapshot
-    let insight: DashboardInsightSummary
+    // Null for free accounts — insights are gated behind Peppy Premium, so the
+    // backend omits the payload rather than sending content the user cannot
+    // open. Optional here, otherwise the whole summary fails to decode and a
+    // free user sees the dashboard error card instead of the locked card.
+    let insight: DashboardInsightSummary?
     let connectedContext: DashboardConnectedContext
     // `var` with an inline default, not `let`: the default keeps every
     // existing memberwise-init call site compiling without the argument, and

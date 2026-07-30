@@ -3,6 +3,7 @@ import SwiftUI
 struct DashboardView: View {
     @Environment(\.dependencies) private var deps
     @State private var model: DashboardViewModel?
+    @State private var showsPaywall = false
 
     var body: some View {
         NavigationStack {
@@ -53,11 +54,18 @@ struct DashboardView: View {
                                 DashboardWearableTilesRow(tiles: wearableTiles)
                             }
 
-                            DashboardInsightCard(insight: summary.insight) {
-                                if let id = summary.insight.id {
-                                    deps.protocolNavigation.showInsight(.detail(id))
-                                } else {
-                                    deps.protocolNavigation.showInsightsTab()
+                            // Not nested inside `if let summary.insight`: the
+                            // backend nulls that field for free accounts, and
+                            // the locked card still has to render.
+                            if PremiumGate.showsLock(for: deps.entitlements.entitlement) {
+                                lockedInsightCard
+                            } else if let insight = summary.insight {
+                                DashboardInsightCard(insight: insight) {
+                                    if let id = insight.id {
+                                        deps.protocolNavigation.showInsight(.detail(id))
+                                    } else {
+                                        deps.protocolNavigation.showInsightsTab()
+                                    }
                                 }
                             }
 
@@ -107,7 +115,49 @@ struct DashboardView: View {
             .onChange(of: deps.checkinStore.revision) {
                 Task { await model?.refreshIfCheckinStateChanged() }
             }
+            .sheet(isPresented: $showsPaywall) {
+                PaywallView(onDismiss: { showsPaywall = false })
+            }
         }
+    }
+
+    private var lockedInsightCard: some View {
+        Button {
+            showsPaywall = true
+        } label: {
+            PepCard {
+                HStack(alignment: .top, spacing: Spacing.md) {
+                    ZStack {
+                        Circle().fill(Color.pepPrimaryMuted)
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(Color.pepPrimary)
+                    }
+                    .frame(width: 40, height: 40)
+                    .accessibilityHidden(true)
+
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("LATEST INSIGHT")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(Color.pepPrimary)
+                            .tracking(0.5)
+
+                        Text("Unlock Peppy Premium to see your insights.")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(Color.pepTextPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+
+                    Spacer(minLength: Spacing.sm)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.pepTextTertiary)
+                        .accessibilityHidden(true)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Insight locked. Unlock Peppy Premium to see your insights.")
     }
 
     private var header: some View {
