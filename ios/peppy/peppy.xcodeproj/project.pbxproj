@@ -126,6 +126,7 @@
 		49C366262FEE500100C1F5DE /* PaywallPlanCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C366252FEE500100C1F5DE /* PaywallPlanCard.swift */; };
 		49C366292FEE500100C1F5DE /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C366282FEE500100C1F5DE /* PaywallView.swift */; };
 		49C3662B2FEE500100C1F5DE /* PremiumLockedOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3662A2FEE500100C1F5DE /* PremiumLockedOverlay.swift */; };
+		49C3662D2FEE500100C1F5DE /* PremiumUpsellCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3662C2FEE500100C1F5DE /* PremiumUpsellCard.swift */; };
 		49C3657D2FF001700C1F5DE /* InsightCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3657C2FF001700C1F5DE /* InsightCardView.swift */; };
 		49C3657F2FF001700C1F5DE /* InsightsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C3657E2FF001700C1F5DE /* InsightsListView.swift */; };
 		49C365862FF001800C1F5DE /* InsightDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49C365852FF001800C1F5DE /* InsightDetailViewModel.swift */; };
@@ -291,6 +292,7 @@
 		49C366252FEE500100C1F5DE /* PaywallPlanCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPlanCard.swift; sourceTree = "<group>"; };
 		49C366282FEE500100C1F5DE /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
 		49C3662A2FEE500100C1F5DE /* PremiumLockedOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumLockedOverlay.swift; sourceTree = "<group>"; };
+		49C3662C2FEE500100C1F5DE /* PremiumUpsellCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremiumUpsellCard.swift; sourceTree = "<group>"; };
 		49C3657C2FF001700C1F5DE /* InsightCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightCardView.swift; sourceTree = "<group>"; };
 		49C3657E2FF001700C1F5DE /* InsightsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsListView.swift; sourceTree = "<group>"; };
 		49C365852FF001800C1F5DE /* InsightDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightDetailViewModel.swift; sourceTree = "<group>"; };
@@ -576,6 +578,7 @@
 				49C366252FEE500100C1F5DE /* PaywallPlanCard.swift */,
 				49C366282FEE500100C1F5DE /* PaywallView.swift */,
 				49C3662A2FEE500100C1F5DE /* PremiumLockedOverlay.swift */,
+				49C3662C2FEE500100C1F5DE /* PremiumUpsellCard.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -1111,6 +1114,7 @@
 				49C366262FEE500100C1F5DE /* PaywallPlanCard.swift in Sources */,
 				49C366292FEE500100C1F5DE /* PaywallView.swift in Sources */,
 				49C3662B2FEE500100C1F5DE /* PremiumLockedOverlay.swift in Sources */,
+				49C3662D2FEE500100C1F5DE /* PremiumUpsellCard.swift in Sources */,
 				49C3657D2FF001700C1F5DE /* InsightCardView.swift in Sources */,
 				49C3657F2FF001700C1F5DE /* InsightsListView.swift in Sources */,
 				49C365862FF001800C1F5DE /* InsightDetailViewModel.swift in Sources */,

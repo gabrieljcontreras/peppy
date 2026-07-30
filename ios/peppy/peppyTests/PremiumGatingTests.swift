@@ -139,6 +139,24 @@ extension PremiumGatingTests {
 }
 
 extension PremiumGatingTests {
+    func testOnlyDataExportIsPremiumGatedInSettings() {
+        XCTAssertEqual(SettingsRootViewModel.premiumOnlyRoutes, [.dataExport])
+    }
+
+    func testDataExportRowIsFlaggedPremiumOnly() {
+        let row = SettingsRootViewModel.myDataRows.first { $0.route == .dataExport }
+        XCTAssertEqual(row?.isPremiumOnly, true)
+    }
+
+    func testNotificationsStaysFree() {
+        // Dose reminders serve free Protocols; locking them would gut the
+        // free tier.
+        let row = SettingsRootViewModel.myDataRows.first { $0.route == .notifications }
+        XCTAssertEqual(row?.isPremiumOnly, false)
+    }
+}
+
+extension PremiumGatingTests {
     func testPremiumItalicFontResolvesToFraunces() {
         let font = PeppyFonts.premiumItalicUIFont(size: 40)
 
