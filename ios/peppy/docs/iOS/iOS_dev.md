@@ -85,3 +85,30 @@ Branch: `iOS_onboarding_dev`
 - Task 5, Task 6, Task 7, Task 8, Task 9, Task 10, and Task 11 changes are implemented and verified locally.
 - Task 9, Task 10, and Task 11 were verified but not committed because this pass is continuing task-by-task without an explicit commit request.
 - Only Xcode local UI state may remain modified and should stay out of commits unless intentionally changed.
+
+## 2026-07-30 — Peppy Premium paywall
+
+### Completed
+
+- Replaced the `.futurePaywall` placeholder route with a real `.paywall` route. It is shown once, after account creation only: `didAuthenticate(user:isNewAccount:)` routes new accounts to the paywall and returning sign-ins straight to the dashboard.
+- Added a StoreKit 2 `SubscriptionService` plus `EntitlementStore`, wired through `Dependencies`. `Peppy.storekit` holds the three products and is already referenced by `peppy.xcscheme`.
+- Backend gained `subscription_*` columns on `users`, subscription routes, Apple transaction decoding, and 402 gating on insights and data export. iOS maps HTTP 402 to `APIError.paymentRequired`.
+- Bundled Fraunces as the accent face for the "Premium" wordmark (`PeppyFonts.premiumItalicUIFont`).
+- Gated four surfaces behind `PremiumGate.showsLock`: the Insights tab (blurred synthetic teaser), the dashboard insight card, the Settings data-export row (locked to a "Premium" chip), and a More-tab upsell card.
+
+### Verified
+
+- Full iOS test suite passed with 533 tests on `iPhone 17 Pro`.
+- Full backend suite passed with 373 tests.
+- Gate confirmed over real HTTP against a throwaway SQLite database: a freshly registered free account gets `402` on `GET /api/v1/insights` and `POST /api/v1/profile/export`, `200` on `GET /api/v1/dashboard/summary` and `GET /api/v1/subscription`, and `403` unauthenticated.
+- Each gating task followed TDD — the red test failed for the predicted reason before implementation in Tasks 14, 15, 16, and 17.
+
+### External Follow-Up
+
+- Three pre-launch blockers are recorded in `docs/superpowers/plans/2026-07-26-premium-paywall-manual-qa.md`: unimplemented Apple JWS signature verification, App Store Connect product setup with Family Sharing on yearly and lifetime, and the computed `price * 2` original price.
+- Manual QA is still pending; the checklist in that same file is the handoff.
+
+### Workspace Notes
+
+- `DashboardSummary.insight` had to become optional. Backend Task 4 nulls the field for free accounts, and the non-optional Swift property made the whole summary fail to decode, so a free user saw the dashboard error card instead of the locked insight card. Caught in Task 16 and covered by two decode tests.
+- Tasks 12–17 were each staged and committed by Gabriel one at a time; Task 18 is docs only.

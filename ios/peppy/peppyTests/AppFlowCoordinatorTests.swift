@@ -155,16 +155,46 @@ final class AppFlowCoordinatorTests: XCTestCase {
         XCTAssertEqual(fixture.coordinator.route, .authentication(.register))
     }
 
-    func testReadySummaryAdvancesThroughFuturePaywallBypassToRegistration() {
+    func testRegistrationRoutesToPaywall() async {
         let fixture = Fixture()
+        let user = User(
+            id: UUID(), email: "new@example.com", displayName: nil, isVerified: false
+        )
 
+        await fixture.coordinator.didAuthenticate(user: user, isNewAccount: true)
+
+        XCTAssertEqual(fixture.coordinator.route, .paywall)
+    }
+
+    func testSignInSkipsPaywall() async {
+        let fixture = Fixture()
+        let user = User(
+            id: UUID(), email: "returning@example.com", displayName: nil, isVerified: true
+        )
+
+        await fixture.coordinator.didAuthenticate(user: user)
+
+        XCTAssertEqual(fixture.coordinator.route, .dashboard)
+    }
+
+    func testDismissingPaywallReachesDashboard() async {
+        let fixture = Fixture()
+        let user = User(
+            id: UUID(), email: "new@example.com", displayName: nil, isVerified: false
+        )
+        await fixture.coordinator.didAuthenticate(user: user, isNewAccount: true)
+
+        fixture.coordinator.dismissPaywall()
+
+        XCTAssertEqual(fixture.coordinator.route, .dashboard)
+    }
+
+    func testReadySummaryContinuesStraightToRegistration() {
+        let fixture = Fixture()
         fixture.coordinator.showReadySummary()
-        XCTAssertEqual(fixture.coordinator.route, .readySummary)
 
         fixture.coordinator.continueFromReadySummary()
-        XCTAssertEqual(fixture.coordinator.route, .futurePaywall)
 
-        fixture.coordinator.advancePastFuturePaywall()
         XCTAssertEqual(fixture.coordinator.route, .authentication(.register))
     }
 
@@ -649,7 +679,7 @@ final class AppFlowCoordinatorTests: XCTestCase {
     func testRootOnlyResolvesLaunchWhileLaunching() {
         let deps = Dependencies.mock()
 
-        deps.flow.route = .futurePaywall
+        deps.flow.route = .paywall
         XCTAssertFalse(RootView.shouldResolveLaunch(for: deps))
 
         deps.flow.route = .launching
@@ -691,7 +721,7 @@ final class AppFlowCoordinatorTests: XCTestCase {
 
         await RegisterView.completeRegistration(user: user, deps: deps)
 
-        XCTAssertEqual(deps.flow.route, .dashboard)
+        XCTAssertEqual(deps.flow.route, .paywall)
         XCTAssertTrue(deps.appState.isAuthenticated)
         XCTAssertFalse(deps.flow.hasProfileAttachFailure)
         XCTAssertNil(deps.onboardingStore.loadAnonymousDraft())

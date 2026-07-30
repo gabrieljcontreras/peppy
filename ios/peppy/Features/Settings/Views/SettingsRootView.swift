@@ -8,6 +8,15 @@ struct SettingsRootView: View {
 
     @State private var path: [SettingsRoute] = []
     @State private var showsLogoutConfirmation = false
+    @State private var showsPaywall = false
+
+    /// Empty until the entitlement resolves, so a paying customer never sees
+    /// their own features flash a "Premium" chip at launch.
+    private var lockedRoutes: Set<SettingsRoute> {
+        PremiumGate.showsLock(for: dependencies.entitlements.entitlement)
+            ? SettingsRootViewModel.premiumOnlyRoutes
+            : []
+    }
 
     init(
         store: SettingsStore,
@@ -31,16 +40,30 @@ struct SettingsRootView: View {
                         }
                     }
 
+                    if dependencies.entitlements.entitlement.isResolved {
+                        PremiumUpsellCard(
+                            entitlement: dependencies.entitlements.entitlement
+                        ) {
+                            showsPaywall = true
+                        }
+                    }
+
                     SettingsProfileCard(user: store.user)
 
                     SettingsSectionCard(
                         title: "My data",
-                        rows: SettingsRootViewModel.myDataRows
+                        rows: SettingsRootViewModel.myDataRows,
+                        lockedRoutes: lockedRoutes,
+                        onLockedTap: { _ in showsPaywall = true }
                     )
 
+                    // Also gated, so a row flagged `isPremiumOnly` in this
+                    // section would lock too rather than silently staying open.
                     SettingsSectionCard(
                         title: "Account & app",
-                        rows: SettingsRootViewModel.accountAndAppRows
+                        rows: SettingsRootViewModel.accountAndAppRows,
+                        lockedRoutes: lockedRoutes,
+                        onLockedTap: { _ in showsPaywall = true }
                     )
 
                     footer
@@ -71,6 +94,9 @@ struct SettingsRootView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("You’ll need to sign in again to access your account.")
+        }
+        .sheet(isPresented: $showsPaywall) {
+            PaywallView(onDismiss: { showsPaywall = false })
         }
     }
 

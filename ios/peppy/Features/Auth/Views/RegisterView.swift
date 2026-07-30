@@ -208,7 +208,7 @@ struct RegisterView: View {
 
     @MainActor
     static func completeRegistration(user: User, deps: Dependencies) async {
-        await deps.flow.didAuthenticate(user: user)
+        await deps.flow.didAuthenticate(user: user, isNewAccount: true)
         deps.appState.showSuccess("Welcome to Peppy!")
     }
 }

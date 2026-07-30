@@ -9,6 +9,7 @@ struct InsightsListView: View {
     @Bindable private var navigation: ProtocolNavigationCoordinator
     @State private var model: InsightsListViewModel
     @State private var toast: Toast?
+    @State private var showsPaywall = false
 
     init(store: InsightsStore, navigation: ProtocolNavigationCoordinator) {
         self.store = store
@@ -21,13 +22,23 @@ struct InsightsListView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
-                    filterChips
 
-                    if model.showsSummaryCard {
-                        weeklySummaryCard
+                    if !PremiumGate.showsLock(for: deps.entitlements.entitlement) {
+                        filterChips
+
+                        if model.showsSummaryCard {
+                            weeklySummaryCard
+                        }
                     }
 
-                    if store.insights.isEmpty && store.isLoading {
+                    if PremiumGate.showsLock(for: deps.entitlements.entitlement) {
+                        PremiumLockedOverlay(
+                            title: "Insights are a Premium feature",
+                            message: "See what your check-ins and doses are "
+                                + "telling you, every week.",
+                            action: { showsPaywall = true }
+                        )
+                    } else if store.insights.isEmpty && store.isLoading {
                         PepLoadingView(message: "Loading your insights")
                             .frame(maxWidth: .infinity, minHeight: 220)
                     } else if model.showsLearningState {
@@ -60,6 +71,7 @@ struct InsightsListView: View {
                 }
             }
             .task {
+                guard !PremiumGate.showsLock(for: deps.entitlements.entitlement) else { return }
                 await model.onAppear()
             }
             .onChange(of: store.errorMessage) {
@@ -68,6 +80,9 @@ struct InsightsListView: View {
                 }
             }
             .pepToast($toast)
+            .sheet(isPresented: $showsPaywall) {
+                PaywallView(onDismiss: { showsPaywall = false })
+            }
         }
     }
 

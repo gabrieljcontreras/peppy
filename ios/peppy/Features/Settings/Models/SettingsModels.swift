@@ -37,12 +37,38 @@ struct SettingsRowModel: Equatable, Identifiable {
     let subtitle: String
     let systemImage: String?
     let tone: SettingsRowTone
+    let isPremiumOnly: Bool
 
     var id: SettingsRoute { route }
+
+    // Spelled out rather than synthesized so `isPremiumOnly` can default and
+    // every existing call site keeps compiling without it.
+    init(
+        route: SettingsRoute,
+        title: String,
+        subtitle: String,
+        systemImage: String?,
+        tone: SettingsRowTone,
+        isPremiumOnly: Bool = false
+    ) {
+        self.route = route
+        self.title = title
+        self.subtitle = subtitle
+        self.systemImage = systemImage
+        self.tone = tone
+        self.isPremiumOnly = isPremiumOnly
+    }
 }
 
 enum SettingsRootViewModel {
     static let profileRoute: SettingsRoute = .profile
+
+    /// Single source of truth for what Settings locks. Derived from the rows
+    /// themselves so a row flagged `isPremiumOnly` can never drift out of the
+    /// set that actually gates navigation.
+    static let premiumOnlyRoutes: Set<SettingsRoute> = Set(
+        releaseRows.filter(\.isPremiumOnly).map(\.route)
+    )
 
     static let myDataRows: [SettingsRowModel] = [
         SettingsRowModel(
@@ -57,7 +83,8 @@ enum SettingsRootViewModel {
             title: "Data export",
             subtitle: "Export your data",
             systemImage: "square.and.arrow.down",
-            tone: .orange
+            tone: .orange,
+            isPremiumOnly: true
         )
     ]
 

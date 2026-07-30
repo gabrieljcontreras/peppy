@@ -60,6 +60,103 @@ extension PremiumGatingTests {
 }
 
 extension PremiumGatingTests {
+    func testLockIsHiddenUntilEntitlementResolves() {
+        // Showing a lock at launch would flash "locked" at paying customers.
+        XCTAssertFalse(PremiumGate.showsLock(for: .unknown))
+    }
+
+    func testLockShownForFreeAccounts() {
+        XCTAssertTrue(PremiumGate.showsLock(for: .free))
+    }
+
+    func testLockHiddenForPremiumAccounts() {
+        XCTAssertFalse(
+            PremiumGate.showsLock(for: .premium(plan: .yearly, expires: nil))
+        )
+    }
+}
+
+extension PremiumGatingTests {
+    /// The backend nulls `insight` for free accounts (see DashboardService).
+    /// If the iOS model keeps the field non-optional the whole summary fails
+    /// to decode, so a free user sees the dashboard error card instead of the
+    /// locked insight card.
+    func testDashboardSummaryDecodesWithNullInsightForFreeAccounts() throws {
+        let summary = try Self.decodeDashboardSummary(insightJSON: "null")
+
+        XCTAssertNil(summary.insight)
+        // The rest of the payload must survive: the lock replaces one card,
+        // it does not blank the dashboard.
+        XCTAssertEqual(summary.protocol.title, "Starter protocol")
+        XCTAssertEqual(summary.profileStatus, "present")
+    }
+
+    func testDashboardSummaryStillDecodesInsightForPremiumAccounts() throws {
+        let summary = try Self.decodeDashboardSummary(
+            insightJSON: """
+            {"id": null, "title": "Your weight trend is accelerating",
+             "severity": "info", "empty_message": null, "confidence": 0.82}
+            """
+        )
+
+        XCTAssertEqual(summary.insight?.title, "Your weight trend is accelerating")
+        XCTAssertEqual(summary.insight?.confidence, 0.82)
+    }
+
+    private static func decodeDashboardSummary(insightJSON: String) throws -> DashboardSummary {
+        let json = """
+        {
+          "generated_at": "2026-07-30T12:00:00Z",
+          "profile_status": "present",
+          "protocol": {
+            "id": "00000000-0000-0000-0000-000000000001",
+            "status": "active",
+            "title": "Starter protocol",
+            "compounds": ["Retatrutide"],
+            "start_date": null
+          },
+          "today_checkin": {"logged": false, "checkin_id": null},
+          "response_snapshot": {
+            "weight_trend": [],
+            "latest_energy": null,
+            "latest_mood": null
+          },
+          "insight": \(insightJSON),
+          "connected_context": {
+            "healthkit_requested": true,
+            "has_labs": false,
+            "has_wearables": false
+          },
+          "recent_activity": []
+        }
+        """
+
+        let decoder = JSONDecoder()
+        // Matches APIClient's configuration.
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(DashboardSummary.self, from: Data(json.utf8))
+    }
+}
+
+extension PremiumGatingTests {
+    func testOnlyDataExportIsPremiumGatedInSettings() {
+        XCTAssertEqual(SettingsRootViewModel.premiumOnlyRoutes, [.dataExport])
+    }
+
+    func testDataExportRowIsFlaggedPremiumOnly() {
+        let row = SettingsRootViewModel.myDataRows.first { $0.route == .dataExport }
+        XCTAssertEqual(row?.isPremiumOnly, true)
+    }
+
+    func testNotificationsStaysFree() {
+        // Dose reminders serve free Protocols; locking them would gut the
+        // free tier.
+        let row = SettingsRootViewModel.myDataRows.first { $0.route == .notifications }
+        XCTAssertEqual(row?.isPremiumOnly, false)
+    }
+}
+
+extension PremiumGatingTests {
     func testPremiumItalicFontResolvesToFraunces() {
         let font = PeppyFonts.premiumItalicUIFont(size: 40)
 

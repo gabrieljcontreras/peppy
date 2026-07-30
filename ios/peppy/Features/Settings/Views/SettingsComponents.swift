@@ -143,6 +143,8 @@ struct SettingsProfileCard: View {
 struct SettingsSectionCard: View {
     let title: String
     let rows: [SettingsRowModel]
+    var lockedRoutes: Set<SettingsRoute> = []
+    var onLockedTap: ((SettingsRoute) -> Void)?
 
     @ScaledMetric(relativeTo: .headline) private var titleFontSize: CGFloat = 13
 
@@ -154,10 +156,19 @@ struct SettingsSectionCard: View {
 
             VStack(spacing: 0) {
                 ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
-                    NavigationLink(value: row.route) {
-                        SettingsMenuRow(row: row)
+                    if lockedRoutes.contains(row.route) {
+                        Button {
+                            onLockedTap?(row.route)
+                        } label: {
+                            SettingsMenuRow(row: row, isLocked: true)
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        NavigationLink(value: row.route) {
+                            SettingsMenuRow(row: row)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
 
                     if index < rows.count - 1 {
                         Rectangle()
@@ -179,6 +190,7 @@ struct SettingsSectionCard: View {
 
 struct SettingsMenuRow: View {
     let row: SettingsRowModel
+    var isLocked: Bool = false
 
     @ScaledMetric(relativeTo: .body) private var titleFontSize: CGFloat = 13
     @ScaledMetric(relativeTo: .subheadline) private var subtitleFontSize: CGFloat = 11
@@ -207,10 +219,21 @@ struct SettingsMenuRow: View {
 
             Spacer(minLength: Spacing.sm)
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(Color.pepTextTertiary)
-                .accessibilityHidden(true)
+            if isLocked {
+                Text("Premium")
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color.pepPrimary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.pepPrimaryMuted)
+                    .clipShape(Capsule())
+                    .accessibilityHidden(true)
+            } else {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.pepTextTertiary)
+                    .accessibilityHidden(true)
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
@@ -218,7 +241,11 @@ struct SettingsMenuRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(row.title), \(row.subtitle)")
+        .accessibilityLabel(
+            isLocked
+                ? "\(row.title), \(row.subtitle), Premium required"
+                : "\(row.title), \(row.subtitle)"
+        )
     }
 
     @ViewBuilder
