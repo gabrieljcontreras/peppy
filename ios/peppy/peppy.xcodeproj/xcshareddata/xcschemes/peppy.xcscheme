@@ -72,7 +72,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../../Peppy.storekit">
+         identifier = "../../Peppy.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
