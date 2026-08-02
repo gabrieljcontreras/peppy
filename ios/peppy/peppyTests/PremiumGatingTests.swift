@@ -101,6 +101,12 @@ extension PremiumGatingTests {
 
         XCTAssertEqual(summary.insight?.title, "Your weight trend is accelerating")
         XCTAssertEqual(summary.insight?.confidence, 0.82)
+        XCTAssertEqual(summary.responseSnapshot.weightTrend.count, 1)
+        XCTAssertEqual(
+            summary.responseSnapshot.weightTrend.first?.date,
+            APIDateOnly.date(from: "2026-07-21")
+        )
+        XCTAssertEqual(summary.responseSnapshot.weightTrend.first?.weightKg, 74.8)
     }
 
     private static func decodeDashboardSummary(insightJSON: String) throws -> DashboardSummary {
@@ -117,7 +123,7 @@ extension PremiumGatingTests {
           },
           "today_checkin": {"logged": false, "checkin_id": null},
           "response_snapshot": {
-            "weight_trend": [],
+            "weight_trend": [{"date": "2026-07-21", "weight_kg": 74.8}],
             "latest_energy": null,
             "latest_mood": null
           },

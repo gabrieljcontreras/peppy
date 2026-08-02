@@ -108,6 +108,22 @@ struct DashboardWeightPoint: Codable, Equatable {
     }
 }
 
+extension DashboardWeightPoint {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let rawDate = try container.decode(String.self, forKey: .date)
+        guard let decodedDate = APIDateOnly.date(from: rawDate) else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .date,
+                in: container,
+                debugDescription: "Expected a date in yyyy-MM-dd format."
+            )
+        }
+        date = decodedDate
+        weightKg = try container.decode(Double.self, forKey: .weightKg)
+    }
+}
+
 struct DashboardInsightSummary: Codable, Equatable {
     let id: UUID?
     let title: String?

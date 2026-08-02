@@ -77,15 +77,9 @@ final class DashboardViewModel {
             state.showsProfileSyncRecovery = hasProfileAttachFailure()
         } catch let error as APIError {
             state.errorMessage = error.userMessage
-            if state.summary == nil {
-                state.summary = await recoveringProtocol(in: .mockMissingProfile)
-            }
             state.showsProfileSyncRecovery = hasProfileAttachFailure()
         } catch {
             state.errorMessage = error.localizedDescription
-            if state.summary == nil {
-                state.summary = await recoveringProtocol(in: .mockMissingProfile)
-            }
             state.showsProfileSyncRecovery = hasProfileAttachFailure()
         }
 

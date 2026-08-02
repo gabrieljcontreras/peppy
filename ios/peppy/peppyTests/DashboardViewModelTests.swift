@@ -161,26 +161,18 @@ final class DashboardViewModelTests: XCTestCase {
         XCTAssertEqual(fixture.model.state.errorMessage, APIError.serverError.userMessage)
     }
 
-    func testDashboardFailureUsesActiveProtocolFromStore() async {
+    func testInitialDashboardDecodingFailureDoesNotSubstituteMockSummary() async {
         let api = MockAPIClient()
-        api.setMockError(.serverError, for: Endpoint.getDashboardSummary)
-        api.setMockResponse([ProtocolModel.fixture], for: Endpoint.getProtocols)
-        let store = ProtocolStore(api: api)
+        api.setMockError(.decodingFailed, for: Endpoint.getDashboardSummary)
         let model = DashboardViewModel(
             api: api,
-            protocolStore: store,
             hasProfileAttachFailure: false
         )
 
         await model.load()
 
-        XCTAssertEqual(model.state.summary?.protocol.id, ProtocolModel.fixture.id)
-        XCTAssertEqual(model.state.summary?.protocol.status, "active")
-        XCTAssertEqual(model.state.summary?.protocol.title, ProtocolModel.fixture.name)
-        XCTAssertEqual(
-            model.state.summary?.protocol.compounds,
-            ProtocolModel.fixture.compounds.map(\.name)
-        )
+        XCTAssertNil(model.state.summary)
+        XCTAssertEqual(model.state.errorMessage, APIError.decodingFailed.userMessage)
     }
 
     func testMissingDashboardSummaryUsesActiveProtocolFromStore() async {
@@ -561,6 +553,16 @@ final class DashboardModelDecodingTests: XCTestCase {
         let summary = try decoder.decode(DashboardProtocolSummary.self, from: Data(json.utf8))
 
         XCTAssertNil(summary.startDate)
+    }
+
+    func testWeightPointDecodesDateOnlyDate() throws {
+        let json = """
+        {"date": "2026-07-21", "weight_kg": 74.8}
+        """
+        let point = try decoder.decode(DashboardWeightPoint.self, from: Data(json.utf8))
+
+        XCTAssertEqual(point.date, APIDateOnly.date(from: "2026-07-21"))
+        XCTAssertEqual(point.weightKg, 74.8)
     }
 
     func testInsightSummaryDecodesConfidence() throws {
