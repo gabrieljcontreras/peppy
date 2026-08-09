@@ -5,6 +5,29 @@ struct DashboardWeightTrendCard: View {
     let snapshot: DashboardResponseSnapshot
     let preferredUnit: WeightUnit
 
+    /// Trend dates arrive as `yyyy-MM-dd` and decode to UTC midnight via
+    /// `APIDateOnly`, so the axis has to label them in UTC too. Formatting them
+    /// in the device calendar shifts every weekday back a day west of GMT.
+    private static let weekdayLabel = Date.FormatStyle(
+        date: .omitted,
+        time: .omitted,
+        timeZone: TimeZone(secondsFromGMT: 0) ?? .current
+    ).weekday(.abbreviated)
+
+    /// The backend sends up to 10 check-ins spanning 30 days. Plotting all of
+    /// them crowds the axis past the point of legibility, so the card shows a
+    /// week — which is also the window `deltaText` describes.
+    private static let maximumPoints = 7
+
+    /// Oldest to newest, because the axis labels read left to right.
+    private var points: [DashboardWeightPoint] {
+        Array(
+            snapshot.weightTrend
+                .sorted { $0.date < $1.date }
+                .suffix(Self.maximumPoints)
+        )
+    }
+
     var body: some View {
         PepCard {
             VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -13,22 +36,22 @@ struct DashboardWeightTrendCard: View {
                     .foregroundStyle(Color.pepPrimary)
                     .tracking(0.5)
 
-                if let latest = snapshot.weightTrend.last {
-                    HStack(alignment: .firstTextBaseline, spacing: Spacing.sm) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(preferredUnit.format(kilograms: latest.weightKg))
-                                .font(.system(size: 26, weight: .bold))
-                                .foregroundStyle(Color.pepTextPrimary)
-                            if let deltaText {
-                                Text(deltaText)
-                                    .font(.system(size: 13, weight: .semibold))
-                                    .foregroundStyle(delta ?? 0 <= 0 ? Color.pepSuccess : Color.pepWarning)
-                            }
+                if let latest = points.last {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(preferredUnit.format(kilograms: latest.weightKg))
+                            .font(.system(size: 26, weight: .bold))
+                            .foregroundStyle(Color.pepTextPrimary)
+                        if let deltaText {
+                            Text(deltaText)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(delta ?? 0 <= 0 ? Color.pepSuccess : Color.pepWarning)
                         }
-                        Spacer()
-                        sparkline
-                            .frame(width: 140, height: 60)
                     }
+
+                    trendChart
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 96)
+                        .padding(.top, Spacing.xs)
                 } else {
                     Text("Log a few check-ins to see your trend.")
                         .font(.system(size: 13))
@@ -40,7 +63,12 @@ struct DashboardWeightTrendCard: View {
     }
 
     private var delta: Double? {
-        guard let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: Date()) else { return nil }
+        // Points sit at UTC midnight, so the cutoff has to as well — measuring
+        // back from the local clock drops the oldest day west of GMT.
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0) ?? .current
+        let today = calendar.startOfDay(for: Date())
+        guard let cutoff = calendar.date(byAdding: .day, value: -7, to: today) else { return nil }
         let recent = snapshot.weightTrend.filter { $0.date >= cutoff }.sorted { $0.date < $1.date }
         guard let first = recent.first, let last = recent.last, first.date != last.date else { return nil }
         return last.weightKg - first.weightKg
@@ -53,11 +81,11 @@ struct DashboardWeightTrendCard: View {
         return "\(arrow) \(String(format: "%.1f", displayDelta)) \(preferredUnit.symbol) this week"
     }
 
-    private var sparkline: some View {
-        let points = snapshot.weightTrend
-        let weights = points.map(\.weightKg)
+    private var trendChart: some View {
+        let plotted = points
+        let weights = plotted.map(\.weightKg)
         let lower = (weights.min() ?? 0) - 0.5
-        return Chart(points, id: \.date) { point in
+        return Chart(plotted, id: \.date) { point in
             AreaMark(
                 x: .value("Day", point.date),
                 yStart: .value("Baseline", lower),
@@ -79,11 +107,20 @@ struct DashboardWeightTrendCard: View {
             .interpolationMethod(.catmullRom)
             .lineStyle(StrokeStyle(lineWidth: 2))
             .foregroundStyle(Color.pepPrimary)
+            // A lone check-in draws no line segment; the symbol keeps the
+            // chart from coming up blank on a brand new account.
+            .symbol {
+                Circle()
+                    .fill(Color.pepPrimary)
+                    .frame(width: 5, height: 5)
+            }
         }
+        // Labelling the check-in dates themselves, rather than striding by day,
+        // keeps every label under a data point and caps the count at seven.
         .chartXAxis {
-            AxisMarks(values: .stride(by: .day)) { _ in
-                AxisValueLabel(format: .dateTime.weekday(.abbreviated))
-                    .font(.system(size: 9))
+            AxisMarks(values: plotted.map(\.date)) { _ in
+                AxisValueLabel(format: Self.weekdayLabel)
+                    .font(.system(size: 10))
                     .foregroundStyle(Color.pepTextTertiary)
             }
         }

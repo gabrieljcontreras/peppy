@@ -42,12 +42,6 @@ struct ProtocolListView: View {
                 PeppyLogo(size: 34, showsWordmark: true)
 
                 Spacer()
-
-                PeppyLogo(size: 42)
-                    .padding(8)
-                    .background(Color.pepSurface)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.pepBorder, lineWidth: 1))
             }
 
             HStack(alignment: .center, spacing: 16) {

@@ -40,16 +40,6 @@ struct SettingsHeader: View {
                 SettingsWordmark()
 
                 Spacer()
-
-                PeppyLogo(size: 22)
-                    .frame(width: 36, height: 36)
-                    .background(Color.pepSurface)
-                    .clipShape(Circle())
-                    .overlay(Circle().stroke(Color.pepBorder, lineWidth: 1))
-                    .frame(
-                        width: SettingsFigmaLayout.minimumTapTarget,
-                        height: SettingsFigmaLayout.minimumTapTarget
-                    )
             }
 
             VStack(alignment: .leading, spacing: Spacing.xs) {
